@@ -1,0 +1,18 @@
+{
+  "title": "Toy regression pipeline smoke test",
+  "question": "Does adding a quadratic feature reduce test RMSE on a deterministic synthetic regression task?",
+  "domain": "AI / machine learning",
+  "keywords": ["polynomial regression", "quadratic features", "generalization"],
+  "sourceUrls": ["https://scikit-learn.org/stable/modules/linear_model.html"],
+  "experiment": {
+    "workspace": "examples/toy-regression",
+    "baseline": { "program": "python3", "args": ["experiment.py", "baseline"] },
+    "candidate": { "program": "python3", "args": ["experiment.py", "candidate"] },
+    "metric": "rmse",
+    "direction": "minimize",
+    "seed": 42,
+    "execution": "process"
+  },
+  "limits": { "maxModelCalls": 6, "maxWallMinutes": 20, "maxExperimentSeconds": 30, "maxIterations": 1 },
+  "publicMaterialsOnly": true
+}
