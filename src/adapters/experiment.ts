@@ -4,16 +4,18 @@ import { resolve, join } from "node:path";
 import type { ExperimentResult, ResearchBrief } from "../core/schema.js";
 import { restrictedExperimentEnv, runProcess } from "./process.js";
 
-function parseMetric(stdout: string, metricName: string): number | null {
+function parseMetric(stdout: string, metricName: string): { metric: number | null; details: Record<string, unknown> | null } {
   for (const line of stdout.trim().split(/\r?\n/).reverse()) {
     try {
       const parsed: unknown = JSON.parse(line);
       if (typeof parsed !== "object" || !parsed) continue;
       const value = (parsed as Record<string, unknown>)[metricName] ?? (parsed as Record<string, unknown>).metric;
-      if (typeof value === "number" && Number.isFinite(value)) return value;
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return { metric: value, details: parsed as Record<string, unknown> };
+      }
     } catch { /* Log line is not JSON. */ }
   }
-  return null;
+  return { metric: null, details: null };
 }
 
 export async function executeExperiment(
@@ -53,9 +55,10 @@ export async function executeExperiment(
   const stderrPath = join(runDir, `${variant}.stderr.log`);
   writeFileSync(stdoutPath, output.stdout);
   writeFileSync(stderrPath, output.stderr);
+  const parsed = output.exitCode === 0 ? parseMetric(output.stdout, spec.metric) : { metric: null, details: null };
   return {
     variant, command, seed: spec.seed, codePath, codeSha256, codeSnapshotPath,
-    metric: output.exitCode === 0 ? parseMetric(output.stdout, spec.metric) : null,
+    metric: parsed.metric, details: parsed.details,
     exitCode: output.exitCode, timedOut: output.timedOut, durationMs: output.durationMs,
     stdoutPath, stderrPath, startedAt, finishedAt: new Date().toISOString(),
   };

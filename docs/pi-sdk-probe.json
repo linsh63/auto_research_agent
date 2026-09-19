@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "model": "probe/gpt-5.6-luna",
+  "toolExecutions": 1,
+  "eventTypes": [
+    "agent_end",
+    "agent_settled",
+    "agent_start",
+    "message_end",
+    "message_start",
+    "message_update",
+    "tool_execution_end",
+    "tool_execution_start",
+    "turn_end",
+    "turn_start"
+  ],
+  "sessionFile": ".research-data/probes/pi-sdk/sessions/2026-09-19T03-26-54-927Z_01a0b7b3-e3ce-73ce-af29-298c347ffbfb.jsonl",
+  "messageCount": 4,
+  "restoredMessages": 4,
+  "cancelled": true
+}

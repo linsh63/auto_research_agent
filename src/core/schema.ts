@@ -13,6 +13,9 @@ export const ExperimentSchema = z.object({
   metric: z.string().min(1),
   direction: z.enum(["maximize", "minimize"]),
   seed: z.number().int().default(42),
+  pairedSeeds: z.array(z.number().int()).min(1).optional(),
+  protocol: z.string().optional(),
+  successCriterion: z.string().min(5).optional(),
   execution: z.enum(["process", "docker"]).default("docker"),
   dockerImage: z.string().optional(),
 }).refine((value) => value.execution !== "docker" || Boolean(value.dockerImage), {
@@ -32,11 +35,16 @@ export const SourceSchema = z.object({
   accessedAt: z.string(),
 });
 
+export const SeedSourceSchema = SourceSchema.omit({ id: true, accessedAt: true, origin: true }).extend({
+  origin: z.string().default("provided"),
+});
+
 export const BriefSchema = z.object({
   title: z.string().min(3),
   question: z.string().min(10),
   domain: z.string().default("AI"),
   keywords: z.array(z.string().min(2)).min(1),
+  seedSources: z.array(SeedSourceSchema).default([]),
   sourceUrls: z.array(z.url()).default([]),
   startYear: z.number().int().min(1900).optional(),
   endYear: z.number().int().min(1900).optional(),
@@ -61,6 +69,7 @@ export const HypothesisSchema = z.object({
 
 export const PlanSchema = z.object({
   comparison: z.string().min(10),
+  replicateSeeds: z.array(z.number().int()).min(1),
   baselineDescription: z.string().min(5),
   candidateDescription: z.string().min(5),
   metricInterpretation: z.string().min(5),
@@ -83,12 +92,25 @@ export const ReviewSchema = z.object({
   confidence: z.enum(["low", "medium", "high"]),
 });
 
+export const ReviewResponseSchema = z.object({
+  summary: z.string().min(10),
+  conclusion: z.string().min(10),
+  changes: z.array(z.object({
+    requirement: z.string().min(5),
+    disposition: z.enum(["addressed", "accepted_limitation"]),
+    response: z.string().min(10),
+    evidence: z.array(z.string()).min(1),
+  })).min(1),
+  remainingLimitations: z.array(z.string()),
+});
+
 export type ResearchBrief = z.infer<typeof BriefSchema>;
 export type Source = z.infer<typeof SourceSchema>;
 export type Hypothesis = z.infer<typeof HypothesisSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
 export type Analysis = z.infer<typeof AnalysisSchema>;
 export type Review = z.infer<typeof ReviewSchema>;
+export type ReviewResponse = z.infer<typeof ReviewResponseSchema>;
 export type Command = z.infer<typeof CommandSchema>;
 
 export const STAGES = [
@@ -116,6 +138,7 @@ export interface ExperimentResult {
   codeSha256: string | null;
   codeSnapshotPath: string | null;
   metric: number | null;
+  details: Record<string, unknown> | null;
   exitCode: number | null;
   timedOut: boolean;
   durationMs: number;

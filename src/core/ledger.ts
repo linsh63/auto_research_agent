@@ -23,6 +23,8 @@ export class Ledger {
     this.db = new Database(path);
     this.db.pragma("journal_mode = WAL");
     this.db.pragma("foreign_keys = ON");
+    const schemaVersion = this.db.pragma("user_version", { simple: true }) as number;
+    if (schemaVersion > 1) throw new Error(`Ledger schema ${schemaVersion} is newer than supported version 1`);
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS runs (
         id TEXT PRIMARY KEY, brief_json TEXT NOT NULL, stage TEXT NOT NULL,
@@ -40,6 +42,7 @@ export class Ledger {
         payload_json TEXT NOT NULL, created_at TEXT NOT NULL
       );
     `);
+    if (schemaVersion === 0) this.db.pragma("user_version = 1");
   }
 
   close(): void { this.db.close(); }

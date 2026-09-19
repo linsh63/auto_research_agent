@@ -56,6 +56,13 @@ export async function searchPapers(brief: ResearchBrief, skillRoot = process.env
 
   const seen = new Set<string>();
   const sources: Source[] = [];
+  for (const seed of brief.seedSources) {
+    const url = new URL(seed.url).toString();
+    const key = (seed.doi || url).toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    sources.push(SourceSchema.parse({ ...seed, id: `source-${sources.length + 1}`, url, accessedAt: now }));
+  }
   for (const paper of papers) {
     if (!paper.title || !paper.url) continue;
     let url: string;

@@ -8,7 +8,7 @@ import type { PaperSearchResult } from "../src/adapters/papers.js";
 import type { ModelOutput, ResearchModel } from "../src/adapters/pi-model.js";
 import { ResearchEngine } from "../src/core/engine.js";
 import { Ledger } from "../src/core/ledger.js";
-import { BriefSchema, type ResearchBrief } from "../src/core/schema.js";
+import { BriefSchema, type Plan, type ResearchBrief } from "../src/core/schema.js";
 
 class FixtureModel implements ResearchModel {
   readonly id = "fixture/model";
@@ -30,6 +30,7 @@ class FixtureModel implements ResearchModel {
       case "plan":
         payload = {
           comparison: "Run the fixed baseline and candidate commands with one shared seed.",
+          replicateSeeds: [42],
           baselineDescription: "Linear features only.", candidateDescription: "Add a quadratic feature.",
           metricInterpretation: "Lower RMSE means lower prediction error.",
           successCriterion: "Candidate RMSE lower than baseline RMSE.",
@@ -84,6 +85,10 @@ test("research run pauses at both human gates and preserves executable evidence"
 
   assert.equal(await engine.run(id), "approval");
   assert.equal(ledger.latest(id, "experiment_baseline"), undefined);
+  const plan = ledger.latest<Plan>(id, "plan")!;
+  assert.throws(() => engine.revisePlan(id, { ...plan, replicateSeeds: [999] }), /do not match brief/);
+  engine.revisePlan(id, { ...plan, successCriterion: "Researcher-approved descriptive comparison." });
+  assert.equal(ledger.latest<Plan>(id, "plan")?.successCriterion, "Researcher-approved descriptive comparison.");
   assert.equal(engine.approvePlan(id), "baseline");
   assert.equal(await engine.run(id), "final_approval");
   const baseline = ledger.latest<{ metric: number; codeSha256: string }>(id, "experiment_baseline")!;
@@ -92,6 +97,13 @@ test("research run pauses at both human gates and preserves executable evidence"
   assert.match(candidate.codeSha256, /^[a-f0-9]{64}$/);
   assert.ok(existsSync(engine.reportPath(id)));
   assert.match(readFileSync(engine.reportPath(id), "utf8"), /SHA-256=/);
+  assert.throws(() => engine.approveConclusion(id), /review response is required/);
+  engine.respondToReview(id, {
+    summary: "The bounded conclusion retains the single-seed limitation.",
+    conclusion: "The candidate was better only in this recorded fixture run.",
+    changes: [{ requirement: "Repeat with more seeds.", disposition: "accepted_limitation", response: "No extra run is claimed in this fixture.", evidence: ["The report records one seed."] }],
+    remainingLimitations: ["One seed only."],
+  });
   assert.equal(engine.approveConclusion(id), "done");
   assert.equal(ledger.get(id).stage, "done");
 });

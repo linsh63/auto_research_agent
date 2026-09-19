@@ -1,0 +1,47 @@
+{
+  "title": "fastText AG News word bigram method check",
+  "question": "With all other fastText settings held constant, does enabling word bigrams improve top-1 accuracy on the published AG News test split?",
+  "domain": "AI / text classification",
+  "keywords": ["fastText", "Bag of Tricks for Efficient Text Classification", "AG News", "word ngrams"],
+  "startYear": 2015,
+  "endYear": 2026,
+  "seedSources": [
+    {
+      "title": "Bag of Tricks for Efficient Text Classification",
+      "url": "https://arxiv.org/abs/1607.01759",
+      "year": 2016,
+      "authors": ["Armand Joulin", "Edouard Grave", "Piotr Bojanowski", "Tomas Mikolov"],
+      "abstract": "The paper presents fastText as a simple and efficient text classifier and evaluates it on text classification benchmarks. This task checks a word n-gram design choice on AG News; it does not claim to reproduce the paper's full table.",
+      "origin": "primary-paper"
+    },
+    {
+      "title": "Official fastText AG News classification reproduction script",
+      "url": "https://github.com/facebookresearch/fastText/blob/main/classification-results.sh",
+      "year": 2016,
+      "abstract": "The official script downloads AG News and trains fastText with wordNgrams=2, dim=10, epoch=5, and learning rate 0.25 for this dataset.",
+      "origin": "official-code"
+    },
+    {
+      "title": "Character-level Convolutional Networks for Text Classification",
+      "url": "https://arxiv.org/abs/1509.01626",
+      "year": 2015,
+      "authors": ["Xiang Zhang", "Junbo Zhao", "Yann LeCun"],
+      "abstract": "This paper introduced several large-scale text classification datasets, including the AG News benchmark used here.",
+      "origin": "dataset-paper"
+    }
+  ],
+  "experiment": {
+    "workspace": "examples/fasttext-agnews",
+    "baseline": { "program": "python3", "args": ["experiment.py", "baseline"] },
+    "candidate": { "program": "python3", "args": ["experiment.py", "candidate"] },
+    "metric": "accuracy",
+    "direction": "maximize",
+    "seed": 11,
+    "pairedSeeds": [11, 23, 47],
+    "protocol": "Each command trains the same fastText configuration on the full published AG News split for three paired seeds 11, 23, and 47. The only treatment factor is wordNgrams=1 versus wordNgrams=2. Each command reports per-seed accuracy and the mean; no test-set tuning is allowed.",
+    "successCriterion": "The word-bigram candidate supports this bounded hypothesis if its mean test accuracy across the three paired training seeds exceeds the unigram baseline mean. This is a descriptive result on one fixed AG News test split; no statistical-significance threshold is claimed.",
+    "execution": "process"
+  },
+  "limits": { "maxModelCalls": 6, "maxWallMinutes": 30, "maxExperimentSeconds": 600, "maxIterations": 1 },
+  "publicMaterialsOnly": true
+}

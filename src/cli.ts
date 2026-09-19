@@ -15,7 +15,9 @@ Usage:
   npm run dev -- new <brief.json>
   npm run dev -- run <run-id>
   npm run dev -- approve <run-id>
+  npm run dev -- revise-plan <run-id> <plan.json>
   npm run dev -- finalize <run-id>
+  npm run dev -- respond-review <run-id> <response.json>
   npm run dev -- status <run-id>
   npm run dev -- list
   npm run dev -- skills
@@ -79,9 +81,25 @@ async function main(): Promise<void> {
       console.log(`Stage: ${engine.approvePlan(id)}`);
       return;
     }
+    if (command === "revise-plan") {
+      if (!args[1]) throw new Error("Plan JSON path is required");
+      const engine = new ResearchEngine(ledger, undefined, { dataDir });
+      const plan = JSON.parse(readFileSync(resolve(args[1]), "utf8"));
+      engine.revisePlan(id, plan);
+      console.log("Plan revised; review with status before approval.");
+      return;
+    }
     if (command === "finalize") {
       const engine = new ResearchEngine(ledger, undefined, { dataDir });
       console.log(`Stage: ${engine.approveConclusion(id)}`);
+      return;
+    }
+    if (command === "respond-review") {
+      if (!args[1]) throw new Error("Review response JSON path is required");
+      const engine = new ResearchEngine(ledger, undefined, { dataDir });
+      const response = JSON.parse(readFileSync(resolve(args[1]), "utf8"));
+      engine.respondToReview(id, response);
+      console.log("Review response recorded; review the updated report before finalizing.");
       return;
     }
     if (command === "run") {

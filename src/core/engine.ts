@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { z } from "zod";
 import { executeExperiment } from "../adapters/experiment.js";
 import { searchPapers, type PaperSearchResult } from "../adapters/papers.js";
@@ -8,9 +8,9 @@ import type { ResearchModel } from "../adapters/pi-model.js";
 import { SkillCatalog } from "../adapters/skills.js";
 import { Ledger } from "./ledger.js";
 import {
-  AnalysisSchema, HypothesisSchema, PlanSchema, ReviewSchema,
+  AnalysisSchema, HypothesisSchema, PlanSchema, ReviewResponseSchema, ReviewSchema,
   type Analysis, type ExperimentResult, type Hypothesis, type Plan,
-  type ResearchBrief, type ResearchRun, type Review, type Stage,
+  type ResearchBrief, type ResearchRun, type Review, type ReviewResponse, type Stage,
 } from "./schema.js";
 
 export interface EngineOptions {
@@ -18,6 +18,26 @@ export interface EngineOptions {
   search?: typeof searchPapers;
   execute?: typeof executeExperiment;
   skills?: SkillCatalog;
+}
+
+function pairedSeedDifferences(baseline: ExperimentResult, candidate: ExperimentResult, metric: string): Array<{ seed: number; baseline: number; candidate: number; difference: number }> {
+  const baselineRows = baseline.details?.per_seed;
+  const candidateRows = candidate.details?.per_seed;
+  if (!Array.isArray(baselineRows) || !Array.isArray(candidateRows)) return [];
+  const baselineBySeed = new Map<number, number>();
+  for (const row of baselineRows) {
+    if (typeof row === "object" && row && typeof row.seed === "number" && typeof row[metric] === "number") {
+      baselineBySeed.set(row.seed, row[metric]);
+    }
+  }
+  const paired: Array<{ seed: number; baseline: number; candidate: number; difference: number }> = [];
+  for (const row of candidateRows) {
+    if (typeof row !== "object" || !row || typeof row.seed !== "number" || typeof row[metric] !== "number") continue;
+    const base = baselineBySeed.get(row.seed);
+    if (base === undefined) continue;
+    paired.push({ seed: row.seed, baseline: base, candidate: row[metric], difference: row[metric] - base });
+  }
+  return paired;
 }
 
 export class ResearchEngine {
@@ -57,13 +77,59 @@ export class ResearchEngine {
     return "baseline";
   }
 
+  revisePlan(id: string, input: unknown): Plan {
+    const run = this.ledger.get(id);
+    if (run.stage !== "approval") throw new Error(`Run is at ${run.stage}, not awaiting plan approval`);
+    const plan = PlanSchema.parse(input);
+    const expectedSeeds = run.brief.experiment.pairedSeeds ?? [run.brief.experiment.seed];
+    if (JSON.stringify(plan.replicateSeeds) !== JSON.stringify(expectedSeeds)) {
+      throw new Error(`Plan replicateSeeds do not match brief: expected ${expectedSeeds.join(",")}`);
+    }
+    this.ledger.record(id, "plan", plan);
+    this.ledger.event(id, "plan_revised", { at: new Date().toISOString() });
+    return plan;
+  }
+
   approveConclusion(id: string): Stage {
     const run = this.ledger.get(id);
     if (run.stage !== "final_approval") throw new Error(`Run is at ${run.stage}, not awaiting conclusion approval`);
-    if (!this.ledger.latest<Review>(id, "review")) throw new Error("No review to approve");
+    const review = this.ledger.latest<Review>(id, "review");
+    if (!review) throw new Error("No review to approve");
+    if (review.verdict === "needs_work" && !this.ledger.latest<ReviewResponse>(id, "review_response")) {
+      throw new Error("A review response is required before approving a needs_work conclusion");
+    }
     this.ledger.record(id, "conclusion_approval", { approvedAt: new Date().toISOString() });
     this.ledger.transition(id, "final_approval", "done");
     return "done";
+  }
+
+  respondToReview(id: string, input: unknown): ReviewResponse {
+    const run = this.ledger.get(id);
+    if (run.stage !== "final_approval") throw new Error(`Run is at ${run.stage}, not awaiting conclusion approval`);
+    const review = this.ledger.latest<Review>(id, "review");
+    if (!review) throw new Error("No review to respond to");
+    const response = ReviewResponseSchema.parse(input);
+    for (const required of review.requiredChanges) {
+      if (!response.changes.some((change) => change.requirement === required)) {
+        throw new Error(`Review response does not address required change: ${required}`);
+      }
+    }
+    this.ledger.record(id, "review_response", response);
+    this.ledger.event(id, "review_response_recorded", { at: new Date().toISOString() });
+    const path = this.reportPath(id);
+    const section = [
+      "", "## Researcher response to review", "", response.summary, "",
+      `Final bounded conclusion: ${response.conclusion}`, "",
+      ...response.changes.flatMap((change, index) => [
+        `### Response ${index + 1}: ${change.disposition}`, "", `Requirement: ${change.requirement}`,
+        "", change.response, "", ...change.evidence.map((item) => `- Evidence: ${item}`), "",
+      ]),
+      "### Remaining limitations", "", ...response.remainingLimitations.map((item) => `- ${item}`), "",
+    ].join("\n");
+    writeFileSync(path, readFileSync(path, "utf8") + section);
+    const sha256 = createHash("sha256").update(readFileSync(path)).digest("hex");
+    this.ledger.record(id, "artifact", { kind: "reviewed_report", path, sha256 });
+    return response;
   }
 
   private async step(run: ResearchRun): Promise<void> {
@@ -96,10 +162,17 @@ export class ResearchEngine {
       }
       case "plan": {
         if (!this.ledger.latest(id, "plan")) {
+          const expectedSeeds = brief.experiment.pairedSeeds ?? [brief.experiment.seed];
           const plan = await this.callModel(run, "plan", PlanSchema, {
             question: brief.question, hypothesis: this.requireRecord<Hypothesis>(id, "hypothesis"),
             experiment: brief.experiment, limits: brief.limits,
-          }, "Describe the approved-command comparison exactly as provided. Do not invent completed experiments or silently change commands. State why one run per variant cannot establish statistical significance.");
+            experimentCode: brief.experiment.baseline.args[0]
+              ? this.readAuditFile(resolve(brief.experiment.workspace, brief.experiment.baseline.args[0])) : null,
+          }, "Describe the approved-command comparison exactly as provided. Echo experiment.pairedSeeds in replicateSeeds; a command can run multiple seed-level trainings. Do not invent completed experiments or silently change commands. State the limits of repeated seeds on one fixed test set.");
+          if (JSON.stringify(plan.replicateSeeds) !== JSON.stringify(expectedSeeds)) {
+            throw new Error(`Plan replicateSeeds do not match approved brief: expected ${expectedSeeds.join(",")}`);
+          }
+          if (brief.experiment.successCriterion) plan.successCriterion = brief.experiment.successCriterion;
           this.ledger.record(id, "plan", plan);
         }
         this.ledger.transition(id, "plan", "approval");
@@ -125,11 +198,12 @@ export class ResearchEngine {
           const metricsValid = baseline.metric !== null && candidate.metric !== null;
           const improved = metricsValid && (brief.experiment.direction === "maximize"
             ? candidate.metric! > baseline.metric! : candidate.metric! < baseline.metric!);
+          const paired = pairedSeedDifferences(baseline, candidate, brief.experiment.metric);
           const analysis = await this.callModel(run, "analysis", AnalysisSchema, {
             hypothesis: this.requireRecord<Hypothesis>(id, "hypothesis"),
             plan: this.requireRecord<Plan>(id, "plan"), baseline, candidate,
-            deterministicComparison: { metricsValid, improved, delta: metricsValid ? candidate.metric! - baseline.metric! : null },
-          }, "Analyze only recorded results. A single run per variant is descriptive, not statistical proof. If either command failed or metric is missing, mark the hypothesis inconclusive.");
+            deterministicComparison: { metricsValid, improved, delta: metricsValid ? candidate.metric! - baseline.metric! : null, paired },
+          }, "Analyze only recorded results. Report paired seed differences when available. Repeated training seeds on one fixed test set are not independent datasets. Do not claim statistical proof. If either command failed or metric is missing, mark the hypothesis inconclusive.");
           if (!metricsValid && analysis.supportsHypothesis !== "inconclusive") {
             throw new Error("Analysis must be inconclusive when a metric is missing");
           }
@@ -148,6 +222,10 @@ export class ResearchEngine {
             baseline: this.requireRecord<ExperimentResult>(id, "experiment_baseline"),
             candidate: this.requireRecord<ExperimentResult>(id, "experiment_candidate"),
             analysis: this.requireRecord<Analysis>(id, "analysis"),
+            pairedSeedDifferences: pairedSeedDifferences(
+              this.requireRecord<ExperimentResult>(id, "experiment_baseline"),
+              this.requireRecord<ExperimentResult>(id, "experiment_candidate"), brief.experiment.metric,
+            ),
             auditMaterials: {
               baselineCode: this.readAuditFile(this.requireRecord<ExperimentResult>(id, "experiment_baseline").codeSnapshotPath),
               candidateCode: this.readAuditFile(this.requireRecord<ExperimentResult>(id, "experiment_candidate").codeSnapshotPath),
@@ -207,6 +285,7 @@ export class ResearchEngine {
     const plan = this.requireRecord<Plan>(id, "plan");
     const baseline = this.requireRecord<ExperimentResult>(id, "experiment_baseline");
     const candidate = this.requireRecord<ExperimentResult>(id, "experiment_candidate");
+    const paired = pairedSeedDifferences(baseline, candidate, run.brief.experiment.metric);
     const analysis = this.requireRecord<Analysis>(id, "analysis");
     const review = this.requireRecord<Review>(id, "review");
     const lines = [
@@ -227,6 +306,11 @@ export class ResearchEngine {
       `Baseline stdout: ${this.readAuditFile(baseline.stdoutPath, 2000) ?? "missing"}`,
       `Candidate stdout: ${this.readAuditFile(candidate.stdoutPath, 2000) ?? "missing"}`,
       `Seed: ${run.brief.experiment.seed}`, "",
+      ...(paired.length ? [
+        "Paired training-seed results:", "",
+        "| Seed | Baseline | Candidate | Candidate − baseline |", "| ---: | ---: | ---: | ---: |",
+        ...paired.map((row) => `| ${row.seed} | ${row.baseline} | ${row.candidate} | ${row.difference} |`), "",
+      ] : []),
       "## Analysis", "", analysis.summary, "", `Support: ${analysis.supportsHypothesis}`,
       ...analysis.evidence.map((item) => `- Evidence: ${item}`),
       ...analysis.limitations.map((item) => `- Limitation: ${item}`),

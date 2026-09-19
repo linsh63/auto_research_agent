@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "skillRoot": "/home/linsihan/.codex/skills",
+  "records": [
+    {
+      "name": "anysearch",
+      "mode": "script",
+      "stages": [
+        "evidence"
+      ],
+      "available": true,
+      "sha256": "54702f6066dc76cb2b3c04ba556404e6113b1cdcf0f63120ef3306343f9ab25e",
+      "checks": [
+        "instruction-load",
+        "runtime-self-test",
+        "script-syntax"
+      ],
+      "scriptCount": 4,
+      "runtime": [
+        {
+          "command": [
+            "sha256sum",
+            "-c",
+            "SHA256SUMS.txt"
+          ],
+          "exitCode": 0,
+          "stdout": "scripts/anysearch_cli.py: OK\nscripts/anysearch_cli.js: OK\nscripts/anysearch_cli.ps1: OK\nscripts/anysearch_cli.sh: OK\n",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "python3",
+            "scripts/anysearch_cli.py",
+            "doc"
+          ],
+          "exitCode": 0,
+          "stdout": "url \"https://example.com/news/article-12345\"\n```\n\n### Scenario 8: Search with API key\n\n```bash\npython scripts/anysearch_cli.py search \"climate change policy 2025\" --api_key <your_api_key> --max_results 3\n```\n\n---\n\n## Rate Limit Handling\n- On rate limit error with auto_registered api_key in response: present key to user for approval, then save to .env and retry\n- On anonymous quota exhausted: inform user that a key provides higher limits; suggest configuring one via .env or environment variable\n\n",
+          "stderr": ""
+        }
+      ],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "paper-search",
+      "mode": "script",
+      "stages": [
+        "evidence"
+      ],
+      "available": true,
+      "sha256": "6f987c1e3f5c610abec4152c8a6220a2aca9cbea979e32cbb07a2064042cebd9",
+      "checks": [
+        "instruction-load",
+        "runtime-self-test",
+        "script-syntax"
+      ],
+      "scriptCount": 14,
+      "runtime": [
+        {
+          "command": [
+            "/home/linsihan/.codex/skills/paper-search/.venv/bin/python",
+            "scripts/selftest_runtime.py"
+          ],
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": " worker exited with status 7; skipping this source.\n[dblp] invalid worker result: Expecting value: line 1 column 1 (char 0); skipping this source.\n[open_alex] worker produced no result file; skipping this source.\nok\ntest_worker_preserves_query_order_and_continues_after_error (__main__.WorkerTests.test_worker_preserves_query_order_and_continues_after_error) ... [arxiv] Error on query 'bad': boom\nok\n\n----------------------------------------------------------------------\nRan 16 tests in 1.367s\n\nOK\n"
+        },
+        {
+          "command": [
+            "/home/linsihan/.codex/skills/paper-search/.venv/bin/python",
+            "scripts/selftest_postprocess.py"
+          ],
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "erm_words drops stopwords/short\n  ok stemming via startswith\n  ok irrelevant paper scores 0\n  ok dedup collapses doi+title matches to one record\n  ok dedup keeps priority source + provenance\n  ok dedup max citations + fills missing fields\n  ok distinct papers not merged\n  ok title bridges doi-less duplicate into the doi cluster\n  ok rank keeps everything by default\n  ok most relevant first, survey sunk despite citations\n  ok min_score drops and counts\n\n[GREEN] selftest_postprocess: 15/15 passed\n"
+        }
+      ],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "grill-me",
+      "mode": "method",
+      "stages": [
+        "intake"
+      ],
+      "available": true,
+      "sha256": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637",
+      "checks": [
+        "instruction-load"
+      ],
+      "scriptCount": 0,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "grilling",
+      "mode": "method",
+      "stages": [
+        "intake"
+      ],
+      "available": true,
+      "sha256": "10ff989e7498b23b5acb49d5048f11dcd906757d2f79c5cdf8a00001381296f2",
+      "checks": [
+        "instruction-load"
+      ],
+      "scriptCount": 0,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "scientific-brainstorming",
+      "mode": "mixed",
+      "stages": [
+        "hypothesis"
+      ],
+      "available": true,
+      "sha256": "49ae9b430f3495a36de5fbfe4f053c0acc67440ad8b2bcb31749283e2286c48f",
+      "checks": [
+        "instruction-load",
+        "script-syntax"
+      ],
+      "scriptCount": 4,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "research-ideation",
+      "mode": "method",
+      "stages": [
+        "hypothesis"
+      ],
+      "available": true,
+      "sha256": "d5e284cb06471e56c5ae09b742775d017bf589c1d588e906b8515b3521e3e49d",
+      "checks": [
+        "instruction-load"
+      ],
+      "scriptCount": 0,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "idea-spark",
+      "mode": "mixed",
+      "stages": [
+        "hypothesis"
+      ],
+      "available": true,
+      "sha256": "a71188c8f9cf231f8db8569a68a8c933e465b434091dd1dbfafa5e7bc31228ec",
+      "checks": [
+        "instruction-load",
+        "runtime-self-test",
+        "script-syntax"
+      ],
+      "scriptCount": 22,
+      "runtime": [
+        {
+          "command": [
+            "/home/linsihan/.codex/skills/idea-spark/.venv/bin/python",
+            "scripts/selftest_routing.py"
+          ],
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": " skips partition -> tagging\n  ok Q1 partition emit cites user_query.txt, not a retyped string\n  ok Q2 Phase 2.1 emit cites user_query.txt (was blind to the user)\n  ok Q3 fresh-run emit requests named_papers + offers --named-papers\n  ok C1 coverage check emitted\n  ok C2 resolve+merge host refs emitted\n  ok C3 tag admitted host rows\n  ok C4 finalize coverage (no admissions)\n  ok C5 marker skips coverage -> fulltext\n  ok C6 env=off skips coverage -> fulltext\n\n[GREEN] selftest_routing: 37/37 passed\n"
+        },
+        {
+          "command": [
+            "/home/linsihan/.codex/skills/idea-spark/.venv/bin/python",
+            "scripts/selftest_units.py"
+          ],
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": " (containment, not punctuation)\n  ok Z1 over-long pre-nominal modifier is flagged\n  ok Z2 the split rewrite passes\n  ok Z3 a break inside the run is not a pre-nominal pile-up\n  ok Z4 ordinary technical noun phrases pass\n  ok Z4b a 17-character run is left alone (the control rewrote none of these)\n  ok Z5 a run does not roll across an earlier 的\n  ok Z6 calque 保留任务 is flagged\n  ok Z7 nested step fields are scanned too\n  ok Z8 a clean card emits a pass finding\n\n[GREEN] selftest_units: 60/60 passed\n"
+        }
+      ],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "scoop-check",
+      "mode": "mixed",
+      "stages": [
+        "hypothesis"
+      ],
+      "available": true,
+      "sha256": "ed15e0fba820ee89e360e502edf0360ea08e7705f78c8c8b09a88fdc70cd7638",
+      "checks": [
+        "instruction-load",
+        "script-syntax"
+      ],
+      "scriptCount": 1,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "hypothesis-generation",
+      "mode": "mixed",
+      "stages": [
+        "hypothesis"
+      ],
+      "available": true,
+      "sha256": "8153fdc33e0a4cd012109931c6a822c0e0afe206769e1af3e7a3d07ea37e1137",
+      "checks": [
+        "instruction-load",
+        "script-syntax"
+      ],
+      "scriptCount": 8,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "experimental-design",
+      "mode": "mixed",
+      "stages": [
+        "plan"
+      ],
+      "available": true,
+      "sha256": "8d1e072e96c40dea985deac2d67d2cb800bb8db1cb18b31db0e623ca66e66741",
+      "checks": [
+        "instruction-load",
+        "script-syntax"
+      ],
+      "scriptCount": 2,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "statistical-analysis",
+      "mode": "mixed",
+      "stages": [
+        "analysis"
+      ],
+      "available": true,
+      "sha256": "1b1d63fd667ef454a8e0cadf32457a511883d3308dcc79c47c48bc565d9a23f7",
+      "checks": [
+        "instruction-load",
+        "script-syntax"
+      ],
+      "scriptCount": 1,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "scientific-critical-thinking",
+      "mode": "method",
+      "stages": [
+        "analysis",
+        "review"
+      ],
+      "available": true,
+      "sha256": "b77ba9ed1872d85d804125a339e2038984052e7aaf3616813ab79f5ad91c0558",
+      "checks": [
+        "instruction-load"
+      ],
+      "scriptCount": 0,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "scientific-writing",
+      "mode": "mixed",
+      "stages": [
+        "report"
+      ],
+      "available": true,
+      "sha256": "f6026e7d79cd3133e9343a7d6e6c5e06f4ad061888efb6a73fcb95e073eebf67",
+      "checks": [
+        "instruction-load",
+        "script-syntax"
+      ],
+      "scriptCount": 9,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    },
+    {
+      "name": "peer-review",
+      "mode": "mixed",
+      "stages": [
+        "review"
+      ],
+      "available": true,
+      "sha256": "3422beafc240aa7d2703e71fe16e3400269a5ea17045d8b390a30efe58c3de67",
+      "checks": [
+        "instruction-load",
+        "script-syntax"
+      ],
+      "scriptCount": 8,
+      "runtime": [],
+      "status": "ready",
+      "errors": []
+    }
+  ],
+  "ready": 14,
+  "total": 14
+}
