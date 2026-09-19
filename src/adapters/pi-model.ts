@@ -1,8 +1,9 @@
 import {
   createAgentSession, DefaultResourceLoader, ModelRuntime, SessionManager, SettingsManager,
 } from "@earendil-works/pi-coding-agent";
+import { mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
 
 export interface ModelOutput<T> {
@@ -17,10 +18,28 @@ export interface ResearchModel {
 }
 
 export interface PiModelConfig {
-  apiKey: string;
+  apiKey?: string;
+  providerId?: string;
+  modelsPath?: string;
+  modelsStorePath?: string;
   baseUrl?: string;
   modelId?: string;
+  api?: Parameters<ModelRuntime["registerProvider"]>[1]["api"];
   timeoutMs?: number;
+}
+
+export function piModelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PiModelConfig {
+  const timeout = env.AUTO_RESEARCH_MODEL_TIMEOUT_MS;
+  return {
+    apiKey: env.AUTO_RESEARCH_API_KEY,
+    providerId: env.AUTO_RESEARCH_PROVIDER,
+    modelsPath: env.AUTO_RESEARCH_MODELS_PATH,
+    modelsStorePath: env.AUTO_RESEARCH_MODELS_STORE_PATH,
+    baseUrl: env.AUTO_RESEARCH_BASE_URL,
+    modelId: env.AUTO_RESEARCH_MODEL,
+    api: env.AUTO_RESEARCH_API as PiModelConfig["api"],
+    timeoutMs: timeout ? Number(timeout) : undefined,
+  };
 }
 
 function parseJson(text: string): unknown {
@@ -42,24 +61,39 @@ export class PiResearchModel implements ResearchModel {
 
   static async create(config: PiModelConfig): Promise<PiResearchModel> {
     const modelId = config.modelId ?? "gpt-5.6-luna";
+    const providerId = config.providerId ?? "xera";
     const timeoutMs = config.timeoutMs ?? 120_000;
     if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new Error("Model timeout must be a positive number");
-    const runtime = await ModelRuntime.create({ modelsPath: null, refreshOnCreate: false });
-    const inputBase = (config.baseUrl ?? "https://newapi.x-era.com").replace(/\/$/, "");
-    runtime.registerProvider("xera", {
-      name: "X-Era OpenAI-compatible API",
-      baseUrl: inputBase.endsWith("/v1") ? inputBase : `${inputBase}/v1`,
-      api: "openai-completions",
-      authHeader: true,
-      models: [{
-        id: modelId, name: modelId, reasoning: false, input: ["text"],
-        contextWindow: 128000, maxTokens: 8192,
-        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-      }],
+    const modelsStorePath = config.modelsStorePath ?? resolve(".research-data", "pi-models-store.json");
+    mkdirSync(dirname(modelsStorePath), { recursive: true });
+    const runtime = await ModelRuntime.create({
+      modelsPath: config.modelsPath,
+      modelsStorePath,
+      refreshOnCreate: false,
     });
-    await runtime.setRuntimeApiKey("xera", config.apiKey);
-    const model = runtime.getModel("xera", modelId);
-    if (!model) throw new Error(`Pi did not register model ${modelId}`);
+    // Backward-compatible shorthand. When modelsPath/providerId is provided, pi's
+    // native provider catalog and models.json composition are used directly.
+    if (config.baseUrl || (!config.modelsPath && !config.providerId)) {
+      const inputBase = (config.baseUrl ?? "https://newapi.x-era.com").replace(/\/$/, "");
+      const legacyXera = providerId === "xera" && !inputBase.endsWith("/v1");
+      runtime.registerProvider(providerId, {
+        name: `${providerId} configured provider`,
+        baseUrl: legacyXera ? `${inputBase}/v1` : inputBase,
+        api: config.api ?? "openai-completions",
+        authHeader: true,
+        models: [{
+          id: modelId, name: modelId, reasoning: false, input: ["text"],
+          contextWindow: 128000, maxTokens: 8192,
+          cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        }],
+      });
+    }
+    if (config.apiKey) await runtime.setRuntimeApiKey(providerId, config.apiKey);
+    const model = runtime.getModel(providerId, modelId);
+    if (!model) {
+      const available = runtime.getModels(providerId).map((item) => item.id).join(", ");
+      throw new Error(`Pi could not resolve ${providerId}/${modelId}. Provider models: ${available || "none"}`);
+    }
     return new PiResearchModel(runtime, model, timeoutMs);
   }
 

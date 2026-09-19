@@ -22,6 +22,7 @@ Usage:
   npm run dev -- list
   npm run dev -- skills
   npm run dev -- doctor
+  npm run dev -- model-check
 
 Set AUTO_RESEARCH_API_KEY for model stages. Optional: AUTO_RESEARCH_BASE_URL,
 AUTO_RESEARCH_MODEL (default gpt-5.6-luna), AUTO_RESEARCH_DATA_DIR,
@@ -42,10 +43,25 @@ async function main(): Promise<void> {
     const skills = new SkillCatalog(root).list();
     console.log(`Node: ${process.version}`);
     console.log(`Model: ${process.env.AUTO_RESEARCH_MODEL ?? "gpt-5.6-luna"}`);
-    console.log(`API key configured: ${Boolean(process.env.AUTO_RESEARCH_API_KEY)}`);
+    console.log(`Provider: ${process.env.AUTO_RESEARCH_PROVIDER ?? "xera (legacy shorthand)"}`);
+    console.log(`Models file: ${process.env.AUTO_RESEARCH_MODELS_PATH ?? "pi default / inline shorthand"}`);
+    console.log(`Runtime API key configured: ${Boolean(process.env.AUTO_RESEARCH_API_KEY)}`);
     console.log(`Skill files: ${skills.filter((s) => s.available).length}/${skills.length}`);
     console.log(`paper-search runtime: ${existsSync(join(root, "paper-search", ".venv", "bin", "python"))}`);
     console.log(`Data directory: ${dataDir}`);
+    return;
+  }
+  if (command === "model-check") {
+    const { z } = await import("zod");
+    const { PiResearchModel, piModelConfigFromEnv } = await import("./adapters/pi-model.js");
+    const model = await PiResearchModel.create(piModelConfigFromEnv());
+    const result = await model.generate(
+      "connectivity-check",
+      { request: "Return ok=true and the exact provider/model identifier shown in the instruction." },
+      z.object({ ok: z.literal(true), note: z.string().max(100) }),
+      `This is a minimal API connectivity check for ${model.id}. Return a very short note.`,
+    );
+    console.log(JSON.stringify({ model: model.id, value: result.value, usage: result.usage }, null, 2));
     return;
   }
   const ledger = new Ledger(join(dataDir, "research.db"));
@@ -103,15 +119,8 @@ async function main(): Promise<void> {
       return;
     }
     if (command === "run") {
-      const key = process.env.AUTO_RESEARCH_API_KEY;
-      if (!key) throw new Error("AUTO_RESEARCH_API_KEY is required for model stages");
-      const { PiResearchModel } = await import("./adapters/pi-model.js");
-      const model = await PiResearchModel.create({
-        apiKey: key, baseUrl: process.env.AUTO_RESEARCH_BASE_URL,
-        modelId: process.env.AUTO_RESEARCH_MODEL,
-        timeoutMs: process.env.AUTO_RESEARCH_MODEL_TIMEOUT_MS
-          ? Number(process.env.AUTO_RESEARCH_MODEL_TIMEOUT_MS) : undefined,
-      });
+      const { PiResearchModel, piModelConfigFromEnv } = await import("./adapters/pi-model.js");
+      const model = await PiResearchModel.create(piModelConfigFromEnv());
       const engine = new ResearchEngine(ledger, model, { dataDir });
       const stage = await engine.run(id);
       console.log(`Stage: ${stage}`);

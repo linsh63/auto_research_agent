@@ -12,13 +12,14 @@ V1 最小科研闭环已经实现并通过公开真实案例验收：TypeScript 
 
 ## 运行原型
 
-需要 Node.js 22.19+。模型密钥仅从 `AUTO_RESEARCH_API_KEY` 环境变量读取，程序不会把它写入项目。默认使用 `https://newapi.x-era.com/v1` 的 `gpt-5.6-luna`；可通过 `AUTO_RESEARCH_BASE_URL` 和 `AUTO_RESEARCH_MODEL` 修改。
+需要 Node.js 22.19+。模型通过 pi 原生 provider catalog 或 `models.json` 配置；[模型 Provider 配置](docs/model-providers.md)说明内置 provider、自定义 API 和凭据入口。`AUTO_RESEARCH_API_KEY` 可作为不落盘的临时 runtime key；也可以使用 pi `models.json` 的环境变量凭据语法。未提供 provider 配置时，旧快捷配置仍默认使用 `https://newapi.x-era.com/v1` 的 `gpt-5.6-luna`。
 
 ```bash
 npm ci
 npm run build
 export AUTO_RESEARCH_API_KEY="<your-key>"
 node dist/cli.js doctor
+node dist/cli.js model-check # 最小模型 API 验证
 node dist/cli.js new examples/toy-regression/brief.json
 node dist/cli.js run <run-id>
 node dist/cli.js status <run-id>
