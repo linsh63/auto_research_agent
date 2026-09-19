@@ -6,6 +6,8 @@
 
 V1 最小科研闭环已经实现并通过公开真实案例验收：TypeScript CLI、pi SDK 模型适配、SQLite 研究账本、论文检索包装器、两个审批节点、受控命令执行、分析审查、审查响应与 Markdown 报告均已接通。技能安装在本机 `~/.codex/skills/`；[技能清单](skills-inventory.md)记录其来源、作用和运行条件。[V1 阶段总结](docs/v1-stage-summary.md)给出验收证据、真实案例结果与剩余限制。
 
+[下一阶段备选方案](docs/next-stage-options.md)列出证据系统、长期记忆、自动实验迭代、第二场景验证和本地模型五条路线，供选择 V2 主目标。
+
 [总体规划（第一版）](docs/v1-plan.md)记录了已确认的目标、基于 pi SDK 的架构、skills 接入方式、实施顺序和暂缓的决策。
 
 ## 运行原型
