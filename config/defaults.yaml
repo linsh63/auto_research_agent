@@ -1,0 +1,38 @@
+schemaVersion: 1
+paths:
+  database: .research-data/research.db
+  artifacts: .research-data/artifacts
+  index: .research-data/index
+  reports: .research-data/runs
+resources:
+  model:
+    softUsd: 8
+    hardUsd: 10
+    softWallMinutes: 1200
+    hardWallMinutes: 1440
+    perCallSoftSeconds: 90
+    perCallHardSeconds: 120
+  retrieval:
+    softRequestSeconds: 30
+    hardRequestSeconds: 60
+    softParseSeconds: 180
+    hardParseSeconds: 300
+  experiments:
+    softGpuHours: 20
+    hardGpuHours: 24
+    softCandidates: 16
+    hardCandidates: 20
+    softConcurrency: 1
+    hardConcurrency: 2
+evidence:
+  metadataSources: [crossref, arxiv, openalex, semantic_scholar, anysearch]
+  parserOrder: [structured, grobid, docling, abstract]
+  passage:
+    targetTokens: 600
+    maxTokens: 1000
+    overlapTokens: 80
+  retrieval:
+    defaultBackend: paperqa
+    fallbackBackend: keyword
+    topK: 20
+    indexVersion: 1

@@ -1,0 +1,9 @@
+[project]
+name = "auto-research-retrieval"
+version = "0.1.0"
+requires-python = ">=3.11,<3.14"
+dependencies = []
+
+[project.optional-dependencies]
+paperqa = ["paper-qa==2026.8.12"]
+parsing = ["docling-slim==2.129.0", "pymupdf"]

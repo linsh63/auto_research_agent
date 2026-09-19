@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SourceSchema, type ResearchBrief, type Source } from "../core/schema.js";
 import { runProcess } from "./process.js";
+import { RetrievalWorkerClient } from "./retrieval-worker.js";
 
 interface PaperResult {
   title?: string;
@@ -34,7 +35,25 @@ export async function searchPapers(brief: ResearchBrief, skillRoot = process.env
   const warnings: string[] = [];
   let papers: PaperResult[] = [];
   let sourceCounts: Record<string, number> = {};
-  if (existsSync(python) && existsSync(join(scriptDir, "search_papers.py"))) {
+  let workerUsed = false;
+  if (process.env.AUTO_RESEARCH_RETRIEVAL_WORKER !== "0") {
+    const worker = new RetrievalWorkerClient({ projectRoot: process.cwd(), skillRoot });
+    try {
+      const handshake = await worker.start();
+      const result = await worker.request({ method: "search_metadata", params: { query, startYear, endYear, maxPapers: 4, maxTotal: 12 }, deadlineMs: 90_000 });
+      if (result.ok && result.result && typeof result.result === "object") {
+        const payload = result.result as { papers?: PaperResult[]; sourceCounts?: Record<string, number>; warnings?: string[] };
+        papers = Array.isArray(payload.papers) ? payload.papers : [];
+        sourceCounts = payload.sourceCounts ?? {};
+        workerUsed = true;
+        if (payload.warnings) warnings.push(...payload.warnings);
+        warnings.push(`retrieval worker backend: ${String((handshake.result as { backend?: string } | undefined)?.backend ?? "unknown")}`);
+      } else if (result.error) warnings.push(`retrieval worker failed: ${result.error.message}`);
+    } catch (error) {
+      warnings.push(`retrieval worker unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    } finally { await worker.stop(); }
+  }
+  if (!workerUsed && existsSync(python) && existsSync(join(scriptDir, "search_papers.py"))) {
     try {
       const result = await runProcess(python, [bridge, scriptDir], {
         stdin: JSON.stringify({ query, startYear, endYear, maxPapers: 4, maxTotal: 12 }),

@@ -63,7 +63,7 @@
           ],
           "exitCode": 0,
           "stdout": "",
-          "stderr": " worker exited with status 7; skipping this source.\n[dblp] invalid worker result: Expecting value: line 1 column 1 (char 0); skipping this source.\n[open_alex] worker produced no result file; skipping this source.\nok\ntest_worker_preserves_query_order_and_continues_after_error (__main__.WorkerTests.test_worker_preserves_query_order_and_continues_after_error) ... [arxiv] Error on query 'bad': boom\nok\n\n----------------------------------------------------------------------\nRan 16 tests in 1.374s\n\nOK\n"
+          "stderr": " worker exited with status 7; skipping this source.\n[dblp] invalid worker result: Expecting value: line 1 column 1 (char 0); skipping this source.\n[open_alex] worker produced no result file; skipping this source.\nok\ntest_worker_preserves_query_order_and_continues_after_error (__main__.WorkerTests.test_worker_preserves_query_order_and_continues_after_error) ... [arxiv] Error on query 'bad': boom\nok\n\n----------------------------------------------------------------------\nRan 16 tests in 1.366s\n\nOK\n"
         },
         {
           "command": [

@@ -6,6 +6,8 @@ import { executeExperiment } from "../adapters/experiment.js";
 import { searchPapers, type PaperSearchResult } from "../adapters/papers.js";
 import type { ResearchModel } from "../adapters/pi-model.js";
 import { SkillCatalog } from "../adapters/skills.js";
+import { ingestSources } from "../adapters/evidence-ingest.js";
+import { EvidenceStore } from "../infrastructure/db/evidence-store.js";
 import { Ledger } from "./ledger.js";
 import {
   AnalysisSchema, HypothesisSchema, PlanSchema, ReviewResponseSchema, ReviewSchema,
@@ -18,6 +20,7 @@ export interface EngineOptions {
   search?: typeof searchPapers;
   execute?: typeof executeExperiment;
   skills?: SkillCatalog;
+  evidenceStore?: EvidenceStore;
 }
 
 function pairedSeedDifferences(baseline: ExperimentResult, candidate: ExperimentResult, metric: string): Array<{ seed: number; baseline: number; candidate: number; difference: number }> {
@@ -139,6 +142,7 @@ export class ResearchEngine {
         if (!this.ledger.latest(id, "evidence")) {
           const evidence = await this.search(brief);
           if (evidence.sources.length === 0) throw new Error("No verified sources found; add sourceUrls or retry search");
+          if (this.options.evidenceStore) ingestSources(this.options.evidenceStore, evidence.sources);
           this.ledger.record(id, "evidence", evidence);
           this.ledger.event(id, "search_completed", evidence.search);
         }
