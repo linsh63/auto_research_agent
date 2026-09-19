@@ -8,6 +8,7 @@ import type { ResearchModel } from "../adapters/pi-model.js";
 import { SkillCatalog } from "../adapters/skills.js";
 import { ingestSources } from "../adapters/evidence-ingest.js";
 import { EvidenceStore } from "../infrastructure/db/evidence-store.js";
+import { MemoryStore } from "../infrastructure/db/memory-store.js";
 import { Ledger } from "./ledger.js";
 import {
   AnalysisSchema, HypothesisSchema, PlanSchema, ReviewResponseSchema, ReviewSchema,
@@ -21,6 +22,8 @@ export interface EngineOptions {
   execute?: typeof executeExperiment;
   skills?: SkillCatalog;
   evidenceStore?: EvidenceStore;
+  memoryStore?: MemoryStore;
+  memoryRetrievalEnabled?: boolean;
 }
 
 function pairedSeedDifferences(baseline: ExperimentResult, candidate: ExperimentResult, metric: string): Array<{ seed: number; baseline: number; candidate: number; difference: number }> {
@@ -102,6 +105,17 @@ export class ResearchEngine {
       throw new Error("A review response is required before approving a needs_work conclusion");
     }
     this.ledger.record(id, "conclusion_approval", { approvedAt: new Date().toISOString() });
+    if (this.options.memoryStore) {
+      const analysis = this.ledger.latest<Analysis>(id, "analysis");
+      const hypothesis = this.ledger.latest<Hypothesis>(id, "hypothesis");
+      for (const [suffix, type, content] of [["hypothesis", "hypothesis", hypothesis?.statement], ["finding", "claim", analysis?.summary]] as const) {
+        if (!content) continue;
+        const memoryId = `memory-${id}-${suffix}`;
+        this.options.memoryStore.createCandidate({ id: memoryId, type, namespace: "project", content, sourceRunId: id, evidenceIds: [`claim-${id}-${suffix === "finding" ? "result" : "hypothesis"}`], applicability: run.brief.domain });
+        this.options.memoryStore.promote(memoryId, "reviewed", "final-approval", "Run passed independent review");
+        this.options.memoryStore.promote(memoryId, "verified", "final-approval", "Researcher approved final conclusion");
+      }
+    }
     this.ledger.transition(id, "final_approval", "done");
     return "done";
   }
@@ -142,7 +156,10 @@ export class ResearchEngine {
         if (!this.ledger.latest(id, "evidence")) {
           const evidence = await this.search(brief);
           if (evidence.sources.length === 0) throw new Error("No verified sources found; add sourceUrls or retry search");
-          if (this.options.evidenceStore) ingestSources(this.options.evidenceStore, evidence.sources);
+          if (this.options.evidenceStore) {
+            ingestSources(this.options.evidenceStore, evidence.sources);
+            this.options.evidenceStore.recordRetrieval(evidence.search.query, { ...evidence.search, sourceIds: evidence.sources.map((source) => source.id) });
+          }
           this.ledger.record(id, "evidence", evidence);
           this.ledger.event(id, "search_completed", evidence.search);
         }
@@ -160,6 +177,14 @@ export class ResearchEngine {
             throw new Error("Hypothesis has no valid source IDs");
           }
           this.ledger.record(id, "hypothesis", hypothesis);
+          if (this.options.evidenceStore) {
+            const claimId = `claim-${id}-hypothesis`;
+            this.options.evidenceStore.addClaim({ id: claimId, runId: id, kind: "hypothesis", text: hypothesis.statement, status: "reviewed", createdAt: new Date().toISOString() });
+            for (const sourceId of hypothesis.sourceIds) {
+              const passage = this.options.evidenceStore.firstPassageForSource(sourceId);
+              if (passage) this.options.evidenceStore.linkClaim({ claimId, passageId: passage.id, experimentRunId: null, relation: "background", note: "Hypothesis background source", createdAt: new Date().toISOString() });
+            }
+          }
         }
         this.ledger.transition(id, "hypothesis", "plan");
         return;
@@ -212,6 +237,11 @@ export class ResearchEngine {
             throw new Error("Analysis must be inconclusive when a metric is missing");
           }
           this.ledger.record(id, "analysis", analysis);
+          if (this.options.evidenceStore) {
+            const claimId = `claim-${id}-result`;
+            this.options.evidenceStore.addClaim({ id: claimId, runId: id, kind: "result", text: analysis.summary, status: "reviewed", createdAt: new Date().toISOString() });
+            for (const experimentRunId of [`${id}:baseline`, `${id}:candidate`]) this.options.evidenceStore.linkClaim({ claimId, passageId: null, experimentRunId, relation: "supports", note: "Recorded experiment", createdAt: new Date().toISOString() });
+          }
         }
         this.ledger.transition(id, "analysis", "review");
         return;
@@ -254,7 +284,9 @@ export class ResearchEngine {
     const skill = this.skills.instructions(stage);
     this.ledger.incrementModelCalls(run.id);
     const instructions = `${instruction}\n\nRelevant skill methodology:${skill.text}`;
-    const result = await this.model.generate(stage, input, schema, instructions);
+    const memories = this.options.memoryRetrievalEnabled ? (this.options.memoryStore?.search(run.brief.question, ["project"], 5) ?? []) : [];
+    for (const memory of memories) this.options.memoryStore?.access(memory.id, run.id, `stage:${stage}`);
+    const result = await this.model.generate(stage, { input, memoryCards: memories.map((memory) => ({ id: memory.id, type: memory.type, content: memory.content, status: memory.status, namespace: memory.namespace, sourceRunId: memory.sourceRunId, evidenceIds: memory.evidenceIds, retrievalReason: `FTS match for ${run.brief.question}` })) }, schema, instructions);
     this.ledger.record(run.id, "model_output", {
       stage, model: this.model.id, input, raw: result.raw, usage: result.usage,
       instructionSha256: createHash("sha256").update(instructions).digest("hex"), skills: skill.used,
@@ -292,6 +324,10 @@ export class ResearchEngine {
     const paired = pairedSeedDifferences(baseline, candidate, run.brief.experiment.metric);
     const analysis = this.requireRecord<Analysis>(id, "analysis");
     const review = this.requireRecord<Review>(id, "review");
+    if (this.options.evidenceStore) {
+      const gate = this.options.evidenceStore.validateClaimForFinal(`claim-${id}-result`);
+      if (!gate.ok) throw new Error(`Final report evidence gate failed: ${gate.reasons.join(", ")}`);
+    }
     const lines = [
       `# ${run.brief.title}`, "", `Run ID: ${id}`, `Question: ${run.brief.question}`, "",
       "## Search and sources", "", `Query: ${evidence.search.query}`, `Years: ${evidence.search.startYear}–${evidence.search.endYear}`, "",

@@ -10,6 +10,8 @@ import { MemoryStore } from "./infrastructure/db/memory-store.js";
 import { RetrievalWorkerClient } from "./adapters/retrieval-worker.js";
 import { parseTextFile } from "./adapters/parsing.js";
 import { createHash } from "node:crypto";
+import { ContentAddressedStore } from "./infrastructure/artifacts/content-store.js";
+import { createEvidenceTools } from "./adapters/evidence-tools.js";
 
 const dataDir = resolve(process.env.AUTO_RESEARCH_DATA_DIR ?? ".research-data");
 const [command, ...args] = process.argv.slice(2);
@@ -34,6 +36,10 @@ Usage:
   npm run dev -- memory-add <memory.json>
   npm run dev -- memory-promote <id> <reviewed|verified|archived|retracted>
   npm run dev -- memory-purge <id>
+  npm run dev -- memory-trace <id>
+  npm run dev -- memory-correct <id> <new-id> <text>
+  npm run dev -- memory-export <namespace>
+  npm run dev -- memory-import <bundle.json>
   npm run dev -- retrieval-check
   npm run dev -- doctor
   npm run dev -- model-check
@@ -89,11 +95,21 @@ async function main(): Promise<void> {
     try {
       const sourceId = `local-${createHash("sha256").update(resolve(args[0])).digest("hex").slice(0, 16)}`;
       const document = await parseTextFile(resolve(args[0]), { id: sourceId, title: resolve(args[0]), authors: [], year: null, abstract: "", identifiers: [], sourceUrl: new URL(args[1]).toString(), accessUrl: new URL(args[1]).toString(), accessStatus: "user_provided", license: null, origin: "user-provided", accessedAt: new Date().toISOString() });
-      console.log(JSON.stringify(store.addCanonicalDocument(document), null, 2));
+      const artifacts = new ContentAddressedStore(join(dataDir, "artifacts"));
+      const stored = artifacts.put(readFileSync(resolve(args[0])));
+      document.version.artifactHash = stored.hash;
+      const ingested = store.addCanonicalDocument(document);
+      const worker = new RetrievalWorkerClient({ projectRoot: process.cwd() });
+      let paperqa: unknown = null;
+      try {
+        await worker.start();
+        paperqa = await worker.request({ method: "paperqa_ingest_text", params: { docname: document.source.title, dockey: document.version.id, citation: document.source.title, texts: document.passages.map((passage) => passage.text) }, idempotencyKey: document.version.contentHash, deadlineMs: 60_000 });
+      } finally { await worker.stop(); }
+      console.log(JSON.stringify({ ...ingested, artifact: stored, paperqa }, null, 2));
     } finally { store.close(); }
     return;
   }
-  if (command === "memory-status" || command === "memory-search" || command === "memory-add" || command === "memory-promote" || command === "memory-purge") {
+  if (["memory-status","memory-search","memory-add","memory-promote","memory-purge","memory-trace","memory-correct","memory-export","memory-import"].includes(command)) {
     const store = new MemoryStore(join(dataDir, "research.db"));
     try {
       if (command === "memory-status") console.log(JSON.stringify(store.counts(), null, 2));
@@ -104,6 +120,18 @@ async function main(): Promise<void> {
       } else if (command === "memory-purge") {
         if (!args[0]) throw new Error("Memory ID is required");
         console.log(JSON.stringify(store.purge(args[0], "researcher"), null, 2));
+      } else if (command === "memory-trace") {
+        if (!args[0]) throw new Error("Memory ID is required");
+        console.log(JSON.stringify(store.trace(args[0]), null, 2));
+      } else if (command === "memory-correct") {
+        if (!args[0] || !args[1] || !args[2]) throw new Error("Memory ID, new ID and correction text are required");
+        console.log(JSON.stringify(store.correct(args[0], args[1], args.slice(2).join(" "), "researcher"), null, 2));
+      } else if (command === "memory-export") {
+        if (!args[0]) throw new Error("Namespace is required");
+        console.log(JSON.stringify(store.exportNamespace(args[0]), null, 2));
+      } else if (command === "memory-import") {
+        if (!args[0]) throw new Error("Memory bundle path is required");
+        console.log(JSON.stringify(store.importBundle(JSON.parse(readFileSync(resolve(args[0]),"utf8"))),null,2));
       } else {
         if (!args[0] || !args[1]) throw new Error("Memory ID and target status are required");
         console.log(JSON.stringify(store.promote(args[0], args[1] as "reviewed" | "verified" | "archived" | "retracted", "researcher"), null, 2));
@@ -126,6 +154,7 @@ async function main(): Promise<void> {
   }
     const ledger = new Ledger(join(dataDir, "research.db"));
     const evidenceStore = new EvidenceStore(join(dataDir, "research.db"));
+    const memoryStore = new MemoryStore(join(dataDir, "research.db"));
     try {
     if (command === "new") {
       if (!args[0]) throw new Error("Brief JSON path is required");
@@ -154,26 +183,26 @@ async function main(): Promise<void> {
       return;
     }
     if (command === "approve") {
-      const engine = new ResearchEngine(ledger, undefined, { dataDir, evidenceStore });
+      const engine = new ResearchEngine(ledger, undefined, { dataDir, evidenceStore, memoryStore });
       console.log(`Stage: ${engine.approvePlan(id)}`);
       return;
     }
     if (command === "revise-plan") {
       if (!args[1]) throw new Error("Plan JSON path is required");
-      const engine = new ResearchEngine(ledger, undefined, { dataDir, evidenceStore });
+      const engine = new ResearchEngine(ledger, undefined, { dataDir, evidenceStore, memoryStore });
       const plan = JSON.parse(readFileSync(resolve(args[1]), "utf8"));
       engine.revisePlan(id, plan);
       console.log("Plan revised; review with status before approval.");
       return;
     }
     if (command === "finalize") {
-      const engine = new ResearchEngine(ledger, undefined, { dataDir, evidenceStore });
+      const engine = new ResearchEngine(ledger, undefined, { dataDir, evidenceStore, memoryStore });
       console.log(`Stage: ${engine.approveConclusion(id)}`);
       return;
     }
     if (command === "respond-review") {
       if (!args[1]) throw new Error("Review response JSON path is required");
-      const engine = new ResearchEngine(ledger, undefined, { dataDir });
+      const engine = new ResearchEngine(ledger, undefined, { dataDir, memoryStore });
       const response = JSON.parse(readFileSync(resolve(args[1]), "utf8"));
       engine.respondToReview(id, response);
       console.log("Review response recorded; review the updated report before finalizing.");
@@ -181,16 +210,25 @@ async function main(): Promise<void> {
     }
     if (command === "run") {
       const { PiResearchModel, piModelConfigFromEnv } = await import("./adapters/pi-model.js");
-      const model = await PiResearchModel.create(piModelConfigFromEnv());
-      const engine = new ResearchEngine(ledger, model, { dataDir, evidenceStore });
-      const stage = await engine.run(id);
-      console.log(`Stage: ${stage}`);
-      if (stage === "approval") console.log("Review the plan with `status`, then run `approve <id>`.");
-      if (stage === "final_approval") console.log(`Review ${engine.reportPath(id)}, then run finalize <id>.`);
+      const retrievalWorker = new RetrievalWorkerClient({ projectRoot: process.cwd() });
+      try {
+        try {
+          await retrievalWorker.start();
+          const byDocument = new Map<string, string[]>();
+          for (const passage of evidenceStore.listPassages()) byDocument.set(passage.documentVersionId, [...(byDocument.get(passage.documentVersionId) ?? []), passage.text]);
+          for (const [documentId, texts] of byDocument) await retrievalWorker.request({ method: "paperqa_ingest_text", params: { docname: documentId, dockey: documentId, texts }, idempotencyKey: documentId, deadlineMs: 60_000 });
+        } catch { /* Evidence tools retain SQLite fallback. */ }
+        const model = await PiResearchModel.create({ ...piModelConfigFromEnv(), customTools: createEvidenceTools(evidenceStore, retrievalWorker) });
+        const engine = new ResearchEngine(ledger, model, { dataDir, evidenceStore, memoryStore, memoryRetrievalEnabled: process.env.AUTO_RESEARCH_MEMORY_ENABLED === "1" });
+        const stage = await engine.run(id);
+        console.log(`Stage: ${stage}`);
+        if (stage === "approval") console.log("Review the plan with `status`, then run `approve <id>`.");
+        if (stage === "final_approval") console.log(`Review ${engine.reportPath(id)}, then run finalize <id>.`);
+      } finally { await retrievalWorker.stop(); }
       return;
     }
     throw new Error(`Unknown command: ${command}`);
-  } finally { evidenceStore.close(); ledger.close(); }
+  } finally { memoryStore.close(); evidenceStore.close(); ledger.close(); }
 }
 
 main().catch((error: unknown) => {

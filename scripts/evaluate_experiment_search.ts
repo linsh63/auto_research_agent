@@ -1,4 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
 import { runProcess } from "../src/adapters/process.js";
 import { BoundedExperimentSearch } from "../src/application/experiment-search.js";
@@ -33,9 +34,19 @@ try {
       if (train.exitCode !== 0) return { metric: null, costUsd: 0, durationMs: train.durationMs, failureClass: "training_failed" };
       const evaluation = await runProcess(binary, ["test", `${prefix}.bin`, join(searchDir, "validation.ft")], { cwd: searchDir, timeoutMs: 30_000 });
       const match = evaluation.stdout.match(/P@1\s+([0-9.]+)/);
-      return { metric: match ? Number(match[1]) : null, costUsd: 0, durationMs: train.durationMs + evaluation.durationMs, artifactHash: null, failureClass: match ? undefined : "metric_missing" };
+      const modelPath=`${prefix}.bin`;
+      const artifactHash=match ? createHash("sha256").update(readFileSync(modelPath)).digest("hex") : undefined;
+      return { metric: match ? Number(match[1]) : null, costUsd: 0, durationMs: train.durationMs + evaluation.durationMs, artifactHash, failureClass: match ? undefined : "metric_missing" };
     },
   });
   const best = nodes.filter((node) => node.metric !== null).sort((a, b) => (b.metric ?? -Infinity) - (a.metric ?? -Infinity))[0] ?? null;
-  console.log(JSON.stringify({ schemaVersion: 1, dataset: { trainCount: training.length, validationCount: validation.length }, strategy, nodes, best }, null, 2));
+  let finalTest: unknown = null;
+  if (best && process.env.APPROVE_FINAL_TEST === "1") {
+    store.approveFinalTest(best.searchRunId);
+    const p=best.parameters; const prefix=join(searchDir,`model-${p.wordNgrams}-${p.epoch}-${p.dim}`);
+    const tested=await runProcess(binary,["test",`${prefix}.bin`,join(data,"test.ft")],{cwd:searchDir,timeoutMs:30000});
+    const match=tested.stdout.match(/P@1\s+([0-9.]+)/); finalTest={approved:true,metric:match?Number(match[1]):null,exitCode:tested.exitCode};
+    store.completeFinalTest(best.searchRunId);
+  }
+  console.log(JSON.stringify({ schemaVersion: 1, dataset: { trainCount: training.length, validationCount: validation.length, testSealedDuringSearch:true }, strategy, nodes, best, finalTest }, null, 2));
 } finally { store.close(); }

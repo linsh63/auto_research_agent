@@ -9,11 +9,15 @@ import type { ModelOutput, ResearchModel } from "../src/adapters/pi-model.js";
 import { ResearchEngine } from "../src/core/engine.js";
 import { Ledger } from "../src/core/ledger.js";
 import { BriefSchema, type Plan, type ResearchBrief } from "../src/core/schema.js";
+import { MemoryStore } from "../src/infrastructure/db/memory-store.js";
+import { EvidenceStore } from "../src/infrastructure/db/evidence-store.js";
 
 class FixtureModel implements ResearchModel {
   readonly id = "fixture/model";
   badSourceOnce = false;
+  readonly seenInputs: unknown[] = [];
   async generate<T>(stage: string, _input: unknown, schema: z.ZodType<T>, _instructions: string): Promise<ModelOutput<T>> {
+    this.seenInputs.push(_input);
     let payload: unknown;
     switch (stage) {
       case "hypothesis":
@@ -79,9 +83,11 @@ test("research run pauses at both human gates and preserves executable evidence"
   const dir = mkdtempSync(join(tmpdir(), "research-engine-test-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const ledger = new Ledger(join(dir, "research.db"));
-  t.after(() => ledger.close());
+  const memory = new MemoryStore(join(dir, "research.db"));
+  const evidenceStore = new EvidenceStore(join(dir, "research.db"));
+  t.after(() => { evidenceStore.close(); memory.close(); ledger.close(); });
   const id = ledger.create(brief()).id;
-  const engine = new ResearchEngine(ledger, new FixtureModel(), { dataDir: dir, search: async () => evidence() });
+  const engine = new ResearchEngine(ledger, new FixtureModel(), { dataDir: dir, search: async () => evidence(), memoryStore: memory, evidenceStore });
 
   assert.equal(await engine.run(id), "approval");
   assert.equal(ledger.latest(id, "experiment_baseline"), undefined);
@@ -106,6 +112,8 @@ test("research run pauses at both human gates and preserves executable evidence"
   });
   assert.equal(engine.approveConclusion(id), "done");
   assert.equal(ledger.get(id).stage, "done");
+  assert.equal(memory.counts().items, 2);
+  assert.equal(evidenceStore.counts().claims, 2);
 });
 
 test("invalid citations keep the stage retryable without repeating search", async (t) => {
@@ -134,4 +142,17 @@ test("model-call limit stops before an unbudgeted stage", async (t) => {
   await assert.rejects(engine.run(id), /Model-call budget reached/);
   assert.equal(ledger.get(id).stage, "plan");
   assert.equal(ledger.get(id).modelCalls, 1);
+});
+
+test("verified memory is injected into a later research run", async (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "research-engine-memory-")); t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const db = join(dir, "research.db"); const ledger = new Ledger(db); const memory = new MemoryStore(db);
+  t.after(() => { memory.close(); ledger.close(); });
+  memory.createCandidate({ id: "prior", type: "procedure", namespace: "project", content: "quadratic feature paired seeds deterministic synthetic data", sourceRunId: "prior-run", evidenceIds: ["claim-prior"], applicability: "AI" });
+  memory.promote("prior", "reviewed", "test"); memory.promote("prior", "verified", "test");
+  const model = new FixtureModel(); const id = ledger.create(brief()).id;
+  const engine = new ResearchEngine(ledger, model, { dataDir: dir, search: async () => evidence(), memoryStore: memory, memoryRetrievalEnabled: true });
+  assert.equal(await engine.run(id), "approval");
+  assert.ok(model.seenInputs.some((input) => Array.isArray((input as { memoryCards?: unknown[] }).memoryCards) && ((input as { memoryCards: unknown[] }).memoryCards.length > 0)));
+  assert.ok(memory.counts().accesses > 0);
 });

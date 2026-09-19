@@ -6,4 +6,4 @@ dependencies = []
 
 [project.optional-dependencies]
 paperqa = ["paper-qa==2026.8.12"]
-parsing = ["docling-slim==2.129.0", "pymupdf"]
+parsing = ["docling-slim==2.129.0", "docling-parse==7.20.0", "pymupdf"]

@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-V1 最小科研闭环已经实现并通过公开真实案例验收：TypeScript CLI、pi SDK 模型适配、SQLite 研究账本、论文检索包装器、两个审批节点、受控命令执行、分析审查、审查响应与 Markdown 报告均已接通。技能安装在本机 `~/.codex/skills/`；[技能清单](skills-inventory.md)记录其来源、作用和运行条件。[V1 阶段总结](docs/v1-stage-summary.md)给出验收证据、真实案例结果与剩余限制。
+V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆和C有界实验搜索已完成本地profile重新验收。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。详细证据与限制见[A–C重新验收报告](docs/releases/abc-revalidation-report.md)。
 
 [下一阶段备选方案](docs/next-stage-options.md)列出证据系统、长期记忆、自动实验迭代、第二场景验证和本地模型五条路线，供选择 V2 主目标。
 
@@ -37,7 +37,7 @@ node dist/cli.js finalize <run-id>  # 审核最终报告后运行
 
 合成回归示例只用于检查 pipeline。真实验收案例使用 fastText v0.9.2 和完整 AG News 公开划分，协议见 [案例说明](docs/cases/fasttext-agnews.md)。两者都显式选择 `process` 执行模式，只应运行可信脚本。其他任务默认使用 `docker`，需指定 `dockerImage`；容器关闭网络并限制进程数、CPU 和内存。
 
-`paper-search` 已接入实际检索脚本；其余技能按方法或混合适配进入相关阶段。`npm run validate:skills` 对全部 14 项能力做离线检查，结果保存在 [skill-validation.json](docs/skill-validation.json)。模型调用次数、单次运行时长和实验超时已有硬上限；代理服务的实际计费单价尚未配置，因此目前不提供可靠的美元费用上限。跨项目记忆和多轮自动迭代也尚未实现。
+`paper-search`和PaperQA2 worker均已接入；其余技能按方法或混合适配进入相关阶段。`npm run validate:skills`对全部14项能力做离线检查。模型调用次数、单次运行时长和实验超时已有硬上限。跨项目记忆已实现但默认关闭，需设置`AUTO_RESEARCH_MEMORY_ENABLED=1`；best-first搜索仍属experimental。
 
 ## 科研链路
 

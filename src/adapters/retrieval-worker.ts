@@ -19,7 +19,7 @@ export class RetrievalWorkerClient {
     const worker = this.options.workerPath ?? join(this.options.projectRoot, "workers", "retrieval", "worker.py");
     const localPython = join(this.options.projectRoot, "workers", "retrieval", ".venv", "bin", "python");
     const python = this.options.python ?? (existsSync(localPython) ? localPython : "python3");
-    this.child = spawn(python, [worker], {
+    this.child = spawn(python, ["-u", worker], {
       cwd: this.options.projectRoot,
       env: { ...process.env, AUTO_RESEARCH_PROJECT_ROOT: this.options.projectRoot, AUTO_RESEARCH_SKILL_ROOT: this.options.skillRoot ?? process.env.AUTO_RESEARCH_SKILL_ROOT },
       stdio: ["pipe", "pipe", "pipe"],
@@ -45,17 +45,23 @@ export class RetrievalWorkerClient {
       this.pending.clear();
     });
     this.started = true;
-    return this.request({ method: "handshake", params: { schemaVersion: 1 }, deadlineMs: 15_000 });
+    return this.send({ method: "handshake", params: { schemaVersion: 1 }, deadlineMs: 60_000 });
   }
 
-  request(request: RetrievalRequest): Promise<RetrievalResponse> {
+  async request(request: RetrievalRequest): Promise<RetrievalResponse> {
+    if (!this.child || !this.started) await this.start();
+    return this.send(request);
+  }
+
+  private send(request: RetrievalRequest): Promise<RetrievalResponse> {
     if (!this.child || !this.started) throw new Error("Retrieval worker is not started");
     const requestId = randomUUID();
     const deadlineMs = request.deadlineMs ?? 60_000;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(requestId);
-        this.child?.stdin.write(JSON.stringify({ schemaVersion: 1, requestId, method: "cancel" }) + "\n");
+        this.child?.kill("SIGKILL");
+        this.started = false;
         reject(new Error(`Retrieval request timed out after ${deadlineMs} ms`));
       }, deadlineMs);
       this.pending.set(requestId, { resolve, reject, timer });

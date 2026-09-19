@@ -23,6 +23,8 @@ PROJECT_PYTHON = PROJECT / "workers" / "retrieval" / ".venv" / "bin" / "python"
 PAPER_PYTHON = Path(os.environ.get("AUTO_RESEARCH_PAPERQA_PYTHON", str(PROJECT_PYTHON if PROJECT_PYTHON.exists() else PAPER_SKILL / ".venv" / "bin" / "python")))
 PAPER_SCRIPTS = PAPER_SKILL / "scripts"
 PAPERQA_DOCS = None
+PAPERQA_SETTINGS = None
+IDEMPOTENCY = {}
 
 
 def paperqa_docs():
@@ -31,6 +33,14 @@ def paperqa_docs():
         from paperqa import Docs
         PAPERQA_DOCS = Docs()
     return PAPERQA_DOCS
+
+
+def paperqa_settings():
+    global PAPERQA_SETTINGS
+    if PAPERQA_SETTINGS is None:
+        from paperqa import Settings
+        PAPERQA_SETTINGS = Settings(embedding="sparse", parsing={"defer_embedding": False})
+    return PAPERQA_SETTINGS
 
 
 def respond(request_id: str, ok: bool, result=None, error=None, metrics=None):
@@ -89,14 +99,27 @@ def main():
             elif method == "search_metadata":
                 respond(request_id, True, search(request.get("params", {})))
             elif method == "paperqa_ingest_text":
-                from paperqa import Settings
                 from paperqa.types import Doc, Text
                 params = request.get("params", {})
+                idempotency_key = request.get("idempotencyKey")
+                if idempotency_key and idempotency_key in IDEMPOTENCY:
+                    respond(request_id, True, {**IDEMPOTENCY[idempotency_key], "reused": True})
+                    continue
                 doc = Doc(docname=params["docname"], dockey=params["dockey"], citation=params.get("citation", params["docname"]))
                 texts = [Text(text=text, name=f"{params['dockey']}-chunk-{index}", doc=doc) for index, text in enumerate(params.get("texts", []))]
                 import asyncio
-                added = asyncio.run(paperqa_docs().aadd_texts(texts, doc, settings=Settings(parsing={"defer_embedding": True}), embedding_model=None))
-                respond(request_id, True, {"added": bool(added), "documentCount": len(paperqa_docs().docs), "backend": "paperqa"})
+                settings = paperqa_settings()
+                added = asyncio.run(paperqa_docs().aadd_texts(texts, doc, settings=settings, embedding_model=settings.get_embedding_model()))
+                ingestion_result = {"added": bool(added), "documentCount": len(paperqa_docs().docs), "backend": "paperqa"}
+                if idempotency_key:
+                    IDEMPOTENCY[idempotency_key] = ingestion_result
+                respond(request_id, True, ingestion_result)
+            elif method == "search_passages":
+                import asyncio
+                params = request.get("params", {})
+                settings = paperqa_settings()
+                texts = asyncio.run(paperqa_docs().retrieve_texts(params["query"], int(params.get("limit", 20)), settings=settings, embedding_model=settings.get_embedding_model()))
+                respond(request_id, True, {"backend": "paperqa", "hits": [{"name": text.name, "text": text.text, "documentKey": str(text.doc.dockey), "citation": text.doc.citation} for text in texts]})
             elif method == "cancel":
                 respond(request_id, True, {"cancelled": True})
             else:

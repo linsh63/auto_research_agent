@@ -1,5 +1,5 @@
 import {
-  createAgentSession, DefaultResourceLoader, ModelRuntime, SessionManager, SettingsManager,
+  createAgentSession, DefaultResourceLoader, ModelRuntime, SessionManager, SettingsManager, type ToolDefinition,
 } from "@earendil-works/pi-coding-agent";
 import { mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -26,6 +26,7 @@ export interface PiModelConfig {
   modelId?: string;
   api?: Parameters<ModelRuntime["registerProvider"]>[1]["api"];
   timeoutMs?: number;
+  customTools?: ToolDefinition[];
 }
 
 export function piModelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PiModelConfig {
@@ -57,6 +58,7 @@ export class PiResearchModel implements ResearchModel {
     private readonly runtime: ModelRuntime,
     private readonly model: NonNullable<ReturnType<ModelRuntime["getModel"]>>,
     private readonly timeoutMs: number,
+    private readonly customTools: ToolDefinition[],
   ) { this.id = `${model.provider}/${model.id}`; }
 
   static async create(config: PiModelConfig): Promise<PiResearchModel> {
@@ -94,7 +96,7 @@ export class PiResearchModel implements ResearchModel {
       const available = runtime.getModels(providerId).map((item) => item.id).join(", ");
       throw new Error(`Pi could not resolve ${providerId}/${modelId}. Provider models: ${available || "none"}`);
     }
-    return new PiResearchModel(runtime, model, timeoutMs);
+    return new PiResearchModel(runtime, model, timeoutMs, config.customTools ?? []);
   }
 
   async generate<T>(stage: string, input: unknown, schema: z.ZodType<T>, instructions: string): Promise<ModelOutput<T>> {
@@ -113,7 +115,8 @@ export class PiResearchModel implements ResearchModel {
     await loader.reload();
     const { session } = await createAgentSession({
       modelRuntime: this.runtime, model: this.model, thinkingLevel: "off",
-      noTools: "all", sessionManager: SessionManager.inMemory(), settingsManager, agentDir,
+      ...(this.customTools.length ? { tools: this.customTools.map((tool) => tool.name), customTools: this.customTools } : { noTools: "all" as const }),
+      sessionManager: SessionManager.inMemory(), settingsManager, agentDir,
       resourceLoader: loader,
     });
     let timer: NodeJS.Timeout | undefined;

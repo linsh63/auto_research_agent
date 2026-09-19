@@ -14,6 +14,8 @@ test("memory promotion and scope filtering prevent candidate injection", (t) => 
   store.promote("m1", "verified", "test");
   assert.equal(store.search("paired seeds", ["project"]).length, 1);
   assert.equal(store.search("paired seeds", ["workspace"]).length, 0);
+  const bundle=store.exportNamespace("project");
+  const imported=store.importBundle(bundle); assert.equal(imported.items,0);
   const proof = store.purge("m1", "test");
   assert.equal(proof.purged, true);
   assert.equal(store.search("paired seeds", ["project"]).length, 0);

@@ -27,6 +27,8 @@ export class EvidenceStore {
         updated_at TEXT NOT NULL
       );
       CREATE VIRTUAL TABLE IF NOT EXISTS sources_fts USING fts5(source_id UNINDEXED, title, abstract, authors);
+      CREATE TABLE IF NOT EXISTS source_identifiers (source_id TEXT NOT NULL REFERENCES evidence_sources(id), scheme TEXT NOT NULL,
+        value TEXT NOT NULL, source TEXT NOT NULL, is_canonical INTEGER NOT NULL, PRIMARY KEY(scheme,value,source_id));
       CREATE TABLE IF NOT EXISTS document_versions (
         id TEXT PRIMARY KEY, source_id TEXT NOT NULL REFERENCES evidence_sources(id),
         payload_json TEXT NOT NULL, content_hash TEXT NOT NULL, created_at TEXT NOT NULL
@@ -52,6 +54,8 @@ export class EvidenceStore {
       CREATE TABLE IF NOT EXISTS retrieval_events (
         id TEXT PRIMARY KEY, query TEXT NOT NULL, payload_json TEXT NOT NULL, created_at TEXT NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS citation_edges (source_id TEXT NOT NULL, target_id TEXT NOT NULL, origin TEXT NOT NULL,
+        created_at TEXT NOT NULL, PRIMARY KEY(source_id,target_id,origin));
     `);
     if (version < 2) this.db.pragma("user_version = 2");
   }
@@ -59,12 +63,18 @@ export class EvidenceStore {
   upsertSource(input: SourceRecord): SourceRecord {
     const source = SourceRecordSchema.parse(input);
     const now = new Date().toISOString();
-    this.db.prepare(`INSERT INTO evidence_sources(id,payload_json,created_at,updated_at)
-      VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET payload_json=excluded.payload_json,updated_at=excluded.updated_at`)
-      .run(source.id, JSON.stringify(source), now, now);
-    this.db.prepare("DELETE FROM sources_fts WHERE source_id=?").run(source.id);
-    this.db.prepare("INSERT INTO sources_fts(source_id,title,abstract,authors) VALUES(?,?,?,?)")
-      .run(source.id, source.title, source.abstract, source.authors.join(" "));
+    const tx = this.db.transaction(() => {
+      this.db.prepare(`INSERT INTO evidence_sources(id,payload_json,created_at,updated_at)
+        VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET payload_json=excluded.payload_json,updated_at=excluded.updated_at`)
+        .run(source.id, JSON.stringify(source), now, now);
+      this.db.prepare("DELETE FROM sources_fts WHERE source_id=?").run(source.id);
+      this.db.prepare("INSERT INTO sources_fts(source_id,title,abstract,authors) VALUES(?,?,?,?)")
+        .run(source.id, source.title, source.abstract, source.authors.join(" "));
+      this.db.prepare("DELETE FROM source_identifiers WHERE source_id=?").run(source.id);
+      const insertIdentifier = this.db.prepare("INSERT OR REPLACE INTO source_identifiers(source_id,scheme,value,source,is_canonical) VALUES(?,?,?,?,?)");
+      for (const identifier of source.identifiers) insertIdentifier.run(source.id, identifier.scheme, identifier.value.toLowerCase(), identifier.source, identifier.isCanonical ? 1 : 0);
+    });
+    tx();
     return source;
   }
 
@@ -127,6 +137,33 @@ export class EvidenceStore {
     return rows.map((row) => SourceRecordSchema.parse(JSON.parse(row.payload_json)));
   }
 
+  listSources(limit = 10000): SourceRecord[] {
+    return (this.db.prepare("SELECT payload_json FROM evidence_sources ORDER BY created_at, rowid LIMIT ?").all(limit) as Array<{ payload_json: string }>)
+      .map((row) => SourceRecordSchema.parse(JSON.parse(row.payload_json)));
+  }
+
+  lookupIdentifier(scheme: string, value: string): SourceRecord | undefined {
+    const row = this.db.prepare("SELECT s.payload_json FROM source_identifiers i JOIN evidence_sources s ON s.id=i.source_id WHERE i.scheme=? AND i.value=? ORDER BY i.is_canonical DESC LIMIT 1")
+      .get(scheme, value.toLowerCase()) as { payload_json: string } | undefined;
+    return row ? SourceRecordSchema.parse(JSON.parse(row.payload_json)) : undefined;
+  }
+
+  getPassage(id: string): Passage | undefined {
+    const row = this.db.prepare("SELECT payload_json FROM passages WHERE id=?").get(id) as { payload_json: string } | undefined;
+    return row ? PassageSchema.parse(JSON.parse(row.payload_json)) : undefined;
+  }
+
+  listPassages(limit = 5000): Passage[] {
+    return (this.db.prepare("SELECT payload_json FROM passages ORDER BY created_at, rowid LIMIT ?").all(limit) as Array<{ payload_json: string }>)
+      .map((row) => PassageSchema.parse(JSON.parse(row.payload_json)));
+  }
+
+  firstPassageForSource(sourceId: string): Passage | undefined {
+    const row = this.db.prepare(`SELECT p.payload_json FROM document_versions d JOIN passages p ON p.document_version_id=d.id
+      WHERE d.source_id=? ORDER BY p.created_at, p.rowid LIMIT 1`).get(sourceId) as { payload_json: string } | undefined;
+    return row ? PassageSchema.parse(JSON.parse(row.payload_json)) : undefined;
+  }
+
   recordRetrieval(query: string, payload: unknown): string {
     const id = randomUUID();
     this.db.prepare("INSERT INTO retrieval_events(id,query,payload_json,created_at) VALUES(?,?,?,?)")
@@ -134,9 +171,17 @@ export class EvidenceStore {
     return id;
   }
 
+  addCitationEdge(sourceId: string, targetId: string, origin: string): void {
+    this.db.prepare("INSERT OR REPLACE INTO citation_edges(source_id,target_id,origin,created_at) VALUES(?,?,?,?)").run(sourceId,targetId,origin,new Date().toISOString());
+  }
+
+  expandCitations(sourceId: string, limit = 20): Array<{ sourceId:string; targetId:string; origin:string }> {
+    return this.db.prepare("SELECT source_id sourceId,target_id targetId,origin FROM citation_edges WHERE source_id=? OR target_id=? LIMIT ?").all(sourceId,sourceId,limit) as Array<{sourceId:string;targetId:string;origin:string}>;
+  }
+
   counts(): Record<string, number> {
     const count = (table: string) => (this.db.prepare(`SELECT count(*) n FROM ${table}`).get() as { n: number }).n;
-    return { sources: count("evidence_sources"), documentVersions: count("document_versions"), passages: count("passages"), claims: count("claims"), retrievalEvents: count("retrieval_events") };
+    return { sources: count("evidence_sources"), documentVersions: count("document_versions"), passages: count("passages"), claims: count("claims"), citationEdges: count("citation_edges"), retrievalEvents: count("retrieval_events") };
   }
 
   validateClaimForFinal(id: string): { ok: boolean; reasons: string[] } {

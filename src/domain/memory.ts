@@ -14,3 +14,4 @@ export const MemoryRelationSchema = z.object({
 });
 export type MemoryItem = z.infer<typeof MemoryItemSchema>;
 export type MemoryRelation = z.infer<typeof MemoryRelationSchema>;
+export interface MemoryCard { id: string; type: MemoryItem["type"]; content: string; status: MemoryItem["status"]; namespace: string; sourceRunId: string | null; evidenceIds: string[]; retrievalReason: string; }
