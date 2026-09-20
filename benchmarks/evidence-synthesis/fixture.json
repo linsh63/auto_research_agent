@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "thresholds": {
+    "decisionAccuracy": 1.0,
+    "criticalProvenance": 1.0,
+    "noveltyOverclaims": 0,
+    "backgroundDirectAcceptances": 0
+  },
+  "cases": [
+    { "id": "fulltext-premise", "type": "entry", "relation": "premise_support", "level": "full_text", "passage": true, "critical": true, "expected": "accept" },
+    { "id": "abstract-direct", "type": "entry", "relation": "direct_result", "level": "abstract", "passage": false, "critical": false, "expected": "reject" },
+    { "id": "background-critical", "type": "entry", "relation": "background", "level": "abstract", "passage": false, "critical": true, "expected": "reject" },
+    { "id": "abstract-background", "type": "entry", "relation": "background", "level": "abstract", "passage": false, "critical": false, "expected": "accept" },
+    { "id": "fulltext-refutation", "type": "entry", "relation": "refutation", "level": "full_text", "passage": true, "critical": false, "expected": "accept" },
+    { "id": "incomplete-unresolved", "type": "novelty", "coverage": "incomplete", "novelty": "unresolved", "gap": true, "comparison": false, "expected": "accept" },
+    { "id": "incomplete-overclaim", "type": "novelty", "coverage": "incomplete", "novelty": "supported_with_scope", "gap": true, "comparison": true, "expected": "reject" },
+    { "id": "complete-no-comparison", "type": "novelty", "coverage": "complete", "novelty": "supported_with_scope", "gap": false, "comparison": false, "expected": "reject" },
+    { "id": "complete-scoped", "type": "novelty", "coverage": "complete", "novelty": "supported_with_scope", "gap": false, "comparison": true, "expected": "accept" },
+    { "id": "likely-overlap", "type": "novelty", "coverage": "complete", "novelty": "likely_overlap", "gap": false, "comparison": true, "comparisonStatus": "partial_overlap", "expected": "accept" },
+    { "id": "exact-duplicate-work", "type": "novelty", "coverage": "complete", "novelty": "likely_overlap", "gap": false, "comparison": true, "comparisonStatus": "exact_overlap", "expected": "accept" },
+    { "id": "exact-overlap-overclaim", "type": "novelty", "coverage": "complete", "novelty": "supported_with_scope", "gap": false, "comparison": true, "comparisonStatus": "exact_overlap", "expected": "reject" },
+    { "id": "metadata-premise", "type": "entry", "relation": "premise_support", "level": "metadata", "passage": false, "critical": true, "expected": "reject" }
+  ]
+}

@@ -15,6 +15,8 @@ import { createEvidenceTools } from "./adapters/evidence-tools.js";
 import { WorkflowCoordinator } from "./application/workflow-coordinator.js";
 import { ResearchStore } from "./infrastructure/db/research-store.js";
 import { loadProjectConfig } from "./infrastructure/config/config.js";
+import { EvidenceSynthesisStore } from "./infrastructure/db/evidence-synthesis-store.js";
+import { EvidenceSynthesisService } from "./application/evidence-synthesis.js";
 
 const dataDir = resolve(process.env.AUTO_RESEARCH_DATA_DIR ?? ".research-data");
 const argv = process.argv.slice(2);
@@ -73,6 +75,15 @@ Research graph (v1.2 E):
   npm run dev -- research visibility <program-id> <visibility.json>
   npm run dev -- research derive <program-id> <reason.json>
   npm run dev -- research status <program-id>
+  npm run dev -- research search-protocol <program-id> <search.json>
+  npm run dev -- research freeze-search <program-id> <search-id>
+  npm run dev -- research screen <decision.json>
+  npm run dev -- research evidence-map <program-id> <map.json>
+  npm run dev -- research evidence-entry <map-id> <entry.json>
+  npm run dev -- research evidence-gap <map-id> <gap.json>
+  npm run dev -- research closest-work <map-id> <comparison.json>
+  npm run dev -- research freeze-evidence-map <program-id> <map-id>
+  npm run dev -- research capabilities <build-evidence-map|generate-hypothesis-set>
 
 Set AUTO_RESEARCH_API_KEY for model stages. Optional: AUTO_RESEARCH_BASE_URL,
 AUTO_RESEARCH_MODEL (default gpt-5.6-luna), AUTO_RESEARCH_DATA_DIR,
@@ -84,7 +95,9 @@ async function main(): Promise<void> {
   if (!command || command === "help" || command === "--help") usage();
   if (researchMode) {
     const store = await ResearchStore.open(join(dataDir, "research.db"), { maxDerivedRuns: loadProjectConfig().research.maxDerivedRuns });
+    const synthesisStore = await EvidenceSynthesisStore.open(join(dataDir, "research.db"));
     const workflow = new WorkflowCoordinator(store);
+    const synthesis = new EvidenceSynthesisService(synthesisStore, store);
     const readJson = (path: string | undefined): unknown => {
       if (!path) throw new Error("JSON input path is required");
       return JSON.parse(readFileSync(resolve(path), "utf8"));
@@ -114,8 +127,17 @@ async function main(): Promise<void> {
         if (!input.reason) throw new Error("Derivation reason is required");
         console.log(JSON.stringify(workflow.derive(args[0]!, input.reason, input.actor ?? "researcher", input.observedData ?? []), null, 2));
       } else if (command === "status") console.log(JSON.stringify(workflow.status(args[0]!), null, 2));
+      else if (command === "search-protocol") console.log(JSON.stringify(synthesisStore.createSearchProtocol(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "freeze-search") console.log(JSON.stringify(synthesisStore.freezeSearchProtocol(args[0]!, args[1]!), null, 2));
+      else if (command === "screen") console.log(JSON.stringify(synthesisStore.screen(readJson(args[0]) as never), null, 2));
+      else if (command === "evidence-map") console.log(JSON.stringify(synthesisStore.createEvidenceMap(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "evidence-entry") console.log(JSON.stringify(synthesisStore.addEntry(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "evidence-gap") console.log(JSON.stringify(synthesisStore.addGap(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "closest-work") console.log(JSON.stringify(synthesisStore.addClosestWork(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "freeze-evidence-map") console.log(JSON.stringify(synthesisStore.freezeEvidenceMap(args[0]!, args[1]!), null, 2));
+      else if (command === "capabilities") console.log(JSON.stringify(synthesis.registerCapabilities(args[0] as "build-evidence-map" | "generate-hypothesis-set"), null, 2));
       else throw new Error(`Unknown research command: ${command}`);
-    } finally { store.close(); }
+    } finally { synthesisStore.close(); store.close(); }
     return;
   }
   if (command === "skills") {

@@ -77,7 +77,7 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
     domain: "AI / computer vision",
     constraints: ["one GPU", "public data only"],
     allowedData: ["CIFAR-10", "CIFAR-10-C"],
-    profile: "confirmatory",
+    profile: "exploratory",
   });
   const candidate = workflow.proposeQuestion(program.id, question());
   workflow.selectQuestion(program.id, candidate.id);
@@ -86,10 +86,11 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   const register = workflow.createAssumptionRegister(candidate.id, [assumption.id]);
   assert.equal(register.assumptionIds.length, 1);
   const hypothesisSet = workflow.createHypothesisSet(program.id, { hypotheses: [
-    { kind: "target", statement: "The declared change improves robustness under held-out corruptions.", prediction: "Primary robustness accuracy increases on confirmation groups.", falsification: "The frozen candidate does not improve robustness.", evidenceIds: [] },
-    { kind: "null", statement: "The declared change does not alter robustness under held-out corruptions.", prediction: "The paired difference is centered near zero.", falsification: "A stable improvement exceeds the predeclared effect boundary.", evidenceIds: [] },
+    { kind: "target", statement: "The declared change improves robustness under held-out corruptions.", prediction: "Primary robustness accuracy increases on confirmation groups.", falsification: "The frozen candidate does not improve robustness.", assumptionIds: [assumption.id], discriminatingObservations: ["A positive paired effect on held-out corruption groups."], updateRules: [{ observation: "The paired effect exceeds the declared boundary.", effect: "strengthen", rationale: "This is the target prediction under the frozen protocol." }], evidenceIds: [] },
+    { kind: "null", statement: "The declared change does not alter robustness under held-out corruptions.", prediction: "The paired difference is centered near zero.", falsification: "A stable improvement exceeds the predeclared effect boundary.", assumptionIds: [assumption.id], discriminatingObservations: ["A paired effect interval centered near zero."], updateRules: [{ observation: "The paired interval remains inside the null region.", effect: "strengthen", rationale: "This observation is expected under the null explanation." }], evidenceIds: [] },
+    { kind: "rival", statement: "Any apparent gain is explained by improved clean accuracy rather than corruption robustness.", prediction: "The gain disappears after conditioning on clean accuracy.", falsification: "Robustness improves without a corresponding clean-accuracy increase.", assumptionIds: [assumption.id], discriminatingObservations: ["Robustness and clean-accuracy changes move independently."], updateRules: [{ observation: "Only clean accuracy improves while grouped robustness is unchanged.", effect: "strengthen", rationale: "That pattern favors the rival explanation over the target mechanism." }], evidenceIds: [] },
   ] });
-  assert.equal(hypothesisSet.hypotheses.length, 2);
+  assert.equal(hypothesisSet.hypotheses.length, 3);
   assert.throws(() => workflow.createAssumptionRegister(candidate.id, [assumption.id], "missing-register"), /latest register as parent/);
   assert.throws(() => workflow.createHypothesisSet(program.id, { parentId: "missing-set", hypotheses: [
     { kind: "target", statement: "A target hypothesis with a missing parent must be rejected.", prediction: "The target outcome changes.", falsification: "The target outcome does not change.", evidenceIds: [] },

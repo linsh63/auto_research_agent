@@ -1,6 +1,6 @@
 {
   "name": "auto-research-agent",
-  "version": "1.2.0-alpha.1",
+  "version": "1.2.0-alpha.2",
   "private": true,
   "type": "module",
   "engines": {
@@ -14,6 +14,7 @@
     "prepare:fasttext": "python3 scripts/prepare_fasttext_agnews.py",
     "validate:skills": "python3 scripts/validate_skills.py",
     "check:docs": "python3 scripts/check_docs.py",
+    "evaluate:evidence-synthesis": "tsx scripts/evaluate_evidence_synthesis.ts",
     "validate:cv": "tsx scripts/validate_cv_scenario.ts",
     "probe:pi": "tsx scripts/pi_sdk_probe.ts"
   },

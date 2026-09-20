@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { CapabilityManifestSchema, type CapabilityManifest } from "../domain/evidence-synthesis.js";
 
 export type SkillMode = "method" | "script" | "mixed";
 export interface SkillSpec {
@@ -51,5 +52,26 @@ export class SkillCatalog {
       used.push({ name: skill.name, sha256: skill.sha256! });
     }
     return { text, used };
+  }
+
+  capabilityManifests(): CapabilityManifest[] {
+    const useCaseForStage: Record<string, string> = { intake: "scope-question", evidence: "build-evidence-map", hypothesis: "generate-hypothesis-set", plan: "draft-protocol", analysis: "analyze-results", review: "review-claims", report: "write-report" };
+    return this.list().filter((skill) => skill.available).map((skill) => CapabilityManifestSchema.parse({
+      name: skill.name,
+      versionHash: skill.sha256!,
+      mode: skill.mode,
+      supportedUseCases: [...new Set(skill.stages.map((stage) => useCaseForStage[stage] ?? stage))],
+      inputSchema: { type: "object", additionalProperties: true },
+      outputSchema: { type: "object", additionalProperties: true },
+      tools: skill.mode === "method" ? [] : [skill.name],
+      sideEffects: skill.mode === "method" ? ["none"] : ["process", "filesystem_read", ...(skill.name === "anysearch" || skill.name === "paper-search" ? ["network" as const] : [])],
+      requiredEvidence: skill.stages.includes("hypothesis") ? ["frozen EvidenceMap"] : [],
+      budget: { maxCalls: 1, maxWallSeconds: skill.mode === "method" ? 120 : 300 },
+      failureSemantics: skill.name === "paper-search" ? "fail_closed" : "degrade",
+    }));
+  }
+
+  selectCapabilities(useCase: string): CapabilityManifest[] {
+    return this.capabilityManifests().filter((manifest) => manifest.supportedUseCases.includes(useCase));
   }
 }

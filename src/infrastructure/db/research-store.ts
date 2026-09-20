@@ -9,14 +9,14 @@ import {
   type Approval, type Assumption, type AssumptionRegister, type HypothesisSet, type ProtocolDeviation, type ProtocolFreeze,
   type ResearchIntent, type ResearchProgram, type ResearchProtocol, type ResearchQuestion,
   type ResearchProfile, type RunDerivation, type VisibilityEvent, type HypothesisItem,
-  assertAggregateCanFreeze, assertConfirmationAllowed, assertProtocolCanFreeze, hashPayload,
+  assertAggregateCanFreeze, assertConfirmationAllowed, assertHypothesisSetComplete, assertProtocolCanFreeze, hashPayload,
 } from "../../domain/research.js";
 
 export type QuestionDraft = Omit<ResearchQuestion, "id" | "programId" | "version" | "status" | "contentHash" | "supersedesId" | "createdAt"> & { supersedesId?: string | null };
 export type ProtocolDraft = Omit<ResearchProtocol, "id" | "programId" | "questionId" | "version" | "profile" | "status" | "contentHash" | "parentId" | "createdAt" | "assumptionRegisterId" | "hypothesisSetId"> & {
   profile?: ResearchProfile; parentId?: string | null; assumptionRegisterId: string; hypothesisSetId: string;
 };
-export type HypothesisSetDraft = { hypotheses: Array<Omit<HypothesisItem, "id">>; parentId?: string | null };
+export type HypothesisSetDraft = { hypotheses: Array<Omit<HypothesisItem, "id">>; evidenceMapId?: string | null; rivalAbsenceJustification?: string | null; parentId?: string | null };
 export type DeviationRequest = Omit<ProtocolDeviation, "id" | "protocolId" | "approved" | "resolution" | "approvedBy" | "resolvedAt" | "createdAt">;
 
 interface ProgramRow { payload_json: string }
@@ -42,6 +42,26 @@ export function applyMigrationTransaction(db: Database.Database, sql: string): v
   transaction();
 }
 
+export function snapshotArtifactManifest(databasePath: string, backupDir: string, migration: string): string {
+  const root = resolve(dirname(databasePath), "artifacts");
+  const entries: Array<{ path: string; size: number; sha256: string }> = [];
+  const visit = (directory: string): void => {
+    if (!existsSync(directory)) return;
+    for (const name of readdirSync(directory)) {
+      const path = resolve(directory, name);
+      if (statSync(path).isDirectory()) visit(path);
+      else {
+        const digest = createHash("sha256").update(readFileSync(path)).digest("hex");
+        entries.push({ path: relative(root, path), size: statSync(path).size, sha256: digest });
+      }
+    }
+  };
+  visit(root);
+  const target = resolve(backupDir, `artifact-manifest-before-${migration}.json`);
+  writeFileSync(target, JSON.stringify({ schemaVersion: 1, source: root, createdAt: new Date().toISOString(), artifacts: entries }, null, 2) + "\n");
+  return target;
+}
+
 export class ResearchStore {
   private readonly db: Database.Database;
   private readonly backupPath: string | null;
@@ -64,9 +84,9 @@ export class ResearchStore {
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
-    if (version > 4) {
+    if (version > 5) {
       db.close();
-      throw new Error(`Research database ${version} is newer than supported version 4`);
+      throw new Error(`Research database ${version} is newer than supported version 5`);
     }
     let backupPath: string | null = null;
     let artifactManifestPath: string | null = null;
@@ -75,7 +95,7 @@ export class ResearchStore {
       mkdirSync(backupDir, { recursive: true });
       backupPath = resolve(backupDir, `research-before-003-${new Date().toISOString().replaceAll(":", "-")}.db`);
       await db.backup(backupPath);
-      artifactManifestPath = ResearchStore.snapshotArtifacts(path, backupDir, "003");
+      artifactManifestPath = snapshotArtifactManifest(path, backupDir, "003");
     }
     if (version < 3) {
       try { applyMigrationTransaction(db, readFileSync(resolve("migrations/003_research_protocol.sql"), "utf8")); }
@@ -90,7 +110,7 @@ export class ResearchStore {
       const correctiveBackup = resolve(backupDir, `research-before-003b-${new Date().toISOString().replaceAll(":", "-")}.db`);
       await db.backup(correctiveBackup);
       backupPath ??= correctiveBackup;
-      artifactManifestPath ??= ResearchStore.snapshotArtifacts(path, backupDir, "003b");
+      artifactManifestPath ??= snapshotArtifactManifest(path, backupDir, "003b");
       try { applyMigrationTransaction(db, readFileSync(resolve("migrations/003b_research_cognitive_objects.sql"), "utf8")); }
       catch (error) { db.close(); throw error; }
       current = db.pragma("user_version", { simple: true }) as number;
@@ -103,26 +123,6 @@ export class ResearchStore {
 
   migrationBackupPath(): string | null { return this.backupPath; }
   artifactManifestSnapshotPath(): string | null { return this.artifactManifestPath; }
-
-  private static snapshotArtifacts(databasePath: string, backupDir: string, migration: string): string {
-    const root = resolve(dirname(databasePath), "artifacts");
-    const entries: Array<{ path: string; size: number; sha256: string }> = [];
-    const visit = (directory: string): void => {
-      if (!existsSync(directory)) return;
-      for (const name of readdirSync(directory)) {
-        const path = resolve(directory, name);
-        if (statSync(path).isDirectory()) visit(path);
-        else {
-          const digest = createHash("sha256").update(readFileSync(path)).digest("hex");
-          entries.push({ path: relative(root, path), size: statSync(path).size, sha256: digest });
-        }
-      }
-    };
-    visit(root);
-    const target = resolve(backupDir, `artifact-manifest-before-${migration}.json`);
-    writeFileSync(target, JSON.stringify({ schemaVersion: 1, source: root, createdAt: new Date().toISOString(), artifacts: entries }, null, 2) + "\n");
-    return target;
-  }
 
   createProgram(input: unknown, derivedFromId: string | null = null): ResearchProgram {
     const intent = ResearchIntentSchema.parse(input);
@@ -459,6 +459,13 @@ export class ResearchStore {
     const question = this.listQuestions(programId).find((item) => item.status === "selected");
     if (!question) throw new Error("A selected question is required before creating a hypothesis set");
     if (!this.hasApproval(programId, "scope", question.id, question.contentHash)) throw new Error("Scope approval is required before creating a hypothesis set");
+    if (program.profile === "confirmatory") {
+      if (!input.evidenceMapId) throw new Error("Confirmatory hypothesis set requires a frozen EvidenceMap");
+      let evidenceMap: { program_id: string; question_id: string; status: string } | undefined;
+      try { evidenceMap = this.db.prepare("SELECT program_id,question_id,status FROM evidence_maps WHERE id=?").get(input.evidenceMapId) as typeof evidenceMap; }
+      catch { throw new Error("F evidence synthesis migration is required for confirmatory hypotheses"); }
+      if (!evidenceMap || evidenceMap.program_id !== programId || evidenceMap.question_id !== question.id || evidenceMap.status !== "frozen") throw new Error("Confirmatory hypothesis set requires this program's frozen EvidenceMap");
+    }
     const existingSets = this.hypothesisSets(programId).filter((set) => set.questionId === question.id);
     const latestSet = existingSets.at(-1);
     if (latestSet && input.parentId !== latestSet.id) throw new Error("A new hypothesis set version must name the latest set as parent");
@@ -472,7 +479,7 @@ export class ResearchStore {
       if (HypothesisSetSchema.parse(JSON.parse(parentRow.payload_json)).status !== "frozen") throw new Error("Hypothesis set parent must be frozen before superseding");
     }
     const latest = this.db.prepare("SELECT max(version) version FROM research_hypothesis_sets WHERE program_id=?").get(programId) as { version: number | null };
-    const body = { hypotheses, parentId: input.parentId ?? null };
+    const body = { hypotheses, evidenceMapId: input.evidenceMapId ?? null, rivalAbsenceJustification: input.rivalAbsenceJustification ?? null, parentId: input.parentId ?? null };
     const set = HypothesisSetSchema.parse({ id: `hypothesis-set-${randomUUID()}`, programId, questionId: question.id, version: (latest.version ?? 0) + 1, status: "draft", ...body, contentHash: hashPayload(body), createdAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {
       if (input.parentId) this.db.prepare("UPDATE research_hypothesis_sets SET status='superseded', payload_json=json_set(payload_json,'$.status','superseded') WHERE id=?").run(input.parentId);
@@ -489,7 +496,8 @@ export class ResearchStore {
     if (!row) throw new Error("Hypothesis set does not belong to program");
     const set = HypothesisSetSchema.parse(JSON.parse(row.payload_json));
     assertAggregateCanFreeze(set.status);
-    const frozen = { ...set, status: "frozen" as const };
+    assertHypothesisSetComplete(set);
+    const frozen = { ...set, status: "frozen" as const, hypotheses: set.hypotheses.map((item) => ({ ...item, status: item.status === "proposed" || item.status === "testable" ? "active" as const : item.status })) };
     this.db.prepare("UPDATE research_hypothesis_sets SET status=?,payload_json=? WHERE id=?").run(frozen.status, JSON.stringify(frozen), frozen.id);
     return frozen;
   }

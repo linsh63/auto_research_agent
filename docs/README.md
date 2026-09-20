@@ -37,6 +37,7 @@ docs/
 ### 架构与配置
 
 - [ADR 001：A 阶段检索 backend](architecture/decisions/001-a-retrieval-backend.md)
+- [ADR 003：F 证据综合与能力契约](architecture/decisions/003-f-evidence-synthesis-and-capabilities.md)
 - [模型 Provider 配置](guides/model-providers.md)
 
 ### 研究案例
@@ -61,6 +62,7 @@ docs/
 - [v1.2.0-alpha.1-r2：E 最终复验](reports/releases/v1.2.0-alpha.1-r2-report.md)
 - [v1.2.0-alpha.1-r2：E 第三次验收整改清单](reports/releases/v1.2.0-alpha.1-r2-e-reacceptance-improvements.md)
 - [v1.2.0-alpha.1-r3：E 最终验收](reports/releases/v1.2.0-alpha.1-r3-report.md)
+- [v1.2.0-alpha.2：F 证据综合与竞争假设](reports/releases/v1.2.0-alpha.2-report.md)
 
 ### 自动验证产物
 

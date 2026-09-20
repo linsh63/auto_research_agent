@@ -110,20 +110,24 @@
     },
     "hypothesisItem": {
       "type": "object",
-      "required": ["id", "kind", "statement", "prediction", "falsification", "evidenceIds"],
+      "required": ["id", "kind", "status", "statement", "prediction", "falsification", "assumptionIds", "discriminatingObservations", "updateRules", "evidenceIds"],
       "properties": {
-        "id": { "type": "string" }, "kind": { "enum": ["target", "null", "rival"] }, "statement": { "type": "string", "minLength": 20 },
+        "id": { "type": "string" }, "kind": { "enum": ["target", "null", "rival"] }, "status": { "enum": ["proposed", "testable", "active", "weakened", "supported", "refuted", "unresolved"] }, "statement": { "type": "string", "minLength": 20 },
         "prediction": { "type": "string", "minLength": 10 }, "falsification": { "type": "string", "minLength": 10 },
+        "assumptionIds": { "type": "array", "items": { "type": "string" } },
+        "discriminatingObservations": { "type": "array", "items": { "type": "string", "minLength": 10 } },
+        "updateRules": { "type": "array", "items": { "type": "object", "required": ["observation", "effect", "rationale"], "properties": { "observation": { "type": "string" }, "effect": { "enum": ["strengthen", "weaken", "refute", "no_change"] }, "rationale": { "type": "string" } }, "additionalProperties": false } },
         "evidenceIds": { "type": "array", "items": { "type": "string" } }
       },
       "additionalProperties": false
     },
     "hypothesisSet": {
       "type": "object",
-      "required": ["id", "programId", "questionId", "version", "status", "hypotheses", "contentHash", "createdAt"],
+      "required": ["id", "programId", "questionId", "evidenceMapId", "version", "status", "hypotheses", "rivalAbsenceJustification", "contentHash", "createdAt"],
       "properties": {
-        "id": { "type": "string" }, "programId": { "type": "string" }, "questionId": { "type": "string" }, "version": { "type": "integer", "minimum": 1 },
+        "id": { "type": "string" }, "programId": { "type": "string" }, "questionId": { "type": "string" }, "evidenceMapId": { "type": ["string", "null"] }, "version": { "type": "integer", "minimum": 1 },
         "status": { "enum": ["draft", "frozen", "superseded"] }, "hypotheses": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/hypothesisItem" } },
+        "rivalAbsenceJustification": { "type": ["string", "null"] },
         "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "parentId": { "type": ["string", "null"] }, "createdAt": { "type": "string" }
       },
       "additionalProperties": false

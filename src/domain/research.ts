@@ -89,9 +89,17 @@ export type AssumptionRegister = z.infer<typeof AssumptionRegisterSchema>;
 export const HypothesisItemSchema = z.object({
   id: z.string().min(1),
   kind: z.enum(["target", "null", "rival"]),
+  status: z.enum(["proposed", "testable", "active", "weakened", "supported", "refuted", "unresolved"]).default("proposed"),
   statement: z.string().min(20),
   prediction: z.string().min(10),
   falsification: z.string().min(10),
+  assumptionIds: z.array(z.string()).default([]),
+  discriminatingObservations: z.array(z.string().min(10)).default([]),
+  updateRules: z.array(z.object({
+    observation: z.string().min(10),
+    effect: z.enum(["strengthen", "weaken", "refute", "no_change"]),
+    rationale: z.string().min(10),
+  })).default([]),
   evidenceIds: z.array(z.string()).default([]),
 });
 export type HypothesisItem = z.infer<typeof HypothesisItemSchema>;
@@ -100,14 +108,25 @@ export const HypothesisSetSchema = z.object({
   id: z.string().min(1),
   programId: z.string().min(1),
   questionId: z.string().min(1),
+  evidenceMapId: z.string().nullable().default(null),
   version: z.number().int().positive(),
   status: z.enum(["draft", "frozen", "superseded"]),
   hypotheses: z.array(HypothesisItemSchema).min(2),
+  rivalAbsenceJustification: z.string().min(10).nullable().default(null),
   contentHash: z.string().regex(/^[a-f0-9]{64}$/),
   parentId: z.string().nullable().default(null),
   createdAt: z.string(),
 });
 export type HypothesisSet = z.infer<typeof HypothesisSetSchema>;
+
+export function assertHypothesisSetComplete(set: HypothesisSet): void {
+  if (!set.hypotheses.some((item) => item.kind === "target")) throw new Error("Hypothesis set requires a target hypothesis");
+  if (!set.hypotheses.some((item) => item.kind === "null")) throw new Error("Hypothesis set requires a null hypothesis");
+  if (!set.hypotheses.some((item) => item.kind === "rival") && !set.rivalAbsenceJustification) throw new Error("Hypothesis set requires a rival or a justified absence");
+  for (const item of set.hypotheses) {
+    if (!item.discriminatingObservations.length || !item.updateRules.length) throw new Error(`Hypothesis ${item.id} requires discriminating observations and update rules`);
+  }
+}
 
 export const ResearchProtocolSchema = z.object({
   id: z.string().min(1),

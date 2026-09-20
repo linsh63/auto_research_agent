@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-research-agent.local/schemas/research/evidence-synthesis.v1.json",
+  "title": "Evidence synthesis objects",
+  "type": "object",
+  "$defs": {
+    "searchProtocol": {
+      "type": "object",
+      "required": ["id", "programId", "questionId", "version", "status", "queryFamilies", "databases", "inclusionCriteria", "exclusionCriteria", "stopConditions", "contentHash", "createdAt"],
+      "properties": {
+        "id": { "type": "string" }, "programId": { "type": "string" }, "questionId": { "type": "string" }, "version": { "type": "integer", "minimum": 1 },
+        "status": { "enum": ["draft", "frozen", "superseded"] }, "queryFamilies": { "type": "array", "minItems": 3 }, "databases": { "type": "array", "minItems": 1 },
+        "startYear": { "type": ["integer", "null"] }, "endYear": { "type": ["integer", "null"] }, "inclusionCriteria": { "type": "array", "minItems": 1 },
+        "exclusionCriteria": { "type": "array", "minItems": 1 }, "stopConditions": { "type": "array", "minItems": 1 },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "parentId": { "type": ["string", "null"] }, "createdAt": { "type": "string" }
+      }, "additionalProperties": false
+    },
+    "screeningDecision": {
+      "type": "object",
+      "required": ["id", "searchProtocolId", "sourceId", "decision", "reason", "actor", "sourceVersionHash", "createdAt"],
+      "properties": { "id": { "type": "string" }, "searchProtocolId": { "type": "string" }, "sourceId": { "type": "string" }, "documentVersionId": { "type": ["string", "null"] }, "decision": { "enum": ["include", "exclude", "review"] }, "reason": { "type": "string" }, "actor": { "type": "string" }, "sourceVersionHash": { "type": "string" }, "createdAt": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "evidenceMap": {
+      "type": "object",
+      "required": ["id", "programId", "questionId", "searchProtocolId", "version", "status", "coverageStatus", "noveltyStatus", "contentHash", "createdAt"],
+      "properties": { "id": { "type": "string" }, "programId": { "type": "string" }, "questionId": { "type": "string" }, "searchProtocolId": { "type": "string" }, "version": { "type": "integer", "minimum": 1 }, "status": { "enum": ["draft", "frozen", "superseded"] }, "coverageStatus": { "enum": ["complete", "incomplete"] }, "noveltyStatus": { "enum": ["unresolved", "likely_overlap", "supported_with_scope"] }, "noveltyScope": { "type": ["string", "null"] }, "contentHash": { "type": "string" }, "parentId": { "type": ["string", "null"] }, "createdAt": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "evidenceMapEntry": {
+      "type": "object",
+      "required": ["id", "mapId", "sourceId", "relation", "topic", "summary", "evidenceLevel", "critical", "createdAt"],
+      "properties": { "id": { "type": "string" }, "mapId": { "type": "string" }, "claimId": { "type": ["string", "null"] }, "sourceId": { "type": "string" }, "passageId": { "type": ["string", "null"] }, "relation": { "enum": ["premise_support", "direct_result", "background", "refutation", "uncertain"] }, "topic": { "enum": ["problem", "method", "dataset", "metric", "result", "limitation", "novelty"] }, "summary": { "type": "string" }, "evidenceLevel": { "enum": ["full_text", "abstract", "metadata"] }, "critical": { "type": "boolean" }, "createdAt": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "capabilityManifest": {
+      "type": "object",
+      "required": ["name", "versionHash", "mode", "supportedUseCases", "inputSchema", "outputSchema", "tools", "sideEffects", "requiredEvidence", "budget", "failureSemantics"],
+      "properties": { "name": { "type": "string" }, "versionHash": { "type": "string" }, "mode": { "enum": ["method", "script", "mixed"] }, "supportedUseCases": { "type": "array" }, "inputSchema": { "type": "object" }, "outputSchema": { "type": "object" }, "tools": { "type": "array" }, "sideEffects": { "type": "array" }, "requiredEvidence": { "type": "array" }, "budget": { "type": "object" }, "failureSemantics": { "enum": ["fail_closed", "degrade", "skip"] } },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "searchProtocol": { "$ref": "#/$defs/searchProtocol" },
+    "screeningDecision": { "$ref": "#/$defs/screeningDecision" },
+    "evidenceMap": { "$ref": "#/$defs/evidenceMap" },
+    "evidenceMapEntry": { "$ref": "#/$defs/evidenceMapEntry" },
+    "capabilityManifest": { "$ref": "#/$defs/capabilityManifest" }
+  }
+}
