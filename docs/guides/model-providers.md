@@ -23,7 +23,7 @@ pi 支持的配置协议包括 OpenAI Chat Completions、OpenAI Responses、Anth
 
 ## DeepSeek 示例
 
-[models.deepseek.json](../examples/models.deepseek.json)使用 DeepSeek 官方 OpenAI 格式 endpoint，并配置当前低价模型 `deepseek-flash`。示例关闭 thinking，适合连通性检查和低成本阶段任务。
+[models.deepseek.json](../../examples/models.deepseek.json)使用 DeepSeek 官方 OpenAI 格式 endpoint，并配置当前低价模型 `deepseek-flash`。示例关闭 thinking，适合连通性检查和低成本阶段任务。
 
 ```bash
 export AUTO_RESEARCH_MODELS_PATH=examples/models.deepseek.json

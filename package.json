@@ -13,6 +13,7 @@
     "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "prepare:fasttext": "python3 scripts/prepare_fasttext_agnews.py",
     "validate:skills": "python3 scripts/validate_skills.py",
+    "check:docs": "python3 scripts/check_docs.py",
     "validate:cv": "tsx scripts/validate_cv_scenario.ts",
     "probe:pi": "tsx scripts/pi_sdk_probe.ts"
   },

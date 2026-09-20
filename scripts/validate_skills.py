@@ -100,7 +100,7 @@ def main() -> None:
 
     report = {"schemaVersion": 1, "skillRoot": str(ROOT), "records": records,
               "ready": sum(r["status"] == "ready" for r in records), "total": len(records)}
-    output = PROJECT / "docs" / "skill-validation.json"
+    output = PROJECT / "docs" / "reports" / "validation" / "skill-validation.json"
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({"ready": report["ready"], "total": report["total"], "report": str(output)}))
     if report["ready"] != report["total"]:

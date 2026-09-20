@@ -12,19 +12,19 @@ V1 规划中的最小科研闭环已经实现并通过一个真实公开 AI 案�
 
 | 规划项目 | 实现与验收证据 | 状态 |
 | --- | --- | --- |
-| pi SDK 技术底座 | 固定 `@earendil-works/pi-coding-agent` 0.85.1；通过 OpenAI 兼容接口使用 `gpt-5.6-luna`；[探针记录](pi-sdk-probe.json)验证一次自定义工具执行、生命周期事件、4 条消息的持久会话恢复与活动请求取消 | 完成 |
+| pi SDK 技术底座 | 固定 `@earendil-works/pi-coding-agent` 0.85.1；通过 OpenAI 兼容接口使用 `gpt-5.6-luna`；[探针记录](../validation/pi-sdk-probe.json)验证一次自定义工具执行、生命周期事件、4 条消息的持久会话恢复与活动请求取消 | 完成 |
 | 核心骨架 | TypeScript CLI、Zod 契约、阶段状态机、SQLite WAL 账本、事件和文件产物 | 完成 |
 | 人工决策 | 实验计划审批、计划修订、审查响应、最终结论审批 | 完成 |
 | 受控实验 | 进程或无网络 Docker 模式；超时、输出上限、有限环境变量、密钥变量拦截 | 完成 |
 | 记忆与恢复 | 阶段产物写入账本后再转移；真实案例在 `review` 阶段中断后只补审查，没有重跑实验 | 完成 |
 | 证据链 | 来源 ID、访问时间、检索范围、模型输入输出、skill 哈希、实验代码快照和 SHA-256 | 完成 |
-| Skills 接入 | 14/14 能力已登记并通过离线验证；方法类验证可加载，脚本类做语法检查，AnySearch、paper-search 和 idea-spark 运行自检 | 完成，详见 [验证记录](skill-validation.json) |
+| Skills 接入 | 14/14 能力已登记并通过离线验证；方法类验证可加载，脚本类做语法检查，AnySearch、paper-search 和 idea-spark 运行自检 | 完成，详见 [验证记录](../validation/skill-validation.json) |
 | 可靠性 | 自动测试覆盖双审批门、计划修订、审查响应、引用 ID 校验、恢复、模型调用预算、实验超时和密钥环境变量拦截 | 完成 |
 | 真实案例 | fastText v0.9.2 + 完整 AG News 公开划分，三个预设配对种子，对照 unigram 与 bigram | 完成 |
 
 ## 真实案例结果
 
-案例协议见 [fastText AG News 方法检查](cases/fasttext-agnews.md)。运行 ID 为 `b496c6dd-4da3-4322-8dc5-0afd26f36596`，最终状态为 `done`，共使用 6 次模型调用。数据和模型保存在忽略版本控制的 `.research-data/`。
+案例协议见 [fastText AG News 方法检查](../../cases/fasttext-agnews.md)。运行 ID 为 `b496c6dd-4da3-4322-8dc5-0afd26f36596`，最终状态为 `done`，共使用 6 次模型调用。数据和模型保存在忽略版本控制的 `.research-data/`。
 
 - unigram 基线平均 accuracy：`0.9093859649`
 - bigram 候选平均 accuracy：`0.9190789474`

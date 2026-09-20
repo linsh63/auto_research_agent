@@ -4,17 +4,17 @@
 
 ## 当前阶段
 
-V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实验搜索和D第二场景均已完成本地profile验收。D 使用 scikit-learn Digits 图像分类验证同一核心流程可以接入CV任务，详情见 [v1.1.0发布报告](docs/releases/v1.1.0-report.md)。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。
+V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实验搜索和D第二场景均已完成本地profile验收。D 使用 scikit-learn Digits 图像分类验证同一核心流程可以接入CV任务，详情见 [v1.1.0发布报告](docs/reports/releases/v1.1.0-report.md)。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。
 
-[下一阶段备选方案](docs/next-stage-options.md)列出证据系统、长期记忆、自动实验迭代、第二场景验证和本地模型五条路线，供选择 V2 主目标。
+[文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 
-[v1.1 实施规划](docs/v1.1-plan.md)记录 A、B、C 三阶段及完成后增补的 D 阶段架构、资源墙和验收门禁。
+[v1.1 实施规划](docs/planning/v1.1-plan.md)记录 A、B、C 三阶段及完成后增补的 D 阶段架构、资源墙和验收门禁。
 
-[总体规划（第一版）](docs/v1-plan.md)记录了已确认的目标、基于 pi SDK 的架构、skills 接入方式、实施顺序和暂缓的决策。
+[总体规划（第一版）](docs/planning/v1-plan.md)记录了已确认的目标、基于 pi SDK 的架构、skills 接入方式、实施顺序和暂缓的决策。
 
 ## 运行原型
 
-需要 Node.js 22.19+。模型通过 pi 原生 provider catalog 或 `models.json` 配置；[模型 Provider 配置](docs/model-providers.md)说明内置 provider、自定义 API 和凭据入口。`AUTO_RESEARCH_API_KEY` 可作为不落盘的临时 runtime key；也可以使用 pi `models.json` 的环境变量凭据语法。未提供 provider 配置时，旧快捷配置仍默认使用 `https://newapi.x-era.com/v1` 的 `gpt-5.6-luna`。
+需要 Node.js 22.19+。模型通过 pi 原生 provider catalog 或 `models.json` 配置；[模型 Provider 配置](docs/guides/model-providers.md)说明内置 provider、自定义 API 和凭据入口。`AUTO_RESEARCH_API_KEY` 可作为不落盘的临时 runtime key；也可以使用 pi `models.json` 的环境变量凭据语法。未提供 provider 配置时，旧快捷配置仍默认使用 `https://newapi.x-era.com/v1` 的 `gpt-5.6-luna`。
 
 ```bash
 npm ci
@@ -33,7 +33,7 @@ node dist/cli.js finalize <run-id>  # 审核最终报告后运行
 
 `new` 会打印 run ID。研究状态保存在 `.research-data/research.db`，实验日志和报告保存在 `.research-data/runs/<run-id>/`。`node dist/cli.js skills` 列出已登记技能及文件哈希。`npm run check` 与 `npm test` 用于类型检查和离线流程验证。
 
-`npm run probe:pi` 使用一次工具调用和一次立即取消的请求，验证 pi SDK 的自定义工具、事件流、持久会话恢复和取消；结果写入 [pi-sdk-probe.json](docs/pi-sdk-probe.json)。该命令需要模型 API，并会产生少量用量。
+`npm run probe:pi` 使用一次工具调用和一次立即取消的请求，验证 pi SDK 的自定义工具、事件流、持久会话恢复和取消；结果写入 [pi-sdk-probe.json](docs/reports/validation/pi-sdk-probe.json)。该命令需要模型 API，并会产生少量用量。
 
 合成回归示例只用于检查 pipeline。真实验收案例使用 fastText v0.9.2 和完整 AG News 公开划分，协议见 [案例说明](docs/cases/fasttext-agnews.md)。两者都显式选择 `process` 执行模式，只应运行可信脚本。其他任务默认使用 `docker`，需指定 `dockerImage`；容器关闭网络并限制进程数、CPU 和内存。
 

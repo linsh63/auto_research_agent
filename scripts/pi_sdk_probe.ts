@@ -74,5 +74,5 @@ if (!cancelled) throw new Error("Active prompt cancellation was not recorded as 
 const report = { schemaVersion: 1, model: `probe/${modelId}`, toolExecutions,
   eventTypes: [...new Set(events)].sort(), sessionFile: relative(process.cwd(), sessionFile),
   messageCount, restoredMessages, cancelled };
-writeFileSync("docs/pi-sdk-probe.json", JSON.stringify(report, null, 2) + "\n");
+writeFileSync("docs/reports/validation/pi-sdk-probe.json", JSON.stringify(report, null, 2) + "\n");
 console.log(JSON.stringify(report));
