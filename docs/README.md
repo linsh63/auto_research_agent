@@ -18,7 +18,7 @@ docs/
 
 ## 推荐阅读顺序
 
-1. [v1.2 科研真实性迭代方案](planning/v1.2-research-fidelity-plan.md)：下一版本的差距分析、目标流程和实施优先级。
+1. [v1.2 完整实施规划](planning/v1.2-plan.md)：下一版本的确定决策、任务顺序、验收案例和发布门禁。
 2. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
 3. [V1 阶段总结](reports/stages/v1-summary.md)：最小科研闭环的实际完成情况。
 4. [v1.1 实施规划](planning/v1.1-plan.md)：证据、记忆、实验搜索和第二场景的完整设计。
@@ -31,7 +31,7 @@ docs/
 
 - [V1 总体规划](planning/v1-plan.md)
 - [v1.1 实施规划](planning/v1.1-plan.md)
-- [v1.2 科研真实性迭代方案](planning/v1.2-research-fidelity-plan.md)
+- [v1.2 完整实施规划](planning/v1.2-plan.md)
 - [下一阶段备选方案](planning/next-stage-options.md)
 
 ### 架构与配置
