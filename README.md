@@ -4,11 +4,11 @@
 
 ## 当前阶段
 
-V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆和C有界实验搜索已完成本地profile重新验收。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。详细证据与限制见[A–C重新验收报告](docs/releases/abc-revalidation-report.md)。
+V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实验搜索和D第二场景均已完成本地profile验收。D 使用 scikit-learn Digits 图像分类验证同一核心流程可以接入CV任务，详情见 [v1.1.0发布报告](docs/releases/v1.1.0-report.md)。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。
 
 [下一阶段备选方案](docs/next-stage-options.md)列出证据系统、长期记忆、自动实验迭代、第二场景验证和本地模型五条路线，供选择 V2 主目标。
 
-[v1.1 实施规划](docs/v1.1-plan.md)已经确定 A、B、C 三阶段的架构、数据、依赖、资源墙、任务顺序和验收门禁。D 阶段延期到 `v1.0.3` 完成后重新规划。
+[v1.1 实施规划](docs/v1.1-plan.md)记录 A、B、C 三阶段及完成后增补的 D 阶段架构、资源墙和验收门禁。
 
 [总体规划（第一版）](docs/v1-plan.md)记录了已确认的目标、基于 pi SDK 的架构、skills 接入方式、实施顺序和暂缓的决策。
 
@@ -39,6 +39,8 @@ node dist/cli.js finalize <run-id>  # 审核最终报告后运行
 
 `paper-search`和PaperQA2 worker均已接入；其余技能按方法或混合适配进入相关阶段。`npm run validate:skills`对全部14项能力做离线检查。模型调用次数、单次运行时长和实验超时已有硬上限。跨项目记忆已实现但默认关闭，需设置`AUTO_RESEARCH_MEMORY_ENABLED=1`；best-first搜索仍属experimental。
 
+第二场景可用 `npm run validate:cv` 免费重放。它会运行真实 Digits baseline/candidate，并用确定性审计 adapter 驱动语言阶段和两个人工门，最终产物写入忽略提交的 `.research-data/cases/sklearn-digits/`。当前机器没有 Docker daemon 权限，因此该案例登记为 local-process profile。
+
 ## 科研链路
 
 1. **定义问题**：明确研究范围、资源约束、成功指标和不成立的条件。
@@ -55,7 +57,7 @@ node dist/cli.js finalize <run-id>  # 审核最终报告后运行
 
 - 改善论文全文、引用段落定位和检索相关性。
 - 根据真实运行失败模式设计跨项目记忆与经验提炼。
-- 接入第二种研究场景，检验核心接口的通用性。
+- 扩展更多研究场景，继续检验核心接口的通用性。
 - 在获得可信计费信息后加入金额预算。
 
-首版先验证 pipeline；跨项目记忆、更多研究场景和探索策略在真实运行记录积累后迭代。
+当前版本已验证文本与小型CV pipeline；跨项目记忆收益、更多研究场景和探索策略随真实运行记录继续迭代。

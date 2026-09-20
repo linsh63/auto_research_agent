@@ -1,0 +1,47 @@
+{
+  "title": "Digits one-pixel translation augmentation check",
+  "question": "With the classifier and paired stratified splits held constant, does four-direction one-pixel translation augmentation improve mean accuracy on scikit-learn Digits images?",
+  "domain": "AI / computer vision",
+  "keywords": ["image classification", "data augmentation", "translation invariance", "scikit-learn digits", "support vector machine"],
+  "startYear": 1998,
+  "endYear": 2026,
+  "seedSources": [
+    {
+      "title": "Optical Recognition of Handwritten Digits dataset",
+      "url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "year": 1998,
+      "authors": ["E. Alpaydin", "C. Kaynak"],
+      "abstract": "The public dataset contains normalized 8 by 8 handwritten digit images. The experiment uses the copy distributed with scikit-learn.",
+      "origin": "dataset-primary"
+    },
+    {
+      "title": "scikit-learn load_digits documentation",
+      "url": "https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_digits.html",
+      "year": 2026,
+      "abstract": "Official API documentation for the packaged 1,797-sample, 8 by 8 Digits dataset.",
+      "origin": "official-documentation"
+    },
+    {
+      "title": "A survey on Image Data Augmentation for Deep Learning",
+      "url": "https://doi.org/10.1186/s40537-019-0197-0",
+      "year": 2019,
+      "authors": ["Connor Shorten", "Taghi M. Khoshgoftaar"],
+      "abstract": "The survey describes geometric transformations, including translations, as image augmentation methods and discusses their assumptions and limitations.",
+      "origin": "primary-paper"
+    }
+  ],
+  "experiment": {
+    "workspace": "examples/sklearn-digits",
+    "baseline": { "program": "python3", "args": ["experiment.py", "baseline"] },
+    "candidate": { "program": "python3", "args": ["experiment.py", "candidate"] },
+    "metric": "accuracy",
+    "direction": "maximize",
+    "seed": 11,
+    "pairedSeeds": [11, 23, 47, 73, 101],
+    "protocol": "For each of five predeclared seeds, make the same stratified 75/25 holdout for both variants. Fit the same RBF SVC (C=5, gamma=scale). The baseline uses original training images; the candidate adds four one-pixel translations of every training image. Report every paired split and the mean. Do not tune on any holdout result.",
+    "successCriterion": "The bounded hypothesis is supported only if candidate mean accuracy is greater than baseline mean accuracy across the five paired holdouts. Report all paired differences, including zero and negative differences. This repeated-holdout result is descriptive and does not establish significance or generalize beyond this dataset and classifier.",
+    "execution": "process"
+  },
+  "limits": { "maxModelCalls": 6, "maxWallMinutes": 10, "maxExperimentSeconds": 120, "maxIterations": 1 },
+  "publicMaterialsOnly": true
+}
