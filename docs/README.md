@@ -59,6 +59,7 @@ docs/
 - [v1.2.0-alpha.1-r1：E 整改复验](reports/releases/v1.2.0-alpha.1-r1-report.md)
 - [v1.2.0-alpha.1-r1：E 第二次验收整改清单](reports/releases/v1.2.0-alpha.1-r1-e-reacceptance-improvements.md)
 - [v1.2.0-alpha.1-r2：E 最终复验](reports/releases/v1.2.0-alpha.1-r2-report.md)
+- [v1.2.0-alpha.1-r2：E 第三次验收整改清单](reports/releases/v1.2.0-alpha.1-r2-e-reacceptance-improvements.md)
 
 ### 自动验证产物
 
