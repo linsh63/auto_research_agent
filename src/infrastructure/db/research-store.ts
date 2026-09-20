@@ -9,12 +9,13 @@ import {
   type Approval, type Assumption, type AssumptionRegister, type HypothesisSet, type ProtocolDeviation, type ProtocolFreeze,
   type ResearchIntent, type ResearchProgram, type ResearchProtocol, type ResearchQuestion,
   type ResearchProfile, type RunDerivation, type VisibilityEvent, type HypothesisItem,
-  assertConfirmationAllowed, assertProtocolCanFreeze, hashPayload,
+  assertAggregateCanFreeze, assertConfirmationAllowed, assertProtocolCanFreeze, hashPayload,
 } from "../../domain/research.js";
 
 export type QuestionDraft = Omit<ResearchQuestion, "id" | "programId" | "version" | "status" | "contentHash" | "supersedesId" | "createdAt"> & { supersedesId?: string | null };
 export type ProtocolDraft = Omit<ResearchProtocol, "id" | "programId" | "questionId" | "version" | "profile" | "status" | "contentHash" | "parentId" | "createdAt"> & { profile?: ResearchProfile; parentId?: string | null };
 export type HypothesisSetDraft = { hypotheses: Array<Omit<HypothesisItem, "id">>; parentId?: string | null };
+export type DeviationRequest = Omit<ProtocolDeviation, "id" | "protocolId" | "approved" | "resolution" | "approvedBy" | "resolvedAt" | "createdAt">;
 
 interface ProgramRow { payload_json: string }
 interface QuestionRow { payload_json: string }
@@ -32,6 +33,11 @@ export interface ResearchStatus {
   deviations: ProtocolDeviation[];
   derivations: RunDerivation[];
   visibility: VisibilityEvent[];
+}
+
+export function applyMigrationTransaction(db: Database.Database, sql: string): void {
+  const transaction = db.transaction(() => db.exec(sql));
+  transaction();
 }
 
 export class ResearchStore {
@@ -70,7 +76,8 @@ export class ResearchStore {
       artifactManifestPath = ResearchStore.snapshotArtifacts(path, backupDir, "003");
     }
     if (version < 3) {
-      db.exec(readFileSync(resolve("migrations/003_research_protocol.sql"), "utf8"));
+      try { applyMigrationTransaction(db, readFileSync(resolve("migrations/003_research_protocol.sql"), "utf8")); }
+      catch (error) { db.close(); throw error; }
       const migrated = db.pragma("user_version", { simple: true }) as number;
       if (migrated !== 3) { db.close(); throw new Error(`Research migration 003 did not reach schema version 3 (got ${migrated})`); }
     }
@@ -82,7 +89,8 @@ export class ResearchStore {
       await db.backup(correctiveBackup);
       backupPath ??= correctiveBackup;
       artifactManifestPath ??= ResearchStore.snapshotArtifacts(path, backupDir, "003b");
-      db.exec(readFileSync(resolve("migrations/003b_research_cognitive_objects.sql"), "utf8"));
+      try { applyMigrationTransaction(db, readFileSync(resolve("migrations/003b_research_cognitive_objects.sql"), "utf8")); }
+      catch (error) { db.close(); throw error; }
       current = db.pragma("user_version", { simple: true }) as number;
       if (current !== 4) { db.close(); throw new Error(`Research migration 003b did not reach schema version 4 (got ${current})`); }
     }
@@ -227,6 +235,12 @@ export class ResearchStore {
     const question = this.listQuestions(programId).find((item) => item.status === "selected");
     if (!question) throw new Error("A selected question is required before protocol drafting");
     if (!this.hasApproval(programId, "scope", question.id, question.contentHash)) throw new Error("Scope approval is required before protocol drafting");
+    if (!this.assumptionRegisters(programId).some((register) => register.questionId === question.id && register.status === "frozen")) {
+      throw new Error("A frozen assumption register is required before protocol drafting");
+    }
+    if (!this.hypothesisSets(programId).some((set) => set.questionId === question.id && set.status === "frozen")) {
+      throw new Error("A frozen hypothesis set is required before protocol drafting");
+    }
     const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
     const body = { ...input, profile: input.profile ?? program.profile, parentId: input.parentId ?? null };
     const protocol = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: question.id, version: (latest.version ?? 0) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
@@ -286,26 +300,38 @@ export class ResearchStore {
     return freeze;
   }
 
-  recordDeviation(programId: string, input: Omit<ProtocolDeviation, "id" | "protocolId" | "createdAt" | "resolution">): ProtocolDeviation {
+  recordDeviation(programId: string, input: DeviationRequest): ProtocolDeviation {
     const program = this.getProgram(programId);
     this.assertProgramMutable(programId);
     const protocol = this.listProtocols(programId).at(-1);
     if (!protocol || protocol.status !== "frozen") throw new Error("A frozen protocol is required before recording a deviation");
-    const deviation = ProtocolDeviationSchema.parse({ ...input, id: `deviation-${randomUUID()}`, protocolId: protocol.id, resolution: input.approved ? "approved" : "pending", createdAt: new Date().toISOString() });
+    const deviation = ProtocolDeviationSchema.parse({ ...input, id: `deviation-${randomUUID()}`, protocolId: protocol.id, approved: false, resolution: "pending", approvedBy: null, resolvedBy: null, resolvedAt: null, createdAt: new Date().toISOString() });
+    this.db.prepare("INSERT INTO protocol_deviations(id,protocol_id,payload_json,created_at) VALUES(?,?,?,?)").run(deviation.id, deviation.protocolId, JSON.stringify(deviation), deviation.createdAt);
+    return deviation;
+  }
+
+  approveDeviation(programId: string, deviationId: string, revisedInput: ProtocolDraft, actor = "researcher"): { deviation: ProtocolDeviation; protocol: ResearchProtocol } {
+    const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
+    const row = this.db.prepare("SELECT payload_json FROM protocol_deviations WHERE id=?").get(deviationId) as ProgramRow | undefined;
+    if (!row) throw new Error(`Unknown protocol deviation ${deviationId}`);
+    const deviation = ProtocolDeviationSchema.parse(JSON.parse(row.payload_json));
+    const original = this.getProtocol(deviation.protocolId);
+    if (original.programId !== programId) throw new Error("Deviation does not belong to program");
+    if (original.status !== "frozen") throw new Error("Deviation approval requires the original protocol to remain frozen");
+    if (deviation.resolution !== "pending") throw new Error(`Deviation is already ${deviation.resolution}`);
+    const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
+    const body = { ...revisedInput, profile: revisedInput.profile ?? program.profile, parentId: original.id };
+    const revised = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: original.questionId, version: (latest.version ?? original.version) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
+    const resolved = ProtocolDeviationSchema.parse({ ...deviation, approved: true, resolution: "approved", approvedBy: actor, resolvedBy: actor, resolvedAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {
-      this.db.prepare("INSERT INTO protocol_deviations(id,protocol_id,payload_json,created_at) VALUES(?,?,?,?)").run(deviation.id, deviation.protocolId, JSON.stringify(deviation), deviation.createdAt);
-      if (deviation.approved) {
-        const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
-        const body = { ...protocol, status: undefined, id: undefined, version: undefined, contentHash: undefined, parentId: protocol.id, createdAt: undefined,
-          allowedChanges: [...protocol.allowedChanges, `Approved deviation request: ${deviation.requestedChange}`] };
-        const revised = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, version: (latest.version ?? protocol.version) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
-        this.db.prepare("INSERT INTO research_protocols(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
-          .run(revised.id, revised.programId, revised.questionId, revised.version, revised.status, JSON.stringify(revised), revised.contentHash, revised.parentId, revised.createdAt);
-        this.updateProgram({ ...program, status: "protocol_ready" });
-      }
+      this.db.prepare("INSERT INTO research_protocols(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
+        .run(revised.id, revised.programId, revised.questionId, revised.version, revised.status, JSON.stringify(revised), revised.contentHash, revised.parentId, revised.createdAt);
+      this.db.prepare("UPDATE protocol_deviations SET payload_json=? WHERE id=?").run(JSON.stringify(resolved), resolved.id);
+      this.updateProgram({ ...program, status: "protocol_ready" });
     });
     tx();
-    return deviation;
+    return { deviation: resolved, protocol: revised };
   }
 
   rejectDeviation(programId: string, deviationId: string, actor = "researcher"): ProtocolDeviation {
@@ -316,7 +342,7 @@ export class ResearchStore {
     const protocol = this.getProtocol(deviation.protocolId);
     if (protocol.programId !== programId) throw new Error("Deviation does not belong to program");
     if (deviation.resolution !== "pending") throw new Error(`Deviation is already ${deviation.resolution}`);
-    const resolved = ProtocolDeviationSchema.parse({ ...deviation, resolution: "rejected", actor: `${deviation.actor}; resolved by ${actor}` });
+    const resolved = ProtocolDeviationSchema.parse({ ...deviation, resolution: "rejected", resolvedBy: actor, resolvedAt: new Date().toISOString() });
     this.db.prepare("UPDATE protocol_deviations SET payload_json=? WHERE id=?").run(JSON.stringify(resolved), resolved.id);
     return resolved;
   }
@@ -357,12 +383,33 @@ export class ResearchStore {
       return AssumptionSchema.parse(JSON.parse(row.payload_json));
     });
     if (!assumptions.length) throw new Error("Assumption register requires at least one assumption");
+    if (parentId) {
+      const parentRow = this.db.prepare("SELECT payload_json FROM research_assumption_registers WHERE id=? AND question_id=?").get(parentId, questionId) as ProgramRow | undefined;
+      if (!parentRow) throw new Error("Assumption register parent must belong to the same question");
+      if (AssumptionRegisterSchema.parse(JSON.parse(parentRow.payload_json)).status !== "frozen") throw new Error("Assumption register parent must be frozen before superseding");
+    }
     const latest = this.db.prepare("SELECT max(version) version FROM research_assumption_registers WHERE question_id=?").get(questionId) as { version: number | null };
     const body = { assumptionIds, parentId };
     const register = AssumptionRegisterSchema.parse({ id: `assumption-register-${randomUUID()}`, questionId, version: (latest.version ?? 0) + 1, status: "draft", ...body, contentHash: hashPayload(body), createdAt: new Date().toISOString() });
-    this.db.prepare("INSERT INTO research_assumption_registers(id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?)")
-      .run(register.id, register.questionId, register.version, register.status, JSON.stringify(register), register.contentHash, register.parentId, register.createdAt);
+    const tx = this.db.transaction(() => {
+      if (parentId) this.db.prepare("UPDATE research_assumption_registers SET status='superseded', payload_json=json_set(payload_json,'$.status','superseded') WHERE id=?").run(parentId);
+      this.db.prepare("INSERT INTO research_assumption_registers(id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?)")
+        .run(register.id, register.questionId, register.version, register.status, JSON.stringify(register), register.contentHash, register.parentId, register.createdAt);
+    });
+    tx();
     return register;
+  }
+
+  freezeAssumptionRegister(questionId: string, registerId: string): AssumptionRegister {
+    const question = this.getQuestion(questionId);
+    this.assertProgramMutable(question.programId);
+    const row = this.db.prepare("SELECT payload_json FROM research_assumption_registers WHERE id=? AND question_id=?").get(registerId, questionId) as ProgramRow | undefined;
+    if (!row) throw new Error("Assumption register does not belong to question");
+    const register = AssumptionRegisterSchema.parse(JSON.parse(row.payload_json));
+    assertAggregateCanFreeze(register.status);
+    const frozen = { ...register, status: "frozen" as const };
+    this.db.prepare("UPDATE research_assumption_registers SET status=?,payload_json=? WHERE id=?").run(frozen.status, JSON.stringify(frozen), frozen.id);
+    return frozen;
   }
 
   createHypothesisSet(programId: string, input: HypothesisSetDraft): HypothesisSet {
@@ -374,12 +421,32 @@ export class ResearchStore {
     const hypotheses = input.hypotheses.map((item) => ({ ...item, id: `hypothesis-${randomUUID()}` }));
     if (!hypotheses.some((item) => item.kind === "target")) throw new Error("Hypothesis set requires a target hypothesis");
     if (!hypotheses.some((item) => item.kind !== "target")) throw new Error("Hypothesis set requires a null or rival hypothesis");
+    if (input.parentId) {
+      const parentRow = this.db.prepare("SELECT payload_json FROM research_hypothesis_sets WHERE id=? AND program_id=? AND question_id=?").get(input.parentId, programId, question.id) as ProgramRow | undefined;
+      if (!parentRow) throw new Error("Hypothesis set parent must belong to the same program and question");
+      if (HypothesisSetSchema.parse(JSON.parse(parentRow.payload_json)).status !== "frozen") throw new Error("Hypothesis set parent must be frozen before superseding");
+    }
     const latest = this.db.prepare("SELECT max(version) version FROM research_hypothesis_sets WHERE program_id=?").get(programId) as { version: number | null };
     const body = { hypotheses, parentId: input.parentId ?? null };
     const set = HypothesisSetSchema.parse({ id: `hypothesis-set-${randomUUID()}`, programId, questionId: question.id, version: (latest.version ?? 0) + 1, status: "draft", ...body, contentHash: hashPayload(body), createdAt: new Date().toISOString() });
-    this.db.prepare("INSERT INTO research_hypothesis_sets(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
-      .run(set.id, set.programId, set.questionId, set.version, set.status, JSON.stringify(set), set.contentHash, set.parentId, set.createdAt);
+    const tx = this.db.transaction(() => {
+      if (input.parentId) this.db.prepare("UPDATE research_hypothesis_sets SET status='superseded', payload_json=json_set(payload_json,'$.status','superseded') WHERE id=?").run(input.parentId);
+      this.db.prepare("INSERT INTO research_hypothesis_sets(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
+        .run(set.id, set.programId, set.questionId, set.version, set.status, JSON.stringify(set), set.contentHash, set.parentId, set.createdAt);
+    });
+    tx();
     return set;
+  }
+
+  freezeHypothesisSet(programId: string, setId: string): HypothesisSet {
+    this.assertProgramMutable(programId);
+    const row = this.db.prepare("SELECT payload_json FROM research_hypothesis_sets WHERE id=? AND program_id=?").get(setId, programId) as ProgramRow | undefined;
+    if (!row) throw new Error("Hypothesis set does not belong to program");
+    const set = HypothesisSetSchema.parse(JSON.parse(row.payload_json));
+    assertAggregateCanFreeze(set.status);
+    const frozen = { ...set, status: "frozen" as const };
+    this.db.prepare("UPDATE research_hypothesis_sets SET status=?,payload_json=? WHERE id=?").run(frozen.status, JSON.stringify(frozen), frozen.id);
+    return frozen;
   }
 
   deriveProgram(parentProgramId: string, reason: string, actor = "researcher", observedData: string[] = []): { program: ResearchProgram; derivation: RunDerivation } {

@@ -62,10 +62,13 @@ Research graph (v1.2 E):
   npm run dev -- research protocol <program-id> <protocol.json>
   npm run dev -- research hypothesis-set <program-id> <hypotheses.json>
   npm run dev -- research assumption-register <question-id> <assumption-ids.json>
+  npm run dev -- research freeze-assumption-register <question-id> <register-id>
+  npm run dev -- research freeze-hypothesis-set <program-id> <set-id>
   npm run dev -- research approve-protocol <program-id> <protocol-id>
   npm run dev -- research freeze-protocol <program-id> <protocol-id>
   npm run dev -- research assumption <question-id> <assumption.json>
   npm run dev -- research deviation <program-id> <deviation.json>
+  npm run dev -- research approve-deviation <program-id> <deviation-id> <revised-protocol.json> [actor]
   npm run dev -- research reject-deviation <program-id> <deviation-id>
   npm run dev -- research visibility <program-id> <visibility.json>
   npm run dev -- research derive <program-id> <reason.json>
@@ -100,7 +103,10 @@ async function main(): Promise<void> {
         if (!Array.isArray(input.assumptionIds)) throw new Error("assumptionIds array is required");
         console.log(JSON.stringify(workflow.createAssumptionRegister(args[0]!, input.assumptionIds, input.parentId ?? null), null, 2));
       } else if (command === "hypothesis-set") console.log(JSON.stringify(workflow.createHypothesisSet(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "freeze-assumption-register") console.log(JSON.stringify(workflow.freezeAssumptionRegister(args[0]!, args[1]!), null, 2));
+      else if (command === "freeze-hypothesis-set") console.log(JSON.stringify(workflow.freezeHypothesisSet(args[0]!, args[1]!), null, 2));
       else if (command === "deviation") console.log(JSON.stringify(workflow.recordDeviation(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "approve-deviation") console.log(JSON.stringify(workflow.approveDeviation(args[0]!, args[1]!, readJson(args[2]) as never, args[3] ?? "researcher"), null, 2));
       else if (command === "reject-deviation") console.log(JSON.stringify(workflow.rejectDeviation(args[0]!, args[1]!), null, 2));
       else if (command === "visibility") console.log(JSON.stringify(workflow.recordVisibility(readJson(args[0]) as never), null, 2));
       else if (command === "derive") {

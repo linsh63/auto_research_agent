@@ -137,8 +137,8 @@
       "additionalProperties": false
     },
     "deviation": {
-      "type": "object", "required": ["id", "protocolId", "reason", "observedData", "requestedChange", "approved", "resolution", "actor", "createdAt"],
-      "properties": { "id": { "type": "string" }, "protocolId": { "type": "string" }, "reason": { "type": "string" }, "observedData": { "type": "boolean" }, "requestedChange": { "type": "string" }, "approved": { "type": "boolean" }, "resolution": { "enum": ["pending", "approved", "rejected"] }, "actor": { "type": "string" }, "createdAt": { "type": "string" } },
+      "type": "object", "required": ["id", "protocolId", "reason", "observedData", "requestedChange", "approved", "resolution", "actor", "approvedBy", "resolvedBy", "resolvedAt", "createdAt"],
+      "properties": { "id": { "type": "string" }, "protocolId": { "type": "string" }, "reason": { "type": "string" }, "observedData": { "type": "boolean" }, "requestedChange": { "type": "string" }, "approved": { "type": "boolean" }, "resolution": { "enum": ["pending", "approved", "rejected"] }, "actor": { "type": "string" }, "approvedBy": { "type": ["string", "null"] }, "resolvedBy": { "type": ["string", "null"] }, "resolvedAt": { "type": ["string", "null"] }, "createdAt": { "type": "string" } },
       "additionalProperties": false
     },
     "visibility": {

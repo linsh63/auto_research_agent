@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
@@ -9,7 +9,7 @@ import { WorkflowCoordinator } from "../src/application/workflow-coordinator.js"
 import { BriefSchema } from "../src/core/schema.js";
 import { EvidenceStore } from "../src/infrastructure/db/evidence-store.js";
 import { ProjectConfigSchema, loadProjectConfig } from "../src/infrastructure/config/config.js";
-import { ResearchStore } from "../src/infrastructure/db/research-store.js";
+import { applyMigrationTransaction, ResearchStore } from "../src/infrastructure/db/research-store.js";
 import { Ledger } from "../src/core/ledger.js";
 
 const execFileAsync = promisify(execFile);
@@ -87,6 +87,14 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
     { kind: "null", statement: "The declared change does not alter robustness under held-out corruptions.", prediction: "The paired difference is centered near zero.", falsification: "A stable improvement exceeds the predeclared effect boundary.", evidenceIds: [] },
   ] });
   assert.equal(hypothesisSet.hypotheses.length, 2);
+  assert.throws(() => workflow.createAssumptionRegister(candidate.id, [assumption.id], "missing-register"), /same question/);
+  assert.throws(() => workflow.createHypothesisSet(program.id, { parentId: "missing-set", hypotheses: [
+    { kind: "target", statement: "A target hypothesis with a missing parent must be rejected.", prediction: "The target outcome changes.", falsification: "The target outcome does not change.", evidenceIds: [] },
+    { kind: "null", statement: "A null hypothesis with a missing parent must be rejected.", prediction: "The outcome stays unchanged.", falsification: "The outcome changes.", evidenceIds: [] },
+  ] }), /same program and question/);
+  assert.throws(() => workflow.draftProtocol(program.id, protocol()), /frozen assumption register/);
+  workflow.freezeAssumptionRegister(candidate.id, register.id);
+  workflow.freezeHypothesisSet(program.id, hypothesisSet.id);
   const drafted = workflow.draftProtocol(program.id, protocol());
   assert.throws(() => workflow.freezeProtocol(program.id, drafted.id), /approved before freeze/);
   workflow.approveProtocol(program.id, drafted.id);
@@ -95,14 +103,16 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   assert.equal(store.getProtocol(drafted.id).status, "frozen");
   assert.throws(() => workflow.freezeProtocol(program.id, drafted.id), /already frozen/);
 
-  const approvedDeviation = workflow.recordDeviation(program.id, { reason: "Change the declared primary analysis after the initial freeze.", observedData: false, requestedChange: "Use the predeclared grouped robustness outcome.", approved: true, actor: "researcher" });
-  assert.equal(approvedDeviation.resolution, "approved");
-  const revisedProtocol = store.listProtocols(program.id).at(-1)!;
+  const requestedDeviation = workflow.recordDeviation(program.id, { reason: "Change the declared primary analysis after the initial freeze.", observedData: false, requestedChange: "Use the predeclared grouped robustness outcome.", actor: "agent" });
+  const approvedDeviation = workflow.approveDeviation(program.id, requestedDeviation.id, { ...protocol(), analysisPlan: "Use the revised grouped robustness outcome with the predeclared paired interval." }, "researcher");
+  assert.equal(approvedDeviation.deviation.resolution, "approved");
+  const revisedProtocol = approvedDeviation.protocol;
+  assert.equal(revisedProtocol.analysisPlan, "Use the revised grouped robustness outcome with the predeclared paired interval.");
   assert.equal(revisedProtocol.status, "draft");
   workflow.approveProtocol(program.id, revisedProtocol.id);
   workflow.freezeProtocol(program.id, revisedProtocol.id);
 
-  const pendingDeviation = workflow.recordDeviation(program.id, { reason: "Request a changed primary analysis after freeze.", observedData: false, requestedChange: "Replace the frozen primary analysis.", approved: false, actor: "agent" });
+  const pendingDeviation = workflow.recordDeviation(program.id, { reason: "Request a changed primary analysis after freeze.", observedData: false, requestedChange: "Replace the frozen primary analysis.", actor: "agent" });
   assert.throws(() => workflow.recordVisibility({ programId: program.id, runId: "blocked-confirmation", dataRole: "confirmation", artifactHash: "c".repeat(64) }), /pending protocol deviation/);
   workflow.rejectDeviation(program.id, pendingDeviation.id);
   workflow.recordVisibility({ programId: program.id, runId: "confirmation-run-1", dataRole: "confirmation", artifactHash: "a".repeat(64) });
@@ -147,12 +157,16 @@ test("E research CLI has a machine-readable create/status contract", async (t) =
   assert.equal(status.program.id, created.id);
   assert.equal(status.program.status, "draft");
   assert.deepEqual(status.questions, []);
+  await assert.rejects(run(["research", "unknown-command"]), /Unknown research command/);
 });
 
 test("E corrective migration upgrades an existing schema-3 database with an online backup", async (t) => {
   const dir = mkdtempSync(join(tmpdir(), "ara-research-003b-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const dbPath = join(dir, "research.db");
+  const artifactRoot = join(dir, "artifacts");
+  mkdirSync(artifactRoot, { recursive: true });
+  writeFileSync(join(artifactRoot, "model.bin"), "model artifact bytes");
   const raw = new Database(dbPath);
   raw.exec(readFileSync(resolve("migrations/003_research_protocol.sql"), "utf8"));
   raw.close();
@@ -162,5 +176,21 @@ test("E corrective migration upgrades an existing schema-3 database with an onli
   migrated.close();
   assert.match(store.migrationBackupPath() ?? "", /research-before-003b-/);
   assert.match(store.artifactManifestSnapshotPath() ?? "", /artifact-manifest-before-003b/);
+  const manifest = JSON.parse(readFileSync(store.artifactManifestSnapshotPath()!, "utf8")) as { artifacts: Array<{ path: string; sha256: string; size: number }> };
+  assert.equal(manifest.artifacts.length, 1);
+  assert.equal(manifest.artifacts[0]?.path, "model.bin");
+  assert.equal(manifest.artifacts[0]?.size, "model artifact bytes".length);
   store.close();
+});
+
+test("E migration failure injection rolls back the partial DDL", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ara-research-migration-failure-"));
+  try {
+    const dbPath = join(dir, "research.db");
+    const raw = new Database(dbPath);
+    assert.throws(() => applyMigrationTransaction(raw, "CREATE TABLE partial_should_rollback (id TEXT); SELECT no_such_function();"));
+    assert.equal(raw.pragma("user_version", { simple: true }), 0);
+    assert.throws(() => raw.prepare("SELECT count(*) FROM partial_should_rollback").get(), /no such table/);
+    raw.close();
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

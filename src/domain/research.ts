@@ -140,6 +140,9 @@ export const ProtocolDeviationSchema = z.object({
   approved: z.boolean().default(false),
   resolution: z.enum(["pending", "approved", "rejected"]).default("pending"),
   actor: z.string().min(1),
+  approvedBy: z.string().nullable().default(null),
+  resolvedBy: z.string().nullable().default(null),
+  resolvedAt: z.string().nullable().default(null),
   createdAt: z.string(),
 });
 export type ProtocolDeviation = z.infer<typeof ProtocolDeviationSchema>;
@@ -210,4 +213,8 @@ export function assertProtocolCanFreeze(protocol: ResearchProtocol, approved: bo
 export function assertConfirmationAllowed(protocol: ResearchProtocol, observedConfirmation: boolean): void {
   if (protocol.status !== "frozen") throw new Error("Confirmation requires a frozen protocol");
   if (observedConfirmation) throw new Error("Confirmation has already been observed; derive a new run");
+}
+
+export function assertAggregateCanFreeze(status: "draft" | "frozen" | "superseded"): void {
+  if (status !== "draft") throw new Error(`Aggregate must be draft before freeze; got ${status}`);
 }

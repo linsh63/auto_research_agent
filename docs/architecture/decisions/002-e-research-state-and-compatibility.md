@@ -42,7 +42,7 @@ E 阶段增加独立的 versioned research graph：`ResearchProgram → Research
 
 ## Corrective release
 
-首次 alpha 实现的独立验收发现上述不变量缺口；`v1.2.0-alpha.1-r1` 补齐 aggregate、mutation guard、deviation resolution、online backup、artifact manifest 和 schema 3→4 测试。复验结果见 [corrective release report](../../reports/releases/v1.2.0-alpha.1-r1-report.md)。
+首次 alpha 实现和 r1 复验分别发现不变量缺口；`v1.2.0-alpha.1-r2` 补齐 aggregate 链、parent/supersede、独立 deviation approval、online backup、artifact manifest、事务失败回滚和 CLI 错误测试。最终结果见 [r2 corrective release report](../../reports/releases/v1.2.0-alpha.1-r2-report.md)。
 
 ## 已知限制
 
