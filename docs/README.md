@@ -57,6 +57,7 @@ docs/
 - [v1.2.0-alpha.1：E 研究协议与认知对象](reports/releases/v1.2.0-alpha.1-report.md)
 - [v1.2.0-alpha.1：E 独立验收与整改清单](reports/releases/v1.2.0-alpha.1-e-acceptance-improvements.md)
 - [v1.2.0-alpha.1-r1：E 整改复验](reports/releases/v1.2.0-alpha.1-r1-report.md)
+- [v1.2.0-alpha.1-r1：E 第二次验收整改清单](reports/releases/v1.2.0-alpha.1-r1-e-reacceptance-improvements.md)
 
 ### 自动验证产物
 
