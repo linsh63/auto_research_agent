@@ -10,7 +10,7 @@ export type ProgramStatus = z.infer<typeof ProgramStatusSchema>;
 export const QuestionStatusSchema = z.enum(["proposed", "selected", "superseded", "rejected"]);
 export type QuestionStatus = z.infer<typeof QuestionStatusSchema>;
 
-export const ProtocolStatusSchema = z.enum(["draft", "approved", "frozen", "deviated", "closed"]);
+export const ProtocolStatusSchema = z.enum(["draft", "approved", "frozen", "superseded", "deviated", "closed"]);
 export type ProtocolStatus = z.infer<typeof ProtocolStatusSchema>;
 
 export const ApprovalKindSchema = z.enum(["scope", "protocol"]);
@@ -116,6 +116,8 @@ export const ResearchProtocolSchema = z.object({
   version: z.number().int().positive(),
   profile: ResearchProfileSchema,
   status: ProtocolStatusSchema,
+  assumptionRegisterId: z.string().nullable().default(null),
+  hypothesisSetId: z.string().nullable().default(null),
   primaryOutcome: z.string().min(3),
   secondaryOutcomes: z.array(z.string().min(3)).default([]),
   exploratoryOutcomes: z.array(z.string().min(3)).default([]),

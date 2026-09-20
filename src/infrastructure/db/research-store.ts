@@ -13,7 +13,9 @@ import {
 } from "../../domain/research.js";
 
 export type QuestionDraft = Omit<ResearchQuestion, "id" | "programId" | "version" | "status" | "contentHash" | "supersedesId" | "createdAt"> & { supersedesId?: string | null };
-export type ProtocolDraft = Omit<ResearchProtocol, "id" | "programId" | "questionId" | "version" | "profile" | "status" | "contentHash" | "parentId" | "createdAt"> & { profile?: ResearchProfile; parentId?: string | null };
+export type ProtocolDraft = Omit<ResearchProtocol, "id" | "programId" | "questionId" | "version" | "profile" | "status" | "contentHash" | "parentId" | "createdAt" | "assumptionRegisterId" | "hypothesisSetId"> & {
+  profile?: ResearchProfile; parentId?: string | null; assumptionRegisterId: string; hypothesisSetId: string;
+};
 export type HypothesisSetDraft = { hypotheses: Array<Omit<HypothesisItem, "id">>; parentId?: string | null };
 export type DeviationRequest = Omit<ProtocolDeviation, "id" | "protocolId" | "approved" | "resolution" | "approvedBy" | "resolvedAt" | "createdAt">;
 
@@ -229,24 +231,52 @@ export class ResearchStore {
     return Boolean(row);
   }
 
+  getAssumptionRegister(id: string): AssumptionRegister {
+    const row = this.db.prepare("SELECT payload_json FROM research_assumption_registers WHERE id=?").get(id) as ProgramRow | undefined;
+    if (!row) throw new Error(`Unknown assumption register ${id}`);
+    return AssumptionRegisterSchema.parse(JSON.parse(row.payload_json));
+  }
+
+  getHypothesisSet(id: string): HypothesisSet {
+    const row = this.db.prepare("SELECT payload_json FROM research_hypothesis_sets WHERE id=?").get(id) as ProgramRow | undefined;
+    if (!row) throw new Error(`Unknown hypothesis set ${id}`);
+    return HypothesisSetSchema.parse(JSON.parse(row.payload_json));
+  }
+
+  private assertProtocolCognitiveRefs(programId: string, questionId: string, assumptionRegisterId: string | null, hypothesisSetId: string | null): void {
+    if (!assumptionRegisterId || !hypothesisSetId) throw new Error("Protocol requires explicit assumptionRegisterId and hypothesisSetId");
+    const register = this.getAssumptionRegister(assumptionRegisterId);
+    if (register.questionId !== questionId || register.status !== "frozen") throw new Error("Protocol assumption register must be frozen and belong to the selected question");
+    const set = this.getHypothesisSet(hypothesisSetId);
+    if (set.programId !== programId || set.questionId !== questionId || set.status !== "frozen") throw new Error("Protocol hypothesis set must be frozen and belong to the selected program/question");
+  }
+
   addProtocol(programId: string, input: ProtocolDraft): ResearchProtocol {
     const program = this.getProgram(programId);
     this.assertProgramMutable(programId);
     const question = this.listQuestions(programId).find((item) => item.status === "selected");
     if (!question) throw new Error("A selected question is required before protocol drafting");
     if (!this.hasApproval(programId, "scope", question.id, question.contentHash)) throw new Error("Scope approval is required before protocol drafting");
-    if (!this.assumptionRegisters(programId).some((register) => register.questionId === question.id && register.status === "frozen")) {
-      throw new Error("A frozen assumption register is required before protocol drafting");
-    }
-    if (!this.hypothesisSets(programId).some((set) => set.questionId === question.id && set.status === "frozen")) {
-      throw new Error("A frozen hypothesis set is required before protocol drafting");
-    }
+    this.assertProtocolCognitiveRefs(programId, question.id, input.assumptionRegisterId, input.hypothesisSetId);
+    const protocols = this.listProtocols(programId);
+    const latestProtocol = protocols.at(-1);
+    if (latestProtocol) {
+      if (input.parentId !== latestProtocol.id) throw new Error("A new protocol version must name the latest protocol as parent");
+      if (latestProtocol.questionId !== question.id || latestProtocol.status !== "frozen") throw new Error("Protocol parent must be the frozen latest version for the selected question");
+    } else if (input.parentId) throw new Error("Initial protocol cannot have a parent");
     const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
     const body = { ...input, profile: input.profile ?? program.profile, parentId: input.parentId ?? null };
     const protocol = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: question.id, version: (latest.version ?? 0) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
-    this.db.prepare("INSERT INTO research_protocols(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
-      .run(protocol.id, program.id, protocol.questionId, protocol.version, protocol.status, JSON.stringify(protocol), protocol.contentHash, protocol.parentId, protocol.createdAt);
-    this.updateProgram({ ...program, status: "protocol_ready" });
+    const tx = this.db.transaction(() => {
+      if (latestProtocol) {
+        const superseded = { ...latestProtocol, status: "superseded" as const };
+        this.db.prepare("UPDATE research_protocols SET status=?,payload_json=? WHERE id=?").run(superseded.status, JSON.stringify(superseded), superseded.id);
+      }
+      this.db.prepare("INSERT INTO research_protocols(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
+        .run(protocol.id, program.id, protocol.questionId, protocol.version, protocol.status, JSON.stringify(protocol), protocol.contentHash, protocol.parentId, protocol.createdAt);
+      this.updateProgram({ ...program, status: "protocol_ready" });
+    });
+    tx();
     return protocol;
   }
 
@@ -268,6 +298,7 @@ export class ResearchStore {
     const protocol = this.getProtocol(protocolId);
     if (protocol.programId !== programId) throw new Error("Protocol does not belong to program");
     if (protocol.status !== "draft") throw new Error(`Protocol is not draft: ${protocol.status}`);
+    this.assertProtocolCognitiveRefs(programId, protocol.questionId, protocol.assumptionRegisterId, protocol.hypothesisSetId);
     const approval = ApprovalSchema.parse({ id: `approval-${randomUUID()}`, programId, kind: "protocol", objectId: protocol.id, objectHash: protocol.contentHash, decision: "approved", actor, note, createdAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {
       this.db.prepare("INSERT INTO research_approvals(id,program_id,kind,object_id,object_hash,decision,actor,note,payload_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)")
@@ -285,6 +316,7 @@ export class ResearchStore {
     this.assertProgramMutable(programId);
     const protocol = this.getProtocol(protocolId);
     if (protocol.programId !== programId) throw new Error("Protocol does not belong to program");
+    this.assertProtocolCognitiveRefs(programId, protocol.questionId, protocol.assumptionRegisterId, protocol.hypothesisSetId);
     const existing = this.db.prepare("SELECT payload_json FROM protocol_freezes WHERE protocol_id=?").get(protocol.id) as { payload_json: string } | undefined;
     if (existing) throw new Error("Protocol is already frozen; create a new protocol version for changes");
     assertProtocolCanFreeze(protocol, this.hasApproval(programId, "protocol", protocol.id, protocol.contentHash));
@@ -320,11 +352,15 @@ export class ResearchStore {
     if (original.programId !== programId) throw new Error("Deviation does not belong to program");
     if (original.status !== "frozen") throw new Error("Deviation approval requires the original protocol to remain frozen");
     if (deviation.resolution !== "pending") throw new Error(`Deviation is already ${deviation.resolution}`);
+    if (this.listProtocols(programId).at(-1)?.id !== original.id) throw new Error("Deviation must target the latest protocol version");
+    this.assertProtocolCognitiveRefs(programId, original.questionId, revisedInput.assumptionRegisterId, revisedInput.hypothesisSetId);
     const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
     const body = { ...revisedInput, profile: revisedInput.profile ?? program.profile, parentId: original.id };
     const revised = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: original.questionId, version: (latest.version ?? original.version) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
     const resolved = ProtocolDeviationSchema.parse({ ...deviation, approved: true, resolution: "approved", approvedBy: actor, resolvedBy: actor, resolvedAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {
+      const superseded = { ...original, status: "superseded" as const };
+      this.db.prepare("UPDATE research_protocols SET status=?,payload_json=? WHERE id=?").run(superseded.status, JSON.stringify(superseded), superseded.id);
       this.db.prepare("INSERT INTO research_protocols(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
         .run(revised.id, revised.programId, revised.questionId, revised.version, revised.status, JSON.stringify(revised), revised.contentHash, revised.parentId, revised.createdAt);
       this.db.prepare("UPDATE protocol_deviations SET payload_json=? WHERE id=?").run(JSON.stringify(resolved), resolved.id);
@@ -353,6 +389,7 @@ export class ResearchStore {
     if (input.dataRole === "confirmation" || input.dataRole === "test") {
       const protocol = this.listProtocols(input.programId).at(-1);
       if (!protocol) throw new Error("A protocol is required before confirmation visibility");
+      this.assertProtocolCognitiveRefs(input.programId, protocol.questionId, protocol.assumptionRegisterId, protocol.hypothesisSetId);
       if (this.deviations(input.programId).some((deviation) => deviation.protocolId === protocol.id && deviation.resolution === "pending")) {
         throw new Error("A pending protocol deviation must be resolved before confirmation");
       }
@@ -377,6 +414,10 @@ export class ResearchStore {
   createAssumptionRegister(questionId: string, assumptionIds: string[], parentId: string | null = null): AssumptionRegister {
     const question = this.getQuestion(questionId);
     this.assertProgramMutable(question.programId);
+    const existingRegisters = this.assumptionRegisters(question.programId).filter((register) => register.questionId === questionId);
+    const latestRegister = existingRegisters.at(-1);
+    if (latestRegister && parentId !== latestRegister.id) throw new Error("A new assumption register version must name the latest register as parent");
+    if (!latestRegister && parentId) throw new Error("Initial assumption register cannot have a parent");
     const assumptions = assumptionIds.map((id) => {
       const row = this.db.prepare("SELECT payload_json FROM research_assumptions WHERE id=? AND question_id=?").get(id, questionId) as ProgramRow | undefined;
       if (!row) throw new Error(`Assumption ${id} does not belong to question ${questionId}`);
@@ -418,6 +459,10 @@ export class ResearchStore {
     const question = this.listQuestions(programId).find((item) => item.status === "selected");
     if (!question) throw new Error("A selected question is required before creating a hypothesis set");
     if (!this.hasApproval(programId, "scope", question.id, question.contentHash)) throw new Error("Scope approval is required before creating a hypothesis set");
+    const existingSets = this.hypothesisSets(programId).filter((set) => set.questionId === question.id);
+    const latestSet = existingSets.at(-1);
+    if (latestSet && input.parentId !== latestSet.id) throw new Error("A new hypothesis set version must name the latest set as parent");
+    if (!latestSet && input.parentId) throw new Error("Initial hypothesis set cannot have a parent");
     const hypotheses = input.hypotheses.map((item) => ({ ...item, id: `hypothesis-${randomUUID()}` }));
     if (!hypotheses.some((item) => item.kind === "target")) throw new Error("Hypothesis set requires a target hypothesis");
     if (!hypotheses.some((item) => item.kind !== "target")) throw new Error("Hypothesis set requires a null or rival hypothesis");

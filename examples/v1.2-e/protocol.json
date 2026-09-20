@@ -1,4 +1,6 @@
 {
+  "assumptionRegisterId": "replace-with-frozen-assumption-register-id",
+  "hypothesisSetId": "replace-with-frozen-hypothesis-set-id",
   "primaryOutcome": "mean_corruption_accuracy",
   "secondaryOutcomes": ["clean_accuracy"],
   "exploratoryOutcomes": ["calibration_error"],

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -28,8 +29,10 @@ function question() {
   };
 }
 
-function protocol() {
+function protocol(assumptionRegisterId: string, hypothesisSetId: string) {
   return {
+    assumptionRegisterId,
+    hypothesisSetId,
     primaryOutcome: "mean_corruption_accuracy",
     secondaryOutcomes: ["clean_accuracy"],
     exploratoryOutcomes: ["calibration_error"],
@@ -87,15 +90,24 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
     { kind: "null", statement: "The declared change does not alter robustness under held-out corruptions.", prediction: "The paired difference is centered near zero.", falsification: "A stable improvement exceeds the predeclared effect boundary.", evidenceIds: [] },
   ] });
   assert.equal(hypothesisSet.hypotheses.length, 2);
-  assert.throws(() => workflow.createAssumptionRegister(candidate.id, [assumption.id], "missing-register"), /same question/);
+  assert.throws(() => workflow.createAssumptionRegister(candidate.id, [assumption.id], "missing-register"), /latest register as parent/);
   assert.throws(() => workflow.createHypothesisSet(program.id, { parentId: "missing-set", hypotheses: [
     { kind: "target", statement: "A target hypothesis with a missing parent must be rejected.", prediction: "The target outcome changes.", falsification: "The target outcome does not change.", evidenceIds: [] },
     { kind: "null", statement: "A null hypothesis with a missing parent must be rejected.", prediction: "The outcome stays unchanged.", falsification: "The outcome changes.", evidenceIds: [] },
-  ] }), /same program and question/);
-  assert.throws(() => workflow.draftProtocol(program.id, protocol()), /frozen assumption register/);
+  ] }), /latest set as parent/);
+  assert.throws(() => workflow.draftProtocol(program.id, protocol(register.id, hypothesisSet.id)), /must be frozen/);
   workflow.freezeAssumptionRegister(candidate.id, register.id);
   workflow.freezeHypothesisSet(program.id, hypothesisSet.id);
-  const drafted = workflow.draftProtocol(program.id, protocol());
+  assert.throws(() => workflow.createAssumptionRegister(candidate.id, [assumption.id]), /latest register as parent/);
+  assert.throws(() => workflow.createHypothesisSet(program.id, { hypotheses: hypothesisSet.hypotheses.map(({ id: _id, ...item }) => item) }), /latest set as parent/);
+  const registerV2 = workflow.createAssumptionRegister(candidate.id, [assumption.id], register.id);
+  workflow.freezeAssumptionRegister(candidate.id, registerV2.id);
+  const hypothesisSetV2 = workflow.createHypothesisSet(program.id, { parentId: hypothesisSet.id, hypotheses: hypothesisSet.hypotheses.map(({ id: _id, ...item }) => item) });
+  workflow.freezeHypothesisSet(program.id, hypothesisSetV2.id);
+  assert.equal(store.getAssumptionRegister(register.id).status, "superseded");
+  assert.equal(store.getHypothesisSet(hypothesisSet.id).status, "superseded");
+  assert.throws(() => workflow.draftProtocol(program.id, protocol(register.id, hypothesisSet.id)), /must be frozen/);
+  const drafted = workflow.draftProtocol(program.id, protocol(registerV2.id, hypothesisSetV2.id));
   assert.throws(() => workflow.freezeProtocol(program.id, drafted.id), /approved before freeze/);
   workflow.approveProtocol(program.id, drafted.id);
   const freeze = workflow.freezeProtocol(program.id, drafted.id);
@@ -104,7 +116,7 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   assert.throws(() => workflow.freezeProtocol(program.id, drafted.id), /already frozen/);
 
   const requestedDeviation = workflow.recordDeviation(program.id, { reason: "Change the declared primary analysis after the initial freeze.", observedData: false, requestedChange: "Use the predeclared grouped robustness outcome.", actor: "agent" });
-  const approvedDeviation = workflow.approveDeviation(program.id, requestedDeviation.id, { ...protocol(), analysisPlan: "Use the revised grouped robustness outcome with the predeclared paired interval." }, "researcher");
+  const approvedDeviation = workflow.approveDeviation(program.id, requestedDeviation.id, { ...protocol(registerV2.id, hypothesisSetV2.id), analysisPlan: "Use the revised grouped robustness outcome with the predeclared paired interval." }, "researcher");
   assert.equal(approvedDeviation.deviation.resolution, "approved");
   const revisedProtocol = approvedDeviation.protocol;
   assert.equal(revisedProtocol.analysisPlan, "Use the revised grouped robustness outcome with the predeclared paired interval.");
@@ -158,6 +170,8 @@ test("E research CLI has a machine-readable create/status contract", async (t) =
   assert.equal(status.program.status, "draft");
   assert.deepEqual(status.questions, []);
   await assert.rejects(run(["research", "unknown-command"]), /Unknown research command/);
+  await assert.rejects(run(["research", "status"]));
+  await assert.rejects(run(["research", "approve-scope", created.id]), /selected research question/);
 });
 
 test("E corrective migration upgrades an existing schema-3 database with an online backup", async (t) => {
@@ -180,6 +194,7 @@ test("E corrective migration upgrades an existing schema-3 database with an onli
   assert.equal(manifest.artifacts.length, 1);
   assert.equal(manifest.artifacts[0]?.path, "model.bin");
   assert.equal(manifest.artifacts[0]?.size, "model artifact bytes".length);
+  assert.equal(manifest.artifacts[0]?.sha256, createHash("sha256").update("model artifact bytes").digest("hex"));
   store.close();
 });
 

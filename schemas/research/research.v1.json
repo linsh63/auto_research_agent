@@ -68,14 +68,16 @@
     },
     "researchProtocol": {
       "type": "object",
-      "required": ["id", "programId", "questionId", "version", "profile", "status", "primaryOutcome", "secondaryOutcomes", "exploratoryOutcomes", "experimentUnit", "dataRoles", "analysisPlan", "stoppingRules", "allowedChanges", "baselineTolerance", "contentHash", "createdAt"],
+      "required": ["id", "programId", "questionId", "version", "profile", "status", "assumptionRegisterId", "hypothesisSetId", "primaryOutcome", "secondaryOutcomes", "exploratoryOutcomes", "experimentUnit", "dataRoles", "analysisPlan", "stoppingRules", "allowedChanges", "baselineTolerance", "contentHash", "createdAt"],
       "properties": {
         "id": { "type": "string" },
         "programId": { "type": "string" },
         "questionId": { "type": "string" },
         "version": { "type": "integer", "minimum": 1 },
         "profile": { "enum": ["smoke", "exploratory", "confirmatory"] },
-        "status": { "enum": ["draft", "approved", "frozen", "deviated", "closed"] },
+        "status": { "enum": ["draft", "approved", "frozen", "superseded", "deviated", "closed"] },
+        "assumptionRegisterId": { "type": ["string", "null"] },
+        "hypothesisSetId": { "type": ["string", "null"] },
         "primaryOutcome": { "type": "string" },
         "secondaryOutcomes": { "type": "array", "items": { "type": "string" } },
         "exploratoryOutcomes": { "type": "array", "items": { "type": "string" } },
