@@ -1,0 +1,15 @@
+{
+  "primaryOutcome": "mean_corruption_accuracy",
+  "secondaryOutcomes": ["clean_accuracy"],
+  "exploratoryOutcomes": ["calibration_error"],
+  "experimentUnit": "one model training seed evaluated on one declared corruption group",
+  "dataRoles": {
+    "train": "cifar-train",
+    "validation": "cifar-validation",
+    "confirmation": "cifar-confirmation-sealed"
+  },
+  "analysisPlan": "Compare paired training seeds across declared corruption groups and report raw differences with a predeclared interval.",
+  "stoppingRules": ["Stop at the GPU or wall-clock hard limit.", "Stop if baseline reproduction is outside tolerance."],
+  "allowedChanges": ["Change only the declared training parameter grid during exploration."],
+  "baselineTolerance": "Within the predeclared validation interval of the reference implementation."
+}

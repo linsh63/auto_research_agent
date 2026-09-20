@@ -2,10 +2,17 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
+import { ResearchProfileSchema } from "../../domain/research.js";
 
 const Positive = z.number().finite().nonnegative();
 export const ProjectConfigSchema = z.object({
   schemaVersion: z.literal(1),
+  research: z.object({
+    profile: ResearchProfileSchema,
+    maxDerivedRuns: z.number().int().positive(),
+    requireRivalHypothesis: z.boolean(),
+    requireBaselineReproduction: z.boolean(),
+  }),
   paths: z.object({ database: z.string(), artifacts: z.string(), index: z.string(), reports: z.string() }),
   resources: z.object({
     model: z.object({ softUsd: Positive, hardUsd: Positive, softWallMinutes: Positive, hardWallMinutes: Positive, perCallSoftSeconds: Positive, perCallHardSeconds: Positive }),

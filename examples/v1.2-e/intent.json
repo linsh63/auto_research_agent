@@ -1,0 +1,9 @@
+{
+  "title": "CV distribution shift protocol fixture",
+  "direction": "Study whether a small image classifier remains reliable under common distribution shifts in public image datasets.",
+  "domain": "AI / computer vision",
+  "constraints": ["one GPU", "public data only", "no confirmation data before freeze"],
+  "allowedData": ["CIFAR-10", "CIFAR-10-C"],
+  "prohibitions": ["no hidden remote training", "no post-confirmation tuning in the same run"],
+  "profile": "confirmatory"
+}

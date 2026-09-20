@@ -1,0 +1,10 @@
+{
+  "question": "Does a declared training change improve robustness of a small image classifier under held-out common distribution shifts?",
+  "rationale": "Distribution shift is relevant to deployment, and a fixed corruption profile makes the question observable within a bounded budget.",
+  "targetPopulation": "Small public natural-image classification datasets",
+  "intervention": "One training or calibration change selected after evidence review",
+  "comparator": "The frozen baseline training procedure",
+  "primaryOutcome": "Mean corruption accuracy on held-out corruption groups",
+  "scope": "One lightweight classifier and the declared CIFAR corruption profile only.",
+  "sourceIds": ["source-cv-1"]
+}

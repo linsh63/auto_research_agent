@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ResearchProfileSchema } from "../domain/research.js";
 
 export const CommandSchema = z.object({
   program: z.string().min(1),
@@ -56,6 +57,7 @@ export const BriefSchema = z.object({
     maxIterations: z.literal(1).default(1),
   }).default({ maxModelCalls: 8, maxWallMinutes: 30, maxExperimentSeconds: 120, maxIterations: 1 }),
   publicMaterialsOnly: z.literal(true).default(true),
+  profile: ResearchProfileSchema.default("smoke"),
 });
 
 export const HypothesisSchema = z.object({

@@ -48,11 +48,13 @@ docs/
 
 - [V1 阶段总结](reports/stages/v1-summary.md)
 - [v1.1 阶段进度](reports/stages/v1.1-progress.md)
+- [v1.2 阶段进度](reports/stages/v1.2-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)
 - [A–C 重新验收](reports/releases/abc-revalidation-report.md)
 - [v1.1.0：CV 第二场景](reports/releases/v1.1.0-report.md)
+- [v1.2.0-alpha.1：E 研究协议与认知对象](reports/releases/v1.2.0-alpha.1-report.md)
 
 ### 自动验证产物
 

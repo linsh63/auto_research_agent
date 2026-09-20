@@ -1,4 +1,9 @@
 schemaVersion: 1
+research:
+  profile: smoke
+  maxDerivedRuns: 3
+  requireRivalHypothesis: true
+  requireBaselineReproduction: true
 paths:
   database: .research-data/research.db
   artifacts: .research-data/artifacts

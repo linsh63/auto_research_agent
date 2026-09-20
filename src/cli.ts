@@ -12,9 +12,18 @@ import { parseTextFile } from "./adapters/parsing.js";
 import { createHash } from "node:crypto";
 import { ContentAddressedStore } from "./infrastructure/artifacts/content-store.js";
 import { createEvidenceTools } from "./adapters/evidence-tools.js";
+import { WorkflowCoordinator } from "./application/workflow-coordinator.js";
+import { ResearchStore } from "./infrastructure/db/research-store.js";
 
 const dataDir = resolve(process.env.AUTO_RESEARCH_DATA_DIR ?? ".research-data");
-const [command, ...args] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+let command = argv.shift();
+const args = argv;
+let researchMode = false;
+if (command === "research") {
+  researchMode = true;
+  command = args.shift() ?? "help";
+}
 
 function usage(): never {
   console.log(`Auto Research Agent
@@ -44,6 +53,20 @@ Usage:
   npm run dev -- doctor
   npm run dev -- model-check
 
+Research graph (v1.2 E):
+  npm run dev -- research new <intent.json>
+  npm run dev -- research question <program-id> <question.json>
+  npm run dev -- research select-question <program-id> <question-id>
+  npm run dev -- research approve-scope <program-id> [actor]
+  npm run dev -- research protocol <program-id> <protocol.json>
+  npm run dev -- research approve-protocol <program-id> <protocol-id>
+  npm run dev -- research freeze-protocol <program-id> <protocol-id>
+  npm run dev -- research assumption <question-id> <assumption.json>
+  npm run dev -- research deviation <program-id> <deviation.json>
+  npm run dev -- research visibility <program-id> <visibility.json>
+  npm run dev -- research derive <program-id> <reason.json>
+  npm run dev -- research status <program-id>
+
 Set AUTO_RESEARCH_API_KEY for model stages. Optional: AUTO_RESEARCH_BASE_URL,
 AUTO_RESEARCH_MODEL (default gpt-5.6-luna), AUTO_RESEARCH_DATA_DIR,
 AUTO_RESEARCH_SKILL_ROOT.`);
@@ -52,6 +75,33 @@ AUTO_RESEARCH_SKILL_ROOT.`);
 
 async function main(): Promise<void> {
   if (!command || command === "help" || command === "--help") usage();
+  if (researchMode) {
+    const store = new ResearchStore(join(dataDir, "research.db"));
+    const workflow = new WorkflowCoordinator(store);
+    const readJson = (path: string | undefined): unknown => {
+      if (!path) throw new Error("JSON input path is required");
+      return JSON.parse(readFileSync(resolve(path), "utf8"));
+    };
+    try {
+      if (command === "new") console.log(JSON.stringify(workflow.createIntent(readJson(args[0])), null, 2));
+      else if (command === "question") console.log(JSON.stringify(workflow.proposeQuestion(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "select-question") console.log(JSON.stringify(workflow.selectQuestion(args[0]!, args[1]!), null, 2));
+      else if (command === "approve-scope") console.log(JSON.stringify(workflow.approveScope(args[0]!, args[1] ?? "researcher"), null, 2));
+      else if (command === "protocol") console.log(JSON.stringify(workflow.draftProtocol(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "approve-protocol") console.log(JSON.stringify(workflow.approveProtocol(args[0]!, args[1]!), null, 2));
+      else if (command === "freeze-protocol") console.log(JSON.stringify(workflow.freezeProtocol(args[0]!, args[1]!), null, 2));
+      else if (command === "assumption") console.log(JSON.stringify(workflow.addAssumption(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "deviation") console.log(JSON.stringify(workflow.recordDeviation(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "visibility") console.log(JSON.stringify(workflow.recordVisibility(readJson(args[0]) as never), null, 2));
+      else if (command === "derive") {
+        const input = readJson(args[1]) as { reason?: string; actor?: string; observedData?: string[] };
+        if (!input.reason) throw new Error("Derivation reason is required");
+        console.log(JSON.stringify(workflow.derive(args[0]!, input.reason, input.actor ?? "researcher", input.observedData ?? []), null, 2));
+      } else if (command === "status") console.log(JSON.stringify(workflow.status(args[0]!), null, 2));
+      else throw new Error(`Unknown research command: ${command}`);
+    } finally { store.close(); }
+    return;
+  }
   if (command === "skills") {
     for (const skill of new SkillCatalog().list()) {
       console.log(`${skill.available ? "ready" : "missing"}\t${skill.mode}\t${skill.name}\t${skill.sha256?.slice(0, 12) ?? "-"}`);
