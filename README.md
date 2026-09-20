@@ -8,6 +8,8 @@ V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实�
 
 [文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 
+[v1.2 科研真实性迭代方案](docs/planning/v1.2-research-fidelity-plan.md)分析当前流水线与真实科研的主要差距，并提出问题收敛、竞争假设、protocol freeze、探索/确认隔离、统计分析和多轮决策的下一版设计。
+
 [v1.1 实施规划](docs/planning/v1.1-plan.md)记录 A、B、C 三阶段及完成后增补的 D 阶段架构、资源墙和验收门禁。
 
 [总体规划（第一版）](docs/planning/v1-plan.md)记录了已确认的目标、基于 pi SDK 的架构、skills 接入方式、实施顺序和暂缓的决策。
