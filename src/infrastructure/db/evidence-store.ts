@@ -20,7 +20,7 @@ export class EvidenceStore {
 
   private migrate(): void {
     const version = this.db.pragma("user_version", { simple: true }) as number;
-    if (version > 3) throw new Error(`Unsupported evidence database version ${version}`);
+    if (version > 4) throw new Error(`Unsupported evidence database version ${version}`);
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS evidence_sources (
         id TEXT PRIMARY KEY, payload_json TEXT NOT NULL, created_at TEXT NOT NULL,

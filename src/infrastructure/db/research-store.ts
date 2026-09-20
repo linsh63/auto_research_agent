@@ -1,19 +1,20 @@
 import Database from "better-sqlite3";
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
+import { createHash, randomUUID } from "node:crypto";
 import {
-  ApprovalSchema, AssumptionSchema, ProtocolDeviationSchema, ProtocolFreezeSchema,
-  ProtocolStatusSchema, ResearchIntentSchema, ResearchProgramSchema, ResearchProtocolSchema,
-  ResearchQuestionSchema, ResearchProfileSchema, RunDerivationSchema, VisibilityEventSchema,
-  type Approval, type Assumption, type ProtocolDeviation, type ProtocolFreeze,
+  ApprovalSchema, AssumptionRegisterSchema, AssumptionSchema, HypothesisSetSchema, ProtocolDeviationSchema,
+  ProtocolFreezeSchema, ResearchIntentSchema, ResearchProgramSchema, ResearchProtocolSchema,
+  ResearchQuestionSchema, RunDerivationSchema, VisibilityEventSchema,
+  type Approval, type Assumption, type AssumptionRegister, type HypothesisSet, type ProtocolDeviation, type ProtocolFreeze,
   type ResearchIntent, type ResearchProgram, type ResearchProtocol, type ResearchQuestion,
-  type ResearchProfile, type RunDerivation, type VisibilityEvent,
+  type ResearchProfile, type RunDerivation, type VisibilityEvent, type HypothesisItem,
   assertConfirmationAllowed, assertProtocolCanFreeze, hashPayload,
 } from "../../domain/research.js";
 
 export type QuestionDraft = Omit<ResearchQuestion, "id" | "programId" | "version" | "status" | "contentHash" | "supersedesId" | "createdAt"> & { supersedesId?: string | null };
 export type ProtocolDraft = Omit<ResearchProtocol, "id" | "programId" | "questionId" | "version" | "profile" | "status" | "contentHash" | "parentId" | "createdAt"> & { profile?: ResearchProfile; parentId?: string | null };
+export type HypothesisSetDraft = { hypotheses: Array<Omit<HypothesisItem, "id">>; parentId?: string | null };
 
 interface ProgramRow { payload_json: string }
 interface QuestionRow { payload_json: string }
@@ -23,6 +24,8 @@ export interface ResearchStatus {
   program: ResearchProgram;
   questions: ResearchQuestion[];
   assumptions: Assumption[];
+  assumptionRegisters: AssumptionRegister[];
+  hypothesisSets: HypothesisSet[];
   protocols: ResearchProtocol[];
   approvals: Approval[];
   freezes: ProtocolFreeze[];
@@ -34,36 +37,81 @@ export interface ResearchStatus {
 export class ResearchStore {
   private readonly db: Database.Database;
   private readonly backupPath: string | null;
+  private readonly artifactManifestPath: string | null;
+  private readonly maxDerivedRuns: number;
 
-  constructor(private readonly path: string) {
+  private constructor(private readonly path: string, db: Database.Database, backupPath: string | null, artifactManifestPath: string | null, maxDerivedRuns: number) {
+    this.db = db;
+    this.backupPath = backupPath;
+    this.artifactManifestPath = artifactManifestPath;
+    this.maxDerivedRuns = maxDerivedRuns;
+  }
+
+  static async open(path: string, options: { maxDerivedRuns?: number } = {}): Promise<ResearchStore> {
+    const maxDerivedRuns = options.maxDerivedRuns ?? 3;
+    if (!Number.isInteger(maxDerivedRuns) || maxDerivedRuns < 1) throw new Error("maxDerivedRuns must be a positive integer");
     mkdirSync(dirname(path), { recursive: true });
-    this.db = new Database(path);
-    this.db.pragma("journal_mode = WAL");
-    this.db.pragma("foreign_keys = ON");
-    this.backupPath = this.migrate();
+    const existed = existsSync(path);
+    const db = new Database(path);
+    db.pragma("journal_mode = WAL");
+    db.pragma("foreign_keys = ON");
+    const version = db.pragma("user_version", { simple: true }) as number;
+    if (version > 4) {
+      db.close();
+      throw new Error(`Research database ${version} is newer than supported version 4`);
+    }
+    let backupPath: string | null = null;
+    let artifactManifestPath: string | null = null;
+    if (version < 3 && existed) {
+      const backupDir = resolve(dirname(path), "backups");
+      mkdirSync(backupDir, { recursive: true });
+      backupPath = resolve(backupDir, `research-before-003-${new Date().toISOString().replaceAll(":", "-")}.db`);
+      await db.backup(backupPath);
+      artifactManifestPath = ResearchStore.snapshotArtifacts(path, backupDir, "003");
+    }
+    if (version < 3) {
+      db.exec(readFileSync(resolve("migrations/003_research_protocol.sql"), "utf8"));
+      const migrated = db.pragma("user_version", { simple: true }) as number;
+      if (migrated !== 3) { db.close(); throw new Error(`Research migration 003 did not reach schema version 3 (got ${migrated})`); }
+    }
+    let current = db.pragma("user_version", { simple: true }) as number;
+    if (current < 4) {
+      const backupDir = resolve(dirname(path), "backups");
+      mkdirSync(backupDir, { recursive: true });
+      const correctiveBackup = resolve(backupDir, `research-before-003b-${new Date().toISOString().replaceAll(":", "-")}.db`);
+      await db.backup(correctiveBackup);
+      backupPath ??= correctiveBackup;
+      artifactManifestPath ??= ResearchStore.snapshotArtifacts(path, backupDir, "003b");
+      db.exec(readFileSync(resolve("migrations/003b_research_cognitive_objects.sql"), "utf8"));
+      current = db.pragma("user_version", { simple: true }) as number;
+      if (current !== 4) { db.close(); throw new Error(`Research migration 003b did not reach schema version 4 (got ${current})`); }
+    }
+    return new ResearchStore(path, db, backupPath, artifactManifestPath, maxDerivedRuns);
   }
 
   close(): void { this.db.close(); }
 
   migrationBackupPath(): string | null { return this.backupPath; }
+  artifactManifestSnapshotPath(): string | null { return this.artifactManifestPath; }
 
-  private migrate(): string | null {
-    const version = this.db.pragma("user_version", { simple: true }) as number;
-    if (version > 3) throw new Error(`Research database ${version} is newer than supported version 3`);
-    if (version >= 3) return null;
-    let backup: string | null = null;
-    if (existsSync(this.path)) {
-      try { this.db.pragma("wal_checkpoint(TRUNCATE)"); } catch { /* A busy WAL is still copied and reported by verification. */ }
-      const backupDir = resolve(dirname(this.path), "backups");
-      mkdirSync(backupDir, { recursive: true });
-      backup = resolve(backupDir, `research-before-003-${new Date().toISOString().replaceAll(":", "-")}.db`);
-      copyFileSync(this.path, backup);
-    }
-    const migration = readFileSync(resolve("migrations/003_research_protocol.sql"), "utf8");
-    this.db.exec(migration);
-    const migrated = this.db.pragma("user_version", { simple: true }) as number;
-    if (migrated !== 3) throw new Error(`Research migration 003 did not reach schema version 3 (got ${migrated})`);
-    return backup;
+  private static snapshotArtifacts(databasePath: string, backupDir: string, migration: string): string {
+    const root = resolve(dirname(databasePath), "artifacts");
+    const entries: Array<{ path: string; size: number; sha256: string }> = [];
+    const visit = (directory: string): void => {
+      if (!existsSync(directory)) return;
+      for (const name of readdirSync(directory)) {
+        const path = resolve(directory, name);
+        if (statSync(path).isDirectory()) visit(path);
+        else {
+          const digest = createHash("sha256").update(readFileSync(path)).digest("hex");
+          entries.push({ path: relative(root, path), size: statSync(path).size, sha256: digest });
+        }
+      }
+    };
+    visit(root);
+    const target = resolve(backupDir, `artifact-manifest-before-${migration}.json`);
+    writeFileSync(target, JSON.stringify({ schemaVersion: 1, source: root, createdAt: new Date().toISOString(), artifacts: entries }, null, 2) + "\n");
+    return target;
   }
 
   createProgram(input: unknown, derivedFromId: string | null = null): ResearchProgram {
@@ -94,8 +142,15 @@ export class ResearchStore {
     return parsed;
   }
 
+  private assertProgramMutable(programId: string): void {
+    if (this.visibility(programId).some((event) => event.dataRole === "confirmation" || event.dataRole === "test")) {
+      throw new Error("Research program is closed after confirmation/test visibility; derive a new run");
+    }
+  }
+
   addQuestion(programId: string, input: QuestionDraft): ResearchQuestion {
     const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
     const latest = this.db.prepare("SELECT max(version) version FROM research_questions WHERE program_id=?").get(programId) as { version: number | null };
     const now = new Date().toISOString();
     const version = (latest.version ?? 0) + 1;
@@ -119,6 +174,7 @@ export class ResearchStore {
   }
 
   selectQuestion(programId: string, questionId: string): ResearchQuestion {
+    this.assertProgramMutable(programId);
     const question = this.getQuestion(questionId);
     if (question.programId !== programId) throw new Error("Question does not belong to program");
     if (question.status !== "proposed") throw new Error(`Question is not selectable from ${question.status}`);
@@ -136,7 +192,8 @@ export class ResearchStore {
   }
 
   addAssumption(questionId: string, input: Omit<Assumption, "id" | "questionId" | "createdAt">): Assumption {
-    this.getQuestion(questionId);
+    const question = this.getQuestion(questionId);
+    this.assertProgramMutable(question.programId);
     const assumption = AssumptionSchema.parse({ ...input, id: `assumption-${randomUUID()}`, questionId, createdAt: new Date().toISOString() });
     this.db.prepare("INSERT INTO research_assumptions(id,question_id,payload_json,created_at) VALUES(?,?,?,?)")
       .run(assumption.id, assumption.questionId, JSON.stringify(assumption), assumption.createdAt);
@@ -145,6 +202,7 @@ export class ResearchStore {
 
   approveScope(programId: string, actor = "researcher", note = ""): Approval {
     const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
     const question = this.listQuestions(programId).find((item) => item.status === "selected");
     if (!question) throw new Error("A selected research question is required before scope approval");
     const approval = ApprovalSchema.parse({ id: `approval-${randomUUID()}`, programId, kind: "scope", objectId: question.id, objectHash: question.contentHash, decision: "approved", actor, note, createdAt: new Date().toISOString() });
@@ -165,6 +223,7 @@ export class ResearchStore {
 
   addProtocol(programId: string, input: ProtocolDraft): ResearchProtocol {
     const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
     const question = this.listQuestions(programId).find((item) => item.status === "selected");
     if (!question) throw new Error("A selected question is required before protocol drafting");
     if (!this.hasApproval(programId, "scope", question.id, question.contentHash)) throw new Error("Scope approval is required before protocol drafting");
@@ -191,6 +250,7 @@ export class ResearchStore {
 
   approveProtocol(programId: string, protocolId: string, actor = "researcher", note = ""): Approval {
     const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
     const protocol = this.getProtocol(protocolId);
     if (protocol.programId !== programId) throw new Error("Protocol does not belong to program");
     if (protocol.status !== "draft") throw new Error(`Protocol is not draft: ${protocol.status}`);
@@ -208,6 +268,7 @@ export class ResearchStore {
 
   freezeProtocol(programId: string, protocolId: string, actor = "researcher"): ProtocolFreeze {
     const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
     const protocol = this.getProtocol(protocolId);
     if (protocol.programId !== programId) throw new Error("Protocol does not belong to program");
     const existing = this.db.prepare("SELECT payload_json FROM protocol_freezes WHERE protocol_id=?").get(protocol.id) as { payload_json: string } | undefined;
@@ -225,27 +286,50 @@ export class ResearchStore {
     return freeze;
   }
 
-  recordDeviation(programId: string, input: Omit<ProtocolDeviation, "id" | "protocolId" | "createdAt">): ProtocolDeviation {
+  recordDeviation(programId: string, input: Omit<ProtocolDeviation, "id" | "protocolId" | "createdAt" | "resolution">): ProtocolDeviation {
     const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
     const protocol = this.listProtocols(programId).at(-1);
-    if (!protocol || (protocol.status !== "frozen" && protocol.status !== "deviated")) throw new Error("A frozen protocol is required before recording a deviation");
-    const deviation = ProtocolDeviationSchema.parse({ ...input, id: `deviation-${randomUUID()}`, protocolId: protocol.id, createdAt: new Date().toISOString() });
+    if (!protocol || protocol.status !== "frozen") throw new Error("A frozen protocol is required before recording a deviation");
+    const deviation = ProtocolDeviationSchema.parse({ ...input, id: `deviation-${randomUUID()}`, protocolId: protocol.id, resolution: input.approved ? "approved" : "pending", createdAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {
       this.db.prepare("INSERT INTO protocol_deviations(id,protocol_id,payload_json,created_at) VALUES(?,?,?,?)").run(deviation.id, deviation.protocolId, JSON.stringify(deviation), deviation.createdAt);
-      const updated = { ...protocol, status: "deviated" as const };
-      this.db.prepare("UPDATE research_protocols SET status=?,payload_json=? WHERE id=?").run(updated.status, JSON.stringify(updated), updated.id);
-      this.updateProgram({ ...program, status: "frozen" });
+      if (deviation.approved) {
+        const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
+        const body = { ...protocol, status: undefined, id: undefined, version: undefined, contentHash: undefined, parentId: protocol.id, createdAt: undefined,
+          allowedChanges: [...protocol.allowedChanges, `Approved deviation request: ${deviation.requestedChange}`] };
+        const revised = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, version: (latest.version ?? protocol.version) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
+        this.db.prepare("INSERT INTO research_protocols(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
+          .run(revised.id, revised.programId, revised.questionId, revised.version, revised.status, JSON.stringify(revised), revised.contentHash, revised.parentId, revised.createdAt);
+        this.updateProgram({ ...program, status: "protocol_ready" });
+      }
     });
     tx();
     return deviation;
   }
 
+  rejectDeviation(programId: string, deviationId: string, actor = "researcher"): ProtocolDeviation {
+    this.assertProgramMutable(programId);
+    const row = this.db.prepare("SELECT payload_json FROM protocol_deviations WHERE id=?").get(deviationId) as ProgramRow | undefined;
+    if (!row) throw new Error(`Unknown protocol deviation ${deviationId}`);
+    const deviation = ProtocolDeviationSchema.parse(JSON.parse(row.payload_json));
+    const protocol = this.getProtocol(deviation.protocolId);
+    if (protocol.programId !== programId) throw new Error("Deviation does not belong to program");
+    if (deviation.resolution !== "pending") throw new Error(`Deviation is already ${deviation.resolution}`);
+    const resolved = ProtocolDeviationSchema.parse({ ...deviation, resolution: "rejected", actor: `${deviation.actor}; resolved by ${actor}` });
+    this.db.prepare("UPDATE protocol_deviations SET payload_json=? WHERE id=?").run(JSON.stringify(resolved), resolved.id);
+    return resolved;
+  }
+
   recordVisibility(input: Omit<VisibilityEvent, "id" | "observedAt">): VisibilityEvent {
     const program = this.getProgram(input.programId);
-    const alreadyObserved = this.visibility(input.programId).some((event) => event.dataRole === input.dataRole);
+    const alreadyObserved = this.visibility(input.programId).some((event) => event.dataRole === "confirmation" || event.dataRole === "test");
     if (input.dataRole === "confirmation" || input.dataRole === "test") {
       const protocol = this.listProtocols(input.programId).at(-1);
       if (!protocol) throw new Error("A protocol is required before confirmation visibility");
+      if (this.deviations(input.programId).some((deviation) => deviation.protocolId === protocol.id && deviation.resolution === "pending")) {
+        throw new Error("A pending protocol deviation must be resolved before confirmation");
+      }
       assertConfirmationAllowed(protocol, alreadyObserved);
     }
     const event = VisibilityEventSchema.parse({ ...input, id: `visibility-${randomUUID()}`, observedAt: new Date().toISOString() });
@@ -264,8 +348,44 @@ export class ResearchStore {
     }
   }
 
+  createAssumptionRegister(questionId: string, assumptionIds: string[], parentId: string | null = null): AssumptionRegister {
+    const question = this.getQuestion(questionId);
+    this.assertProgramMutable(question.programId);
+    const assumptions = assumptionIds.map((id) => {
+      const row = this.db.prepare("SELECT payload_json FROM research_assumptions WHERE id=? AND question_id=?").get(id, questionId) as ProgramRow | undefined;
+      if (!row) throw new Error(`Assumption ${id} does not belong to question ${questionId}`);
+      return AssumptionSchema.parse(JSON.parse(row.payload_json));
+    });
+    if (!assumptions.length) throw new Error("Assumption register requires at least one assumption");
+    const latest = this.db.prepare("SELECT max(version) version FROM research_assumption_registers WHERE question_id=?").get(questionId) as { version: number | null };
+    const body = { assumptionIds, parentId };
+    const register = AssumptionRegisterSchema.parse({ id: `assumption-register-${randomUUID()}`, questionId, version: (latest.version ?? 0) + 1, status: "draft", ...body, contentHash: hashPayload(body), createdAt: new Date().toISOString() });
+    this.db.prepare("INSERT INTO research_assumption_registers(id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?)")
+      .run(register.id, register.questionId, register.version, register.status, JSON.stringify(register), register.contentHash, register.parentId, register.createdAt);
+    return register;
+  }
+
+  createHypothesisSet(programId: string, input: HypothesisSetDraft): HypothesisSet {
+    const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
+    const question = this.listQuestions(programId).find((item) => item.status === "selected");
+    if (!question) throw new Error("A selected question is required before creating a hypothesis set");
+    if (!this.hasApproval(programId, "scope", question.id, question.contentHash)) throw new Error("Scope approval is required before creating a hypothesis set");
+    const hypotheses = input.hypotheses.map((item) => ({ ...item, id: `hypothesis-${randomUUID()}` }));
+    if (!hypotheses.some((item) => item.kind === "target")) throw new Error("Hypothesis set requires a target hypothesis");
+    if (!hypotheses.some((item) => item.kind !== "target")) throw new Error("Hypothesis set requires a null or rival hypothesis");
+    const latest = this.db.prepare("SELECT max(version) version FROM research_hypothesis_sets WHERE program_id=?").get(programId) as { version: number | null };
+    const body = { hypotheses, parentId: input.parentId ?? null };
+    const set = HypothesisSetSchema.parse({ id: `hypothesis-set-${randomUUID()}`, programId, questionId: question.id, version: (latest.version ?? 0) + 1, status: "draft", ...body, contentHash: hashPayload(body), createdAt: new Date().toISOString() });
+    this.db.prepare("INSERT INTO research_hypothesis_sets(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
+      .run(set.id, set.programId, set.questionId, set.version, set.status, JSON.stringify(set), set.contentHash, set.parentId, set.createdAt);
+    return set;
+  }
+
   deriveProgram(parentProgramId: string, reason: string, actor = "researcher", observedData: string[] = []): { program: ResearchProgram; derivation: RunDerivation } {
     const parent = this.getProgram(parentProgramId);
+    const derivedCount = (this.db.prepare("SELECT count(*) n FROM research_run_derivations WHERE parent_program_id=?").get(parent.id) as { n: number }).n;
+    if (derivedCount >= this.maxDerivedRuns) throw new Error(`Derived run limit reached: ${this.maxDerivedRuns}`);
     const child = this.createProgram({ ...parent, title: `${parent.title} (derived)`, id: undefined, status: undefined, contentHash: undefined, derivedFromId: undefined, createdAt: undefined, updatedAt: undefined }, parent.id);
     const derivation = RunDerivationSchema.parse({ id: `derivation-${randomUUID()}`, parentProgramId: parent.id, childProgramId: child.id, reason, observedData, actor, createdAt: new Date().toISOString() });
     this.db.prepare("INSERT INTO research_run_derivations(id,parent_program_id,child_program_id,payload_json,created_at) VALUES(?,?,?,?,?)")
@@ -284,6 +404,20 @@ export class ResearchStore {
     const placeholders = questionIds.map(() => "?").join(",");
     return (this.db.prepare(`SELECT payload_json FROM research_assumptions WHERE question_id IN (${placeholders}) ORDER BY created_at`).all(...questionIds) as ProgramRow[])
       .map((row) => AssumptionSchema.parse(JSON.parse(row.payload_json)));
+  }
+
+  assumptionRegisters(programId: string): AssumptionRegister[] {
+    const questionIds = this.listQuestions(programId).map((question) => question.id);
+    if (!questionIds.length) return [];
+    const placeholders = questionIds.map(() => "?").join(",");
+    return (this.db.prepare(`SELECT payload_json FROM research_assumption_registers WHERE question_id IN (${placeholders}) ORDER BY version`).all(...questionIds) as ProgramRow[])
+      .map((row) => AssumptionRegisterSchema.parse(JSON.parse(row.payload_json)));
+  }
+
+  hypothesisSets(programId: string): HypothesisSet[] {
+    this.getProgram(programId);
+    return (this.db.prepare("SELECT payload_json FROM research_hypothesis_sets WHERE program_id=? ORDER BY version").all(programId) as ProgramRow[])
+      .map((row) => HypothesisSetSchema.parse(JSON.parse(row.payload_json)));
   }
 
   freezes(programId: string): ProtocolFreeze[] {
@@ -317,6 +451,8 @@ export class ResearchStore {
       program: this.getProgram(programId),
       questions: this.listQuestions(programId),
       assumptions: this.assumptions(programId),
+      assumptionRegisters: this.assumptionRegisters(programId),
+      hypothesisSets: this.hypothesisSets(programId),
       protocols: this.listProtocols(programId),
       approvals: this.approvals(programId),
       freezes: this.freezes(programId),
@@ -330,6 +466,7 @@ export class ResearchStore {
     const count = (table: string) => (this.db.prepare(`SELECT count(*) n FROM ${table}`).get() as { n: number }).n;
     return {
       programs: count("research_programs"), questions: count("research_questions"), assumptions: count("research_assumptions"),
+      assumptionRegisters: count("research_assumption_registers"), hypothesisSets: count("research_hypothesis_sets"),
       protocols: count("research_protocols"), approvals: count("research_approvals"), freezes: count("protocol_freezes"),
       deviations: count("protocol_deviations"), derivations: count("research_run_derivations"), visibility: count("research_visibility_events"),
     };

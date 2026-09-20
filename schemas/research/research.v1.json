@@ -8,7 +8,14 @@
     "profile": { "enum": ["smoke", "exploratory", "confirmatory"] },
     "intent": { "$ref": "#/$defs/researchIntent" },
     "question": { "$ref": "#/$defs/researchQuestion" },
-    "protocol": { "$ref": "#/$defs/researchProtocol" }
+    "protocol": { "$ref": "#/$defs/researchProtocol" },
+    "assumptionRegister": { "$ref": "#/$defs/assumptionRegister" },
+    "hypothesisSet": { "$ref": "#/$defs/hypothesisSet" },
+    "approval": { "$ref": "#/$defs/approval" },
+    "freeze": { "$ref": "#/$defs/freeze" },
+    "deviation": { "$ref": "#/$defs/deviation" },
+    "visibility": { "$ref": "#/$defs/visibility" },
+    "derivation": { "$ref": "#/$defs/derivation" }
   },
   "$defs": {
     "researchIntent": {
@@ -87,6 +94,61 @@
         "parentId": { "type": ["string", "null"] },
         "createdAt": { "type": "string" }
       },
+      "additionalProperties": false
+    },
+    "assumptionRegister": {
+      "type": "object",
+      "required": ["id", "questionId", "version", "status", "assumptionIds", "contentHash", "createdAt"],
+      "properties": {
+        "id": { "type": "string" }, "questionId": { "type": "string" }, "version": { "type": "integer", "minimum": 1 },
+        "status": { "enum": ["draft", "frozen", "superseded"] }, "assumptionIds": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "parentId": { "type": ["string", "null"] }, "createdAt": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "hypothesisItem": {
+      "type": "object",
+      "required": ["id", "kind", "statement", "prediction", "falsification", "evidenceIds"],
+      "properties": {
+        "id": { "type": "string" }, "kind": { "enum": ["target", "null", "rival"] }, "statement": { "type": "string", "minLength": 20 },
+        "prediction": { "type": "string", "minLength": 10 }, "falsification": { "type": "string", "minLength": 10 },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "hypothesisSet": {
+      "type": "object",
+      "required": ["id", "programId", "questionId", "version", "status", "hypotheses", "contentHash", "createdAt"],
+      "properties": {
+        "id": { "type": "string" }, "programId": { "type": "string" }, "questionId": { "type": "string" }, "version": { "type": "integer", "minimum": 1 },
+        "status": { "enum": ["draft", "frozen", "superseded"] }, "hypotheses": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/hypothesisItem" } },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }, "parentId": { "type": ["string", "null"] }, "createdAt": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "approval": {
+      "type": "object", "required": ["id", "programId", "kind", "objectId", "objectHash", "decision", "actor", "createdAt"],
+      "properties": { "id": { "type": "string" }, "programId": { "type": "string" }, "kind": { "enum": ["scope", "protocol"] }, "objectId": { "type": "string" }, "objectHash": { "type": "string" }, "decision": { "enum": ["approved", "rejected"] }, "actor": { "type": "string" }, "note": { "type": "string" }, "createdAt": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "freeze": {
+      "type": "object", "required": ["id", "protocolId", "contentHash", "approvedBy", "createdAt"],
+      "properties": { "id": { "type": "string" }, "protocolId": { "type": "string" }, "contentHash": { "type": "string" }, "approvedBy": { "type": "string" }, "createdAt": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "deviation": {
+      "type": "object", "required": ["id", "protocolId", "reason", "observedData", "requestedChange", "approved", "resolution", "actor", "createdAt"],
+      "properties": { "id": { "type": "string" }, "protocolId": { "type": "string" }, "reason": { "type": "string" }, "observedData": { "type": "boolean" }, "requestedChange": { "type": "string" }, "approved": { "type": "boolean" }, "resolution": { "enum": ["pending", "approved", "rejected"] }, "actor": { "type": "string" }, "createdAt": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "visibility": {
+      "type": "object", "required": ["id", "programId", "runId", "dataRole", "observedAt"],
+      "properties": { "id": { "type": "string" }, "programId": { "type": "string" }, "runId": { "type": "string" }, "dataRole": { "enum": ["confirmation", "test", "audit"] }, "artifactHash": { "type": ["string", "null"] }, "observedAt": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "derivation": {
+      "type": "object", "required": ["id", "parentProgramId", "childProgramId", "reason", "observedData", "actor", "createdAt"],
+      "properties": { "id": { "type": "string" }, "parentProgramId": { "type": "string" }, "childProgramId": { "type": "string" }, "reason": { "type": "string" }, "observedData": { "type": "array", "items": { "type": "string" } }, "actor": { "type": "string" }, "createdAt": { "type": "string" } },
       "additionalProperties": false
     }
   }

@@ -74,6 +74,41 @@ export const AssumptionSchema = z.object({
 });
 export type Assumption = z.infer<typeof AssumptionSchema>;
 
+export const AssumptionRegisterSchema = z.object({
+  id: z.string().min(1),
+  questionId: z.string().min(1),
+  version: z.number().int().positive(),
+  status: z.enum(["draft", "frozen", "superseded"]),
+  assumptionIds: z.array(z.string()).min(1),
+  contentHash: z.string().regex(/^[a-f0-9]{64}$/),
+  parentId: z.string().nullable().default(null),
+  createdAt: z.string(),
+});
+export type AssumptionRegister = z.infer<typeof AssumptionRegisterSchema>;
+
+export const HypothesisItemSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["target", "null", "rival"]),
+  statement: z.string().min(20),
+  prediction: z.string().min(10),
+  falsification: z.string().min(10),
+  evidenceIds: z.array(z.string()).default([]),
+});
+export type HypothesisItem = z.infer<typeof HypothesisItemSchema>;
+
+export const HypothesisSetSchema = z.object({
+  id: z.string().min(1),
+  programId: z.string().min(1),
+  questionId: z.string().min(1),
+  version: z.number().int().positive(),
+  status: z.enum(["draft", "frozen", "superseded"]),
+  hypotheses: z.array(HypothesisItemSchema).min(2),
+  contentHash: z.string().regex(/^[a-f0-9]{64}$/),
+  parentId: z.string().nullable().default(null),
+  createdAt: z.string(),
+});
+export type HypothesisSet = z.infer<typeof HypothesisSetSchema>;
+
 export const ResearchProtocolSchema = z.object({
   id: z.string().min(1),
   programId: z.string().min(1),
@@ -103,6 +138,7 @@ export const ProtocolDeviationSchema = z.object({
   observedData: z.boolean().default(false),
   requestedChange: z.string().min(10),
   approved: z.boolean().default(false),
+  resolution: z.enum(["pending", "approved", "rejected"]).default("pending"),
   actor: z.string().min(1),
   createdAt: z.string(),
 });
@@ -172,6 +208,6 @@ export function assertProtocolCanFreeze(protocol: ResearchProtocol, approved: bo
 }
 
 export function assertConfirmationAllowed(protocol: ResearchProtocol, observedConfirmation: boolean): void {
-  if (protocol.status !== "frozen" && protocol.status !== "deviated") throw new Error("Confirmation requires a frozen protocol");
+  if (protocol.status !== "frozen") throw new Error("Confirmation requires a frozen protocol");
   if (observedConfirmation) throw new Error("Confirmation has already been observed; derive a new run");
 }

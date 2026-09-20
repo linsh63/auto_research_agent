@@ -14,6 +14,7 @@ import { ContentAddressedStore } from "./infrastructure/artifacts/content-store.
 import { createEvidenceTools } from "./adapters/evidence-tools.js";
 import { WorkflowCoordinator } from "./application/workflow-coordinator.js";
 import { ResearchStore } from "./infrastructure/db/research-store.js";
+import { loadProjectConfig } from "./infrastructure/config/config.js";
 
 const dataDir = resolve(process.env.AUTO_RESEARCH_DATA_DIR ?? ".research-data");
 const argv = process.argv.slice(2);
@@ -59,10 +60,13 @@ Research graph (v1.2 E):
   npm run dev -- research select-question <program-id> <question-id>
   npm run dev -- research approve-scope <program-id> [actor]
   npm run dev -- research protocol <program-id> <protocol.json>
+  npm run dev -- research hypothesis-set <program-id> <hypotheses.json>
+  npm run dev -- research assumption-register <question-id> <assumption-ids.json>
   npm run dev -- research approve-protocol <program-id> <protocol-id>
   npm run dev -- research freeze-protocol <program-id> <protocol-id>
   npm run dev -- research assumption <question-id> <assumption.json>
   npm run dev -- research deviation <program-id> <deviation.json>
+  npm run dev -- research reject-deviation <program-id> <deviation-id>
   npm run dev -- research visibility <program-id> <visibility.json>
   npm run dev -- research derive <program-id> <reason.json>
   npm run dev -- research status <program-id>
@@ -76,7 +80,7 @@ AUTO_RESEARCH_SKILL_ROOT.`);
 async function main(): Promise<void> {
   if (!command || command === "help" || command === "--help") usage();
   if (researchMode) {
-    const store = new ResearchStore(join(dataDir, "research.db"));
+    const store = await ResearchStore.open(join(dataDir, "research.db"), { maxDerivedRuns: loadProjectConfig().research.maxDerivedRuns });
     const workflow = new WorkflowCoordinator(store);
     const readJson = (path: string | undefined): unknown => {
       if (!path) throw new Error("JSON input path is required");
@@ -91,7 +95,13 @@ async function main(): Promise<void> {
       else if (command === "approve-protocol") console.log(JSON.stringify(workflow.approveProtocol(args[0]!, args[1]!), null, 2));
       else if (command === "freeze-protocol") console.log(JSON.stringify(workflow.freezeProtocol(args[0]!, args[1]!), null, 2));
       else if (command === "assumption") console.log(JSON.stringify(workflow.addAssumption(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "assumption-register") {
+        const input = readJson(args[1]) as { assumptionIds?: string[]; parentId?: string | null };
+        if (!Array.isArray(input.assumptionIds)) throw new Error("assumptionIds array is required");
+        console.log(JSON.stringify(workflow.createAssumptionRegister(args[0]!, input.assumptionIds, input.parentId ?? null), null, 2));
+      } else if (command === "hypothesis-set") console.log(JSON.stringify(workflow.createHypothesisSet(args[0]!, readJson(args[1]) as never), null, 2));
       else if (command === "deviation") console.log(JSON.stringify(workflow.recordDeviation(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "reject-deviation") console.log(JSON.stringify(workflow.rejectDeviation(args[0]!, args[1]!), null, 2));
       else if (command === "visibility") console.log(JSON.stringify(workflow.recordVisibility(readJson(args[0]) as never), null, 2));
       else if (command === "derive") {
         const input = readJson(args[1]) as { reason?: string; actor?: string; observedData?: string[] };

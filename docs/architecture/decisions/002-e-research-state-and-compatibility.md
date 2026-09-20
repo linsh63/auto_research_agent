@@ -16,9 +16,9 @@ E 阶段增加独立的 versioned research graph：`ResearchProgram → Research
 
 ## 数据库与迁移
 
-- `migrations/003_research_protocol.sql` 创建研究程序、问题、假设、protocol、审批、freeze、deviation、visibility 和 derivation 表。
-- ResearchStore 在从 schema version 0–2 升级到3前创建 SQLite 文件备份和 artifact 备份目录记录。
-- Ledger 与 EvidenceStore 接受 schema version 3，旧表和旧 run 保持可读。
+- `migrations/003_research_protocol.sql` 创建研究程序、问题、protocol、审批、freeze、deviation、visibility 和 derivation 表；`003b_research_cognitive_objects.sql` 补充 AssumptionRegister/HypothesisSet，schema version 到4。
+- ResearchStore 使用 SQLite online backup API，并在迁移前生成 artifact manifest snapshot。
+- Ledger 与 EvidenceStore 接受 schema version 4，旧表和旧 run 保持可读。
 - 新对象无法从旧记录确定推导时不填充默认科学事实；旧 run 只读引用。
 
 ## 状态不变量
@@ -29,6 +29,8 @@ E 阶段增加独立的 versioned research graph：`ResearchProgram → Research
 4. frozen protocol 不能原地再次 freeze 或修改；修改必须创建新 protocol version。
 5. confirmation/test visibility 只能登记一次同一 data role；之后 exploration 被阻止。
 6. 派生 program 保存父 program、原因和已观察数据，不继承为已冻结 confirmation。
+7. confirmation/test visibility 后，原 program 的问题、scope、protocol 和 deviation 写操作全部拒绝；只能派生新 program。
+8. 未决 deviation 不能进入 confirmation；批准 deviation 生成新 draft protocol，必须重新 approval/freeze；驳回 deviation 保留审计记录并恢复原 frozen protocol。
 
 ## 备选方案与取舍
 
@@ -37,6 +39,10 @@ E 阶段增加独立的 versioned research graph：`ResearchProgram → Research
 - 新建独立数据库：隔离简单，但旧 evidence、memory 和 run 不能在同一事实库中追溯。
 
 选择同一 SQLite 事实库加新增表，兼顾 lineage、事务和旧记录只读兼容。
+
+## Corrective release
+
+首次 alpha 实现的独立验收发现上述不变量缺口；`v1.2.0-alpha.1-r1` 补齐 aggregate、mutation guard、deviation resolution、online backup、artifact manifest 和 schema 3→4 测试。复验结果见 [corrective release report](../../reports/releases/v1.2.0-alpha.1-r1-report.md)。
 
 ## 已知限制
 
