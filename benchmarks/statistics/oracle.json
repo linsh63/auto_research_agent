@@ -1,0 +1,11 @@
+{
+  "implementation": "Python 3 / NumPy 1.26.4 / SciPy 1.17.1",
+  "meanDifference": 0.15,
+  "standardError": 0.02886751345948129,
+  "intervalLow": 0.025793114412483484,
+  "intervalHigh": 0.2742068855875165,
+  "pairedEffectSize": 2.9999999999999996,
+  "leaveOneSeedOut": [0.175, 0.15000000000000002, 0.125],
+  "groupNormalPValues": [2.034554614544436e-7, 2.034554614544436e-7],
+  "holmAdjusted": [4.069109229088872e-7, 4.069109229088872e-7]
+}

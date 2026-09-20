@@ -6,6 +6,8 @@ export const SearchNodeSchema = z.object({
   signature: z.string().min(1),
   metric: z.number().nullable(), costUsd: z.number().nonnegative().default(0), durationMs: z.number().nonnegative().default(0),
   failureClass: z.string().nullable().default(null), artifactHash: z.string().nullable().default(null), createdAt: z.string(),
+  protocolId: z.string().nullable().default(null), hypothesisSetId: z.string().nullable().default(null),
+  predictionIds: z.array(z.string()).default([]), phase: z.enum(["exploration", "debug", "confirmation"]).default("exploration"),
 });
 export const SearchBudgetSchema = z.object({ maxCandidates: z.number().int().positive(), maxWallMs: z.number().positive(), maxCostUsd: z.number().nonnegative(), concurrency: z.number().int().positive() });
 export const DatasetRoleSchema = z.object({ name: z.enum(["train", "validation", "test", "audit"]), manifestHash: z.string(), path: z.string(), sealed: z.boolean() });

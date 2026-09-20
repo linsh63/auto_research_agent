@@ -17,6 +17,9 @@ import { ResearchStore } from "./infrastructure/db/research-store.js";
 import { loadProjectConfig } from "./infrastructure/config/config.js";
 import { EvidenceSynthesisStore } from "./infrastructure/db/evidence-synthesis-store.js";
 import { EvidenceSynthesisService } from "./application/evidence-synthesis.js";
+import { StudyStore } from "./infrastructure/db/study-store.js";
+import { SearchStore } from "./infrastructure/db/search-store.js";
+import { StudyWorkflow } from "./application/study-workflow.js";
 
 const dataDir = resolve(process.env.AUTO_RESEARCH_DATA_DIR ?? ".research-data");
 const argv = process.argv.slice(2);
@@ -84,6 +87,17 @@ Research graph (v1.2 E):
   npm run dev -- research closest-work <map-id> <comparison.json>
   npm run dev -- research freeze-evidence-map <program-id> <map-id>
   npm run dev -- research capabilities <build-evidence-map|generate-hypothesis-set>
+  npm run dev -- research study-new <study.json>
+  npm run dev -- research study-outcome <study-id> <outcome.json>
+  npm run dev -- research study-data-role <study-id> <role.json>
+  npm run dev -- research study-analysis-plan <study-id> <plan.json>
+  npm run dev -- research study-deviation-policy <study-id> <policy.json>
+  npm run dev -- research freeze-study <study-id>
+  npm run dev -- research baseline-result <study-id> <result.json>
+  npm run dev -- research candidate-freeze <study-id> <search-run-id> <node-id> <hashes.json>
+  npm run dev -- research candidate-approve <study-id> [actor]
+  npm run dev -- research confirmation-issue <study-id>
+  npm run dev -- research confirmation-consume <study-id> <token> <run-id>
 
 Set AUTO_RESEARCH_API_KEY for model stages. Optional: AUTO_RESEARCH_BASE_URL,
 AUTO_RESEARCH_MODEL (default gpt-5.6-luna), AUTO_RESEARCH_DATA_DIR,
@@ -96,8 +110,11 @@ async function main(): Promise<void> {
   if (researchMode) {
     const store = await ResearchStore.open(join(dataDir, "research.db"), { maxDerivedRuns: loadProjectConfig().research.maxDerivedRuns });
     const synthesisStore = await EvidenceSynthesisStore.open(join(dataDir, "research.db"));
+    const studyStore = await StudyStore.open(join(dataDir, "research.db"));
+    const searchStore = new SearchStore(join(dataDir, "research.db"));
     const workflow = new WorkflowCoordinator(store);
     const synthesis = new EvidenceSynthesisService(synthesisStore, store);
+    const studies = new StudyWorkflow(studyStore, searchStore, store);
     const readJson = (path: string | undefined): unknown => {
       if (!path) throw new Error("JSON input path is required");
       return JSON.parse(readFileSync(resolve(path), "utf8"));
@@ -136,8 +153,19 @@ async function main(): Promise<void> {
       else if (command === "closest-work") console.log(JSON.stringify(synthesisStore.addClosestWork(args[0]!, readJson(args[1]) as never), null, 2));
       else if (command === "freeze-evidence-map") console.log(JSON.stringify(synthesisStore.freezeEvidenceMap(args[0]!, args[1]!), null, 2));
       else if (command === "capabilities") console.log(JSON.stringify(synthesis.registerCapabilities(args[0] as "build-evidence-map" | "generate-hypothesis-set"), null, 2));
+      else if (command === "study-new") console.log(JSON.stringify(studyStore.createStudy(readJson(args[0]) as never), null, 2));
+      else if (command === "study-outcome") console.log(JSON.stringify(studyStore.addOutcome(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "study-data-role") console.log(JSON.stringify(studyStore.addDataRole(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "study-analysis-plan") console.log(JSON.stringify(studyStore.addAnalysisPlan(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "study-deviation-policy") console.log(JSON.stringify(studyStore.addDeviationPolicy(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "freeze-study") console.log(JSON.stringify(studyStore.freezeStudy(args[0]!), null, 2));
+      else if (command === "baseline-result") console.log(JSON.stringify(studyStore.recordBaseline(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "candidate-freeze") console.log(JSON.stringify(studies.freezeBestCandidate(args[0]!, args[1]!, args[2]!, readJson(args[3]) as never), null, 2));
+      else if (command === "candidate-approve") console.log(JSON.stringify(studyStore.approveCandidate(args[0]!, args[1] ?? "researcher"), null, 2));
+      else if (command === "confirmation-issue") console.log(JSON.stringify(studyStore.issueConfirmationToken(args[0]!), null, 2));
+      else if (command === "confirmation-consume") console.log(JSON.stringify(studyStore.consumeConfirmationToken(args[0]!, args[1]!, args[2]!), null, 2));
       else throw new Error(`Unknown research command: ${command}`);
-    } finally { synthesisStore.close(); store.close(); }
+    } finally { searchStore.close(); studyStore.close(); synthesisStore.close(); store.close(); }
     return;
   }
   if (command === "skills") {

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://auto-research-agent.local/schemas/research/study.v1.json",
+  "title": "G study, confirmation and analysis objects",
+  "type": "object",
+  "$defs": {
+    "study": {
+      "type": "object",
+      "required": ["id", "programId", "protocolId", "hypothesisSetId", "evidenceMapId", "status", "experimentalUnit", "design", "seeds", "randomizationSeed", "contentHash", "createdAt", "updatedAt"],
+      "properties": {
+        "id": { "type": "string" }, "programId": { "type": "string" }, "protocolId": { "type": "string" }, "hypothesisSetId": { "type": "string" }, "evidenceMapId": { "type": "string" },
+        "status": { "enum": ["draft", "frozen", "baseline_passed", "baseline_failed", "exploring", "candidate_frozen", "confirmation_ready", "confirmation_consumed", "analyzed", "closed"] },
+        "experimentalUnit": { "type": "string" }, "design": { "enum": ["paired_repeated_run", "seed_by_corruption"] }, "seeds": { "type": "array", "minItems": 2, "items": { "type": "integer" } },
+        "blockingFactors": { "type": "array" }, "nuisanceFactors": { "type": "array" }, "randomizationSeed": { "type": "integer" }, "contentHash": { "type": "string" }, "createdAt": { "type": "string" }, "updatedAt": { "type": "string" }
+      }, "additionalProperties": false
+    },
+    "dataRole": {
+      "type": "object", "required": ["id", "studyId", "role", "path", "manifestHash", "sealed", "createdAt"],
+      "properties": { "id": { "type": "string" }, "studyId": { "type": "string" }, "role": { "enum": ["train", "validation", "confirmation", "audit"] }, "path": { "type": "string" }, "manifestHash": { "type": "string" }, "sealed": { "type": "boolean" }, "createdAt": { "type": "string" } }, "additionalProperties": false
+    },
+    "candidateFreeze": {
+      "type": "object", "required": ["id", "studyId", "searchRunId", "nodeId", "nodeSignature", "protocolHash", "analysisPlanHash", "codeHash", "configHash", "dataManifestHash", "status", "createdAt"],
+      "properties": { "id": { "type": "string" }, "studyId": { "type": "string" }, "searchRunId": { "type": "string" }, "nodeId": { "type": "string" }, "nodeSignature": { "type": "string" }, "protocolHash": { "type": "string" }, "analysisPlanHash": { "type": "string" }, "codeHash": { "type": "string" }, "configHash": { "type": "string" }, "dataManifestHash": { "type": "string" }, "status": { "enum": ["frozen", "approved"] }, "createdAt": { "type": "string" }, "approvedAt": { "type": ["string", "null"] }, "approvedBy": { "type": ["string", "null"] } }, "additionalProperties": false
+    },
+    "observation": {
+      "type": "object", "required": ["id", "studyId", "phase", "variant", "seed", "outcomeId", "runId", "createdAt"],
+      "properties": { "id": { "type": "string" }, "studyId": { "type": "string" }, "phase": { "enum": ["baseline", "exploration", "confirmation"] }, "variant": { "enum": ["baseline", "candidate"] }, "seed": { "type": "integer" }, "group": { "type": ["string", "null"] }, "outcomeId": { "type": "string" }, "value": { "type": ["number", "null"] }, "missingReason": { "type": ["string", "null"] }, "runId": { "type": "string" }, "createdAt": { "type": "string" } }, "additionalProperties": false
+    }
+  },
+  "properties": { "study": { "$ref": "#/$defs/study" }, "dataRole": { "$ref": "#/$defs/dataRole" }, "candidateFreeze": { "$ref": "#/$defs/candidateFreeze" }, "observation": { "$ref": "#/$defs/observation" } }
+}

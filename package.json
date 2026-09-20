@@ -1,6 +1,6 @@
 {
   "name": "auto-research-agent",
-  "version": "1.2.0-alpha.2",
+  "version": "1.2.0-beta.1",
   "private": true,
   "type": "module",
   "engines": {
@@ -15,6 +15,8 @@
     "validate:skills": "python3 scripts/validate_skills.py",
     "check:docs": "python3 scripts/check_docs.py",
     "evaluate:evidence-synthesis": "tsx scripts/evaluate_evidence_synthesis.ts",
+    "validate:bubblewrap": "tsx scripts/validate_bubblewrap.ts",
+    "evaluate:statistics": "tsx scripts/evaluate_statistics.ts",
     "validate:cv": "tsx scripts/validate_cv_scenario.ts",
     "probe:pi": "tsx scripts/pi_sdk_probe.ts"
   },

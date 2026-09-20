@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "seeds": [11, 23, 47],
+  "groups": ["blur", "noise"],
+  "differences": { "11": 0.1, "23": 0.15, "47": 0.2 },
+  "confidenceLevel": 0.95
+}
