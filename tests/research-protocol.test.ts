@@ -42,6 +42,10 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const db = join(dir, "research.db");
   const ledger = new Ledger(db);
+  const legacyRun = ledger.create({
+    title: "Legacy v1.1 run", question: "Does a fixed candidate improve this controlled task?", keywords: ["baseline"],
+    experiment: { workspace: ".", baseline: { program: "python3", args: ["-c", "print('{}')"] }, candidate: { program: "python3", args: ["-c", "print('{}')"] }, metric: "score", direction: "maximize", execution: "process" },
+  });
   ledger.close();
   const store = new ResearchStore(db);
   const workflow = new WorkflowCoordinator(store);
@@ -78,7 +82,8 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   const evidence = new EvidenceStore(db);
   evidence.close();
   const readableLedger = new Ledger(db);
-  assert.equal(readableLedger.list().length, 0);
+  assert.equal(readableLedger.list().length, 1);
+  assert.equal(readableLedger.get(legacyRun.id).brief.title, "Legacy v1.1 run");
   readableLedger.close();
 });
 
