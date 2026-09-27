@@ -70,11 +70,14 @@ docs/
 - [v1.2.0-alpha.2：F 证据综合与竞争假设](reports/releases/v1.2.0-alpha.2-report.md)
 - [v1.2.0-beta.1：G 实验设计、统计与确认](reports/releases/v1.2.0-beta.1-report.md)
 - [v1.2.0-rc.1：H 审查、决策与真实验收](reports/releases/v1.2.0-rc.1-report.md)
+- [v1.2.0：正式发布验收](reports/releases/v1.2.0-report.md)
 
 ### 自动验证产物
 
 - [pi SDK 探针结果](reports/validation/pi-sdk-probe.json)
 - [Skills 验证结果](reports/validation/skill-validation.json)
+- [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
+- [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)
 
 ## 维护约定
 

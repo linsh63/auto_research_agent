@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 7,
+  "programStatus": "closed",
+  "studyStatus": "closed",
+  "decision": "publish_bounded_result",
+  "approvals": {
+    "scope": 1,
+    "protocol": 1,
+    "candidate": 1,
+    "finalClaim": 1
+  },
+  "confirmation": {
+    "tokens": 1,
+    "consumed": 1,
+    "visibilityEvents": 1,
+    "successfulSandboxRuns": 6,
+    "observations": 24
+  },
+  "reviews": {
+    "dimensions": 4,
+    "openFindings": 0
+  },
+  "modelCalls": {
+    "total": 15,
+    "completed": 9,
+    "failed": 6
+  },
+  "sandbox": {
+    "succeeded": 12,
+    "failed": 6
+  },
+  "gpuHours": 3.373845,
+  "artifactBytes": 895354979,
+  "claimGrade": "suggestive",
+  "releaseCandidateCommit": "88c200a91e7801468945e3c0d74b98db2dade49f"
+}

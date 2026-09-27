@@ -6,7 +6,7 @@
 
 V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实验搜索和D第二场景均已完成本地profile验收。D 使用 scikit-learn Digits 图像分类验证同一核心流程可以接入CV任务，详情见 [v1.1.0发布报告](docs/reports/releases/v1.1.0-report.md)。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。
 
-v1.2 的 E–H 已完成：confirmatory workflow 现在包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。当前版本为 `1.2.0-rc.1`；真实 CIFAR-10/CIFAR-10-C 案例已到达 `publish_bounded_result`，详情见 [H 案例](docs/cases/cifar10c-augmix-h.md)。正式 `v1.2.0` 尚未发布。
+v1.2 已正式发布：confirmatory workflow 现在包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。当前版本为 `1.2.0`；真实 CIFAR-10/CIFAR-10-C 案例已到达 `publish_bounded_result`，详情见 [H 案例](docs/cases/cifar10c-augmix-h.md)与[正式发布报告](docs/reports/releases/v1.2.0-report.md)。
 
 [文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 

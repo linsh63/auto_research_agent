@@ -90,6 +90,10 @@ test("H four-dimensional review blocks unresolved findings and emits a bounded r
   const report = workflow.writeReport("program", "study", decision);
   assert.ok(existsSync(report.path));
   assert.match(readFileSync(report.path, "utf8"), /Only the declared fixture seeds/);
+  const statusDb = new Database(dbPath, { readonly: true });
+  assert.equal((statusDb.prepare("SELECT status FROM studies WHERE id='study'").get() as { status: string }).status, "closed");
+  assert.equal((statusDb.prepare("SELECT status FROM research_programs WHERE id='program'").get() as { status: string }).status, "closed");
+  statusDb.close();
   store.close();
 });
 
