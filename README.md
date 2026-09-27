@@ -6,7 +6,7 @@
 
 V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实验搜索和D第二场景均已完成本地profile验收。D 使用 scikit-learn Digits 图像分类验证同一核心流程可以接入CV任务，详情见 [v1.1.0发布报告](docs/reports/releases/v1.1.0-report.md)。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。
 
-v1.2 的 E–G 已完成：confirmatory workflow 现在包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计和bubblewrap实验边界。当前版本为 `1.2.0-beta.1`，H 真实研究验收尚未开始。
+v1.2 的 E–H 已完成：confirmatory workflow 现在包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。当前版本为 `1.2.0-rc.1`；真实 CIFAR-10/CIFAR-10-C 案例已到达 `publish_bounded_result`，详情见 [H 案例](docs/cases/cifar10c-augmix-h.md)。正式 `v1.2.0` 尚未发布。
 
 [文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 
@@ -39,7 +39,7 @@ node dist/cli.js finalize <run-id>  # 审核最终报告后运行
 
 `npm run probe:pi` 使用一次工具调用和一次立即取消的请求，验证 pi SDK 的自定义工具、事件流、持久会话恢复和取消；结果写入 [pi-sdk-probe.json](docs/reports/validation/pi-sdk-probe.json)。该命令需要模型 API，并会产生少量用量。
 
-合成回归示例只用于检查 pipeline。真实验收案例使用 fastText v0.9.2 和完整 AG News 公开划分，协议见 [案例说明](docs/cases/fasttext-agnews.md)。两者都显式选择 `process` 执行模式，只应运行可信脚本。其他任务默认使用 `docker`，需指定 `dockerImage`；容器关闭网络并限制进程数、CPU 和内存。
+合成回归示例只用于检查 pipeline。首个真实验收案例使用 fastText v0.9.2 和完整 AG News 公开划分，协议见 [案例说明](docs/cases/fasttext-agnews.md)。v1.2 H 案例使用 bubblewrap、单 GPU 和 CIFAR-10/CIFAR-10-C。可信固定哈希脚本可使用受限 process；agent 生成或修改的代码使用断网 bubblewrap，不要求 Docker 权限。
 
 `paper-search`和PaperQA2 worker均已接入；其余技能按方法或混合适配进入相关阶段。`npm run validate:skills`对全部14项能力做离线检查。模型调用次数、单次运行时长和实验超时已有硬上限。跨项目记忆已实现但默认关闭，需设置`AUTO_RESEARCH_MEMORY_ENABLED=1`；best-first搜索仍属experimental。
 

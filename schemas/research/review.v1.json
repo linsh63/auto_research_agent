@@ -1,0 +1,706 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "claimAssessment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "studyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claimId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claimText": {
+          "type": "string",
+          "minLength": 10
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 10
+        },
+        "protocolId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidenceMapId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "analysisRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "estimateIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supportingEvidenceIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "opposingEvidenceIds": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "alternativeExplanations": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "invalidationConditions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "grade": {
+          "type": "string",
+          "enum": [
+            "observed",
+            "suggestive",
+            "supported",
+            "replicated",
+            "unresolved",
+            "refuted"
+          ]
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "programId",
+        "studyId",
+        "claimId",
+        "claimText",
+        "scope",
+        "protocolId",
+        "evidenceMapId",
+        "analysisRunId",
+        "estimateIds",
+        "supportingEvidenceIds",
+        "opposingEvidenceIds",
+        "alternativeExplanations",
+        "invalidationConditions",
+        "grade",
+        "contentHash",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "validityThreat": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claimAssessmentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "internal",
+            "construct",
+            "external",
+            "statistical"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10
+        },
+        "mitigation": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 5
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "claimAssessmentId",
+        "kind",
+        "severity",
+        "description",
+        "mitigation",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "structuredReview": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "studyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dimension": {
+          "type": "string",
+          "enum": [
+            "evidence",
+            "methods",
+            "statistics",
+            "reproducibility"
+          ]
+        },
+        "roleSessionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verdict": {
+          "default": "needs_work",
+          "type": "string",
+          "enum": [
+            "sound",
+            "needs_work",
+            "invalid"
+          ]
+        },
+        "confidence": {
+          "default": "medium",
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 20
+        },
+        "inputHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "programId",
+        "studyId",
+        "dimension",
+        "roleSessionId",
+        "verdict",
+        "confidence",
+        "summary",
+        "inputHash",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "reviewFinding": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "major",
+            "minor",
+            "note"
+          ]
+        },
+        "location": {
+          "type": "string",
+          "minLength": 3
+        },
+        "observation": {
+          "type": "string",
+          "minLength": 10
+        },
+        "criterion": {
+          "type": "string",
+          "minLength": 5
+        },
+        "whyItMatters": {
+          "type": "string",
+          "minLength": 10
+        },
+        "requestedAction": {
+          "type": "string",
+          "minLength": 5
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "addressed",
+            "accepted_limitation"
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "reviewId",
+        "severity",
+        "location",
+        "observation",
+        "criterion",
+        "whyItMatters",
+        "requestedAction",
+        "status",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "reviewResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "findingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "addressed",
+            "accepted_limitation"
+          ]
+        },
+        "response": {
+          "type": "string",
+          "minLength": 10
+        },
+        "evidenceIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "reviewId",
+        "findingId",
+        "disposition",
+        "response",
+        "evidenceIds",
+        "actor",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "modelRoleSession": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "researcher",
+            "methodologist",
+            "statistician",
+            "reviewer",
+            "writer"
+          ]
+        },
+        "providerModel": {
+          "type": "string",
+          "minLength": 3
+        },
+        "sessionKind": {
+          "type": "string",
+          "enum": [
+            "independent",
+            "continued"
+          ]
+        },
+        "toolAccess": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inputHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "independence": {
+          "type": "string",
+          "enum": [
+            "none",
+            "session",
+            "model",
+            "provider",
+            "human"
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "programId",
+        "role",
+        "providerModel",
+        "sessionKind",
+        "toolAccess",
+        "inputHash",
+        "independence",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "modelInvocation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roleSessionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "providerModel": {
+          "type": "string",
+          "minLength": 3
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "failed",
+            "timed_out"
+          ]
+        },
+        "inputHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "outputHash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outputText": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "usage": {},
+        "knownCostUsd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "finishedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "programId",
+        "roleSessionId",
+        "stage",
+        "providerModel",
+        "status",
+        "inputHash",
+        "outputHash",
+        "outputText",
+        "usage",
+        "knownCostUsd",
+        "error",
+        "createdAt",
+        "finishedAt"
+      ],
+      "additionalProperties": false
+    },
+    "researchDecision": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "studyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "collect_evidence",
+            "redesign",
+            "debug_reproduction",
+            "explore",
+            "confirm",
+            "replicate",
+            "publish_bounded_result",
+            "stop_low_value",
+            "stop_inconclusive"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 20
+        },
+        "claimAssessmentIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reviewIds": {
+          "minItems": 4,
+          "maxItems": 4,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "approvedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approvedAt": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "programId",
+        "studyId",
+        "action",
+        "rationale",
+        "claimAssessmentIds",
+        "reviewIds",
+        "approvedBy",
+        "approvedAt",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "reproductionManifest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "studyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "codeHashes": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dataManifestHashes": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "protocolHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "analysisPlanHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "environment": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "commands": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "artifactHashes": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "programId",
+        "studyId",
+        "codeHashes",
+        "dataManifestHashes",
+        "protocolHash",
+        "analysisPlanHash",
+        "environment",
+        "commands",
+        "artifactHashes",
+        "contentHash",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "claimAssessment",
+    "validityThreat",
+    "structuredReview",
+    "reviewFinding",
+    "reviewResponse",
+    "modelRoleSession",
+    "modelInvocation",
+    "researchDecision",
+    "reproductionManifest"
+  ],
+  "additionalProperties": false
+}

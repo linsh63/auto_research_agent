@@ -1,0 +1,13 @@
+{
+  "architecture": "torchvision resnet18 with CIFAR stem",
+  "epochs": 12,
+  "batchSize": 128,
+  "optimizer": "SGD(momentum=0.9,nesterov=true,weight_decay=0.0005)",
+  "learningRate": 0.1,
+  "scheduler": "cosine",
+  "seeds": [11, 23, 47],
+  "splitSeed": 42,
+  "explorationGroups": ["brightness-severity3", "defocus_blur-severity3"],
+  "confirmationGroups": ["gaussian_noise-severity3", "contrast-severity3"],
+  "minimumMeaningfulEffect": 0.01
+}

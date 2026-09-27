@@ -9,6 +9,7 @@ export class WorkflowCoordinator {
   selectQuestion(programId: string, questionId: string): ResearchQuestion { return this.store.selectQuestion(programId, questionId); }
   approveScope(programId: string, actor = "researcher", note = ""): Approval { return this.store.approveScope(programId, actor, note); }
   draftProtocol(programId: string, input: ProtocolDraft): ResearchProtocol { return this.store.addProtocol(programId, input); }
+  reviseDraftProtocol(programId: string, protocolId: string, input: ProtocolDraft): ResearchProtocol { return this.store.reviseDraftProtocol(programId, protocolId, input); }
   approveProtocol(programId: string, protocolId: string, actor = "researcher", note = ""): Approval { return this.store.approveProtocol(programId, protocolId, actor, note); }
   freezeProtocol(programId: string, protocolId: string, actor = "researcher"): ProtocolFreeze { return this.store.freezeProtocol(programId, protocolId, actor); }
   addAssumption(questionId: string, input: Omit<Assumption, "id" | "questionId" | "createdAt">): Assumption { return this.store.addAssumption(questionId, input); }

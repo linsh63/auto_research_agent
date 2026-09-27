@@ -25,7 +25,7 @@ export class StudyStore {
     mkdirSync(dirname(path), { recursive: true }); const db = new Database(path); db.pragma("journal_mode = WAL"); db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
     if (version < 5) { db.close(); throw new Error("F schema version 5 is required before G migration"); }
-    if (version > 6) { db.close(); throw new Error(`Study database ${version} is newer than supported version 6`); }
+    if (version > 7) { db.close(); throw new Error(`Study database ${version} is newer than supported version 7`); }
     let backup: string | null = null; let manifest: string | null = null;
     if (version < 6) {
       const backupDir = resolve(dirname(path), "backups"); mkdirSync(backupDir, { recursive: true });
@@ -33,7 +33,7 @@ export class StudyStore {
       manifest = snapshotArtifactManifest(path, backupDir, "005");
       try { applyMigrationTransaction(db, readFileSync(resolve("migrations/005_study_analysis.sql"), "utf8")); } catch (error) { db.close(); throw error; }
     }
-    if ((db.pragma("user_version", { simple: true }) as number) !== 6) { db.close(); throw new Error("G migration did not reach schema version 6"); }
+    const current=db.pragma("user_version", { simple: true }) as number;if(current<6||current>7){db.close();throw new Error(`G schema compatibility failed at version ${current}`);}
     return new StudyStore(db, backup, manifest);
   }
 

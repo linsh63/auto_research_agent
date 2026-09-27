@@ -20,6 +20,10 @@ import { EvidenceSynthesisService } from "./application/evidence-synthesis.js";
 import { StudyStore } from "./infrastructure/db/study-store.js";
 import { SearchStore } from "./infrastructure/db/search-store.js";
 import { StudyWorkflow } from "./application/study-workflow.js";
+import { ReviewStore } from "./infrastructure/db/review-store.js";
+import { ReviewWorkflow } from "./application/review-workflow.js";
+import { PiResearchModel, piModelConfigFromEnv } from "./adapters/pi-model.js";
+import { ReviewDimensionSchema } from "./domain/review.js";
 
 const dataDir = resolve(process.env.AUTO_RESEARCH_DATA_DIR ?? ".research-data");
 const argv = process.argv.slice(2);
@@ -65,6 +69,7 @@ Research graph (v1.2 E):
   npm run dev -- research select-question <program-id> <question-id>
   npm run dev -- research approve-scope <program-id> [actor]
   npm run dev -- research protocol <program-id> <protocol.json>
+  npm run dev -- research revise-protocol <program-id> <protocol-id> <protocol.json>
   npm run dev -- research hypothesis-set <program-id> <hypotheses.json>
   npm run dev -- research assumption-register <question-id> <assumption-ids.json>
   npm run dev -- research freeze-assumption-register <question-id> <register-id>
@@ -98,6 +103,14 @@ Research graph (v1.2 E):
   npm run dev -- research candidate-approve <study-id> [actor]
   npm run dev -- research confirmation-issue <study-id>
   npm run dev -- research confirmation-consume <study-id> <token> <run-id>
+  npm run dev -- research claim-assessment <assessment.json>
+  npm run dev -- research validity-threat <threat.json>
+  npm run dev -- research review <program-id> <study-id> <evidence|methods|statistics|reproducibility> <snapshot.json>
+  npm run dev -- research respond-review <response.json>
+  npm run dev -- research reproduction-manifest <manifest.json>
+  npm run dev -- research decision <decision.json>
+  npm run dev -- research review-report <program-id> <study-id> <decision.json>
+  npm run dev -- research model-invocations <program-id>
 
 Set AUTO_RESEARCH_API_KEY for model stages. Optional: AUTO_RESEARCH_BASE_URL,
 AUTO_RESEARCH_MODEL (default gpt-5.6-luna), AUTO_RESEARCH_DATA_DIR,
@@ -111,6 +124,7 @@ async function main(): Promise<void> {
     const store = await ResearchStore.open(join(dataDir, "research.db"), { maxDerivedRuns: loadProjectConfig().research.maxDerivedRuns });
     const synthesisStore = await EvidenceSynthesisStore.open(join(dataDir, "research.db"));
     const studyStore = await StudyStore.open(join(dataDir, "research.db"));
+    const reviewStore = await ReviewStore.open(join(dataDir, "research.db"));
     const searchStore = new SearchStore(join(dataDir, "research.db"));
     const workflow = new WorkflowCoordinator(store);
     const synthesis = new EvidenceSynthesisService(synthesisStore, store);
@@ -125,6 +139,7 @@ async function main(): Promise<void> {
       else if (command === "select-question") console.log(JSON.stringify(workflow.selectQuestion(args[0]!, args[1]!), null, 2));
       else if (command === "approve-scope") console.log(JSON.stringify(workflow.approveScope(args[0]!, args[1] ?? "researcher"), null, 2));
       else if (command === "protocol") console.log(JSON.stringify(workflow.draftProtocol(args[0]!, readJson(args[1]) as never), null, 2));
+      else if (command === "revise-protocol") console.log(JSON.stringify(workflow.reviseDraftProtocol(args[0]!, args[1]!, readJson(args[2]) as never), null, 2));
       else if (command === "approve-protocol") console.log(JSON.stringify(workflow.approveProtocol(args[0]!, args[1]!), null, 2));
       else if (command === "freeze-protocol") console.log(JSON.stringify(workflow.freezeProtocol(args[0]!, args[1]!), null, 2));
       else if (command === "assumption") console.log(JSON.stringify(workflow.addAssumption(args[0]!, readJson(args[1]) as never), null, 2));
@@ -164,8 +179,23 @@ async function main(): Promise<void> {
       else if (command === "candidate-approve") console.log(JSON.stringify(studyStore.approveCandidate(args[0]!, args[1] ?? "researcher"), null, 2));
       else if (command === "confirmation-issue") console.log(JSON.stringify(studyStore.issueConfirmationToken(args[0]!), null, 2));
       else if (command === "confirmation-consume") console.log(JSON.stringify(studyStore.consumeConfirmationToken(args[0]!, args[1]!, args[2]!), null, 2));
+      else if (command === "claim-assessment") console.log(JSON.stringify(reviewStore.addClaimAssessment(readJson(args[0]) as never), null, 2));
+      else if (command === "validity-threat") console.log(JSON.stringify(reviewStore.addThreat(readJson(args[0]) as never), null, 2));
+      else if (command === "review") {
+        const model = await PiResearchModel.create(piModelConfigFromEnv());
+        const review = new ReviewWorkflow(reviewStore, model, dataDir);
+        console.log(JSON.stringify(await review.review({programId:args[0]!,studyId:args[1]!,dimension:ReviewDimensionSchema.parse(args[2]),auditSnapshot:readJson(args[3]),independence:"session"}),null,2));
+      } else if (command === "respond-review") console.log(JSON.stringify(reviewStore.respond(readJson(args[0]) as never), null, 2));
+      else if (command === "reproduction-manifest") console.log(JSON.stringify(reviewStore.addReproductionManifest(readJson(args[0]) as never), null, 2));
+      else if (command === "decision") {
+        const input=readJson(args[0]) as Parameters<ReviewWorkflow["finalize"]>[0];
+        console.log(JSON.stringify(new ReviewWorkflow(reviewStore,undefined,dataDir).finalize(input),null,2));
+      } else if (command === "review-report") {
+        const decision=readJson(args[2]) as never;
+        console.log(JSON.stringify(new ReviewWorkflow(reviewStore,undefined,dataDir).writeReport(args[0]!,args[1]!,decision),null,2));
+      } else if (command === "model-invocations") console.log(JSON.stringify(reviewStore.modelInvocations(args[0]!),null,2));
       else throw new Error(`Unknown research command: ${command}`);
-    } finally { searchStore.close(); studyStore.close(); synthesisStore.close(); store.close(); }
+    } finally { reviewStore.close(); searchStore.close(); studyStore.close(); synthesisStore.close(); store.close(); }
     return;
   }
   if (command === "skills") {

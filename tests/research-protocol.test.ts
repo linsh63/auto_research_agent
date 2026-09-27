@@ -108,7 +108,10 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   assert.equal(store.getAssumptionRegister(register.id).status, "superseded");
   assert.equal(store.getHypothesisSet(hypothesisSet.id).status, "superseded");
   assert.throws(() => workflow.draftProtocol(program.id, protocol(register.id, hypothesisSet.id)), /must be frozen/);
-  const drafted = workflow.draftProtocol(program.id, protocol(registerV2.id, hypothesisSetV2.id));
+  const originalDraft = workflow.draftProtocol(program.id, protocol(registerV2.id, hypothesisSetV2.id));
+  const drafted = workflow.reviseDraftProtocol(program.id, originalDraft.id, { ...protocol(registerV2.id, hypothesisSetV2.id), parentId: originalDraft.id, analysisPlan: "A corrected pre-approval paired analysis plan with immutable revision history." });
+  assert.equal(store.getProtocol(originalDraft.id).status, "superseded");
+  assert.equal(drafted.version, originalDraft.version + 1);
   assert.throws(() => workflow.freezeProtocol(program.id, drafted.id), /approved before freeze/);
   workflow.approveProtocol(program.id, drafted.id);
   const freeze = workflow.freezeProtocol(program.id, drafted.id);

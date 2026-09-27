@@ -27,6 +27,9 @@ export interface PiModelConfig {
   api?: Parameters<ModelRuntime["registerProvider"]>[1]["api"];
   timeoutMs?: number;
   customTools?: ToolDefinition[];
+  contextWindow?: number;
+  maxTokens?: number;
+  temperature?: number;
 }
 
 export function piModelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PiModelConfig {
@@ -44,12 +47,32 @@ export function piModelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PiMo
 }
 
 function parseJson(text: string): unknown {
-  const clean = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  const afterReasoning = text.includes("</think>") ? text.slice(text.lastIndexOf("</think>") + "</think>".length) : text;
+  const clean = afterReasoning.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
   try { return JSON.parse(clean); } catch { /* Try text around the JSON object. */ }
+  if (/^\s*"[^\n]+"\s*:/.test(clean) && clean.trimEnd().endsWith("}")) {
+    try { return JSON.parse(`{${clean}`); } catch { /* Continue with bounded repair. */ }
+  }
   const start = clean.indexOf("{");
   const end = clean.lastIndexOf("}");
   if (start < 0 || end <= start) throw new Error("Model did not return a JSON object");
-  return JSON.parse(clean.slice(start, end + 1));
+  const candidate = clean.slice(start, end + 1);
+  try { return JSON.parse(candidate); } catch { /* Repair only raw control characters inside strings. */ }
+  let repaired = "";
+  let quoted = false;
+  let escaped = false;
+  for (const char of candidate) {
+    if (quoted && !escaped && (char === "\n" || char === "\r" || char === "\t")) {
+      repaired += char === "\t" ? "\\t" : "\\n";
+      escaped = false;
+      continue;
+    }
+    repaired += char;
+    if (char === '"' && !escaped) quoted = !quoted;
+    escaped = char === "\\" && !escaped;
+    if (char !== "\\") escaped = false;
+  }
+  return JSON.parse(repaired.replace(/,\s*([}\]])/g, "$1"));
 }
 
 export class PiResearchModel implements ResearchModel {
@@ -85,7 +108,8 @@ export class PiResearchModel implements ResearchModel {
         authHeader: true,
         models: [{
           id: modelId, name: modelId, reasoning: false, input: ["text"],
-          contextWindow: 128000, maxTokens: 8192,
+          contextWindow: config.contextWindow ?? 128000, maxTokens: config.maxTokens ?? 8192,
+          ...(config.temperature === undefined ? {} : { samplingParams: { temperature: config.temperature } }),
           cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
         }],
       });
@@ -139,7 +163,19 @@ export class PiResearchModel implements ResearchModel {
           agentError: session.agent.state.errorMessage,
         })}`);
       }
-      return { value: schema.parse(parseJson(raw)), raw, usage: answer.usage };
+      let parsed: unknown;
+      try {
+        parsed = parseJson(raw);
+      } catch (error) {
+        const excerpt = raw.length > 1_000 ? `${raw.slice(0, 500)}\n…\n${raw.slice(-500)}` : raw;
+        throw new Error(`Invalid JSON response for stage ${stage}: ${error instanceof Error ? error.message : String(error)}\n${excerpt}`);
+      }
+      const validated = schema.safeParse(parsed);
+      if (!validated.success) {
+        const excerpt = raw.length > 2_000 ? `${raw.slice(0, 1_000)}\n…\n${raw.slice(-1_000)}` : raw;
+        throw new Error(`Schema-invalid response for stage ${stage}: ${validated.error.message}\n${excerpt}`);
+      }
+      return { value: validated.data, raw, usage: answer.usage };
     } finally {
       if (timer) clearTimeout(timer);
       session.dispose();

@@ -84,9 +84,9 @@ export class ResearchStore {
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
-    if (version > 6) {
+    if (version > 7) {
       db.close();
-      throw new Error(`Research database ${version} is newer than supported version 6`);
+      throw new Error(`Research database ${version} is newer than supported version 7`);
     }
     let backupPath: string | null = null;
     let artifactManifestPath: string | null = null;
@@ -278,6 +278,26 @@ export class ResearchStore {
     });
     tx();
     return protocol;
+  }
+
+  reviseDraftProtocol(programId: string, protocolId: string, input: ProtocolDraft): ResearchProtocol {
+    const program = this.getProgram(programId);
+    this.assertProgramMutable(programId);
+    const original = this.getProtocol(protocolId);
+    const latest = this.listProtocols(programId).at(-1);
+    if (!latest || latest.id !== original.id || original.programId !== programId || original.status !== "draft") throw new Error("Only the latest draft protocol can be revised");
+    if (input.parentId && input.parentId !== original.id) throw new Error("Draft revision parent must be the latest draft protocol");
+    this.assertProtocolCognitiveRefs(programId, original.questionId, input.assumptionRegisterId, input.hypothesisSetId);
+    const body = { ...input, profile: input.profile ?? program.profile, parentId: original.id };
+    const revised = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: original.questionId, version: original.version + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
+    const tx = this.db.transaction(() => {
+      const superseded = { ...original, status: "superseded" as const };
+      this.db.prepare("UPDATE research_protocols SET status=?,payload_json=? WHERE id=?").run(superseded.status, JSON.stringify(superseded), superseded.id);
+      this.db.prepare("INSERT INTO research_protocols(id,program_id,question_id,version,status,payload_json,content_hash,parent_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
+        .run(revised.id, revised.programId, revised.questionId, revised.version, revised.status, JSON.stringify(revised), revised.contentHash, revised.parentId, revised.createdAt);
+    });
+    tx();
+    return revised;
   }
 
   getProtocol(id: string): ResearchProtocol {

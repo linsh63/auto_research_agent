@@ -37,14 +37,18 @@ docs/
 ### 架构与配置
 
 - [ADR 001：A 阶段检索 backend](architecture/decisions/001-a-retrieval-backend.md)
+- [ADR 002：E 研究状态与兼容](architecture/decisions/002-e-research-state-and-compatibility.md)
 - [ADR 003：F 证据综合与能力契约](architecture/decisions/003-f-evidence-synthesis-and-capabilities.md)
 - [ADR 004：G 确认实验、统计与本地沙箱](architecture/decisions/004-g-confirmation-statistics-and-sandbox.md)
+- [ADR 005：H 审查、决策与真实验收](architecture/decisions/005-h-review-decision-and-real-acceptance.md)
 - [模型 Provider 配置](guides/model-providers.md)
+- [H 审查与真实验收指南](guides/h-review-and-acceptance.md)
 
 ### 研究案例
 
 - [fastText / AG News 文本分类](cases/fasttext-agnews.md)
 - [scikit-learn Digits 图像分类](cases/sklearn-digits.md)
+- [CIFAR-10-C / AugMix H 阶段真实案例](cases/cifar10c-augmix-h.md)
 
 ### 阶段与发布报告
 
@@ -65,6 +69,7 @@ docs/
 - [v1.2.0-alpha.1-r3：E 最终验收](reports/releases/v1.2.0-alpha.1-r3-report.md)
 - [v1.2.0-alpha.2：F 证据综合与竞争假设](reports/releases/v1.2.0-alpha.2-report.md)
 - [v1.2.0-beta.1：G 实验设计、统计与确认](reports/releases/v1.2.0-beta.1-report.md)
+- [v1.2.0-rc.1：H 审查、决策与真实验收](reports/releases/v1.2.0-rc.1-report.md)
 
 ### 自动验证产物
 
