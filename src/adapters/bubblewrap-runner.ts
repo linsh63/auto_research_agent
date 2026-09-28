@@ -4,7 +4,7 @@ import { restrictedExperimentEnv, runProcess, type ProcessOutput } from "./proce
 
 export interface BubblewrapSpec {
   workspace:string; command:string; args:string[]; timeoutMs:number; env?:Record<string,string>;
-  readOnlyMounts?:Array<{source:string;target:string}>; gpuDevice?:string;
+  readOnlyMounts?:Array<{source:string;target:string}>; gpuDevice?:string; gpuEnumerationBridge?:boolean;
   maxProcesses?:number; maxAddressSpaceBytes?:number; maxCpuSeconds?:number; maxFileBytes?:number;
 }
 
@@ -20,7 +20,7 @@ export function bubblewrapArgs(spec:BubblewrapSpec):string[]{
   args.push("--proc","/proc","--dev","/dev","--tmpfs","/tmp","--dir","/home","--dir","/data","--bind",workspace,"/work","--chdir","/work","--clearenv","--setenv","PATH","/usr/bin:/bin","--setenv","HOME","/home/sandbox","--setenv","TMPDIR","/tmp");
   for(const [key,value] of Object.entries(safeEnv)){if(["PATH","HOME","TMPDIR"].includes(key))continue;args.push("--setenv",key,value!);}
   for(const mount of spec.readOnlyMounts??[]){const source=requireAbsoluteExisting(mount.source,"read-only mount");if(!mount.target.startsWith("/data/"))throw new Error("Read-only targets must be below /data");args.push("--ro-bind",source,mount.target);}
-  if(spec.gpuDevice!==undefined){if(!/^\d+$/.test(spec.gpuDevice))throw new Error("GPU device must be a numeric index");for(const device of [`/dev/nvidia${spec.gpuDevice}`,"/dev/nvidiactl","/dev/nvidia-uvm","/dev/nvidia-uvm-tools"]){if(existsSync(device))args.push("--dev-bind",device,device);}args.push("--setenv","CUDA_VISIBLE_DEVICES",spec.gpuDevice);}
+  if(spec.gpuDevice!==undefined){if(!/^\d+$/.test(spec.gpuDevice))throw new Error("GPU device must be a numeric index");const selected=Number(spec.gpuDevice),devices=[`/dev/nvidia${selected}`,"/dev/nvidiactl","/dev/nvidia-uvm","/dev/nvidia-uvm-tools"];if(spec.gpuEnumerationBridge)for(let index=0;index<selected;index+=1)devices.push(`/dev/nvidia${index}`);for(const device of [...new Set(devices)]){if(existsSync(device))args.push("--dev-bind",device,device);}args.push("--setenv","CUDA_VISIBLE_DEVICES",spec.gpuDevice);}
   args.push("/usr/bin/prlimit",`--nproc=${spec.maxProcesses??128}`,"--",spec.command,...spec.args);return args;
 }
 
