@@ -6,7 +6,7 @@
 
 V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实验搜索和D第二场景均已完成本地profile验收。D 使用 scikit-learn Digits 图像分类验证同一核心流程可以接入CV任务，详情见 [v1.1.0发布报告](docs/reports/releases/v1.1.0-report.md)。证据系统使用SQLite事实图、FTS5默认检索和PaperQA2可选语义检索；长期记忆默认opt-in；实验搜索支持节点签名复用、搜索树和sealed final-test门。
 
-v1.2 已正式发布：confirmatory workflow 包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。v1.3 A 阶段进一步加入通用实验单位、事实账本、LLM 事实审计、fact-bound 报告、数据替换门和执行前环境预检。当前开发版本为 `1.3.0-alpha.1`；规划见 [v1.3 规划](docs/planning/v1.3-plan.md)。
+v1.2 已正式发布：confirmatory workflow 包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。v1.3 A 阶段已加入通用实验单位、事实账本、LLM 事实审计、fact-bound 报告、数据替换检查和执行前环境预检；严格复验发现部分机制尚未成为不可绕过的默认门禁，当前开发版本 `1.3.0-alpha.1` 仍需整改。详情见 [v1.3 规划](docs/planning/v1.3-plan.md)和[A 阶段重新验收](docs/reports/releases/v1.3.0-alpha.1-a-reacceptance.md)。
 
 [文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 

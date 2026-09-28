@@ -76,6 +76,7 @@ docs/
 - [v1.2.0-rc.1：H 审查、决策与真实验收](reports/releases/v1.2.0-rc.1-report.md)
 - [v1.2.0：正式发布验收](reports/releases/v1.2.0-report.md)
 - [v1.3.0-alpha.1：A 可靠性基础设施](reports/releases/v1.3.0-alpha.1-report.md)
+- [v1.3.0-alpha.1：A 阶段严格重新验收](reports/releases/v1.3.0-alpha.1-a-reacceptance.md)
 
 ### 自动验证产物
 
