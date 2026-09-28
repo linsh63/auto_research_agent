@@ -18,7 +18,8 @@ docs/
 
 ## 推荐阅读顺序
 
-1. [v1.2 完整实施规划](planning/v1.2-plan.md)：下一版本的确定决策、任务顺序、验收案例和发布门禁。
+1. [v1.3 规划](planning/v1.3-plan.md)：可靠性基础设施，以及后续 B/C 联合迭代。
+2. [v1.2 完整实施规划](planning/v1.2-plan.md)：上一版本的确定决策、任务顺序、验收案例和发布门禁。
 2. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
 3. [V1 阶段总结](reports/stages/v1-summary.md)：最小科研闭环的实际完成情况。
 4. [v1.1 实施规划](planning/v1.1-plan.md)：证据、记忆、实验搜索和第二场景的完整设计。
@@ -32,6 +33,7 @@ docs/
 - [V1 总体规划](planning/v1-plan.md)
 - [v1.1 实施规划](planning/v1.1-plan.md)
 - [v1.2 完整实施规划](planning/v1.2-plan.md)
+- [v1.3 规划](planning/v1.3-plan.md)
 - [下一阶段备选方案](planning/next-stage-options.md)
 
 ### 架构与配置
@@ -41,6 +43,7 @@ docs/
 - [ADR 003：F 证据综合与能力契约](architecture/decisions/003-f-evidence-synthesis-and-capabilities.md)
 - [ADR 004：G 确认实验、统计与本地沙箱](architecture/decisions/004-g-confirmation-statistics-and-sandbox.md)
 - [ADR 005：H 审查、决策与真实验收](architecture/decisions/005-h-review-decision-and-real-acceptance.md)
+- [ADR 006：v1.3 可靠性基础设施](architecture/decisions/006-v13-reliability-foundations.md)
 - [模型 Provider 配置](guides/model-providers.md)
 - [H 审查与真实验收指南](guides/h-review-and-acceptance.md)
 
@@ -55,6 +58,7 @@ docs/
 - [V1 阶段总结](reports/stages/v1-summary.md)
 - [v1.1 阶段进度](reports/stages/v1.1-progress.md)
 - [v1.2 阶段进度](reports/stages/v1.2-progress.md)
+- [v1.3 A 阶段进度](reports/stages/v1.3-a-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)
@@ -71,6 +75,7 @@ docs/
 - [v1.2.0-beta.1：G 实验设计、统计与确认](reports/releases/v1.2.0-beta.1-report.md)
 - [v1.2.0-rc.1：H 审查、决策与真实验收](reports/releases/v1.2.0-rc.1-report.md)
 - [v1.2.0：正式发布验收](reports/releases/v1.2.0-report.md)
+- [v1.3.0-alpha.1：A 可靠性基础设施](reports/releases/v1.3.0-alpha.1-report.md)
 
 ### 自动验证产物
 

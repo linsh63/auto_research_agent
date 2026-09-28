@@ -7,7 +7,9 @@ import test from "node:test";
 import type { z } from "zod";
 import type { ModelOutput, ResearchModel } from "../src/adapters/pi-model.js";
 import { ReviewWorkflow } from "../src/application/review-workflow.js";
+import { createFactLedger } from "../src/domain/facts.js";
 import { EvidenceStore } from "../src/infrastructure/db/evidence-store.js";
+import { FactAuditStore } from "../src/infrastructure/db/fact-audit-store.js";
 import { ReviewStore } from "../src/infrastructure/db/review-store.js";
 import { applyMigrationTransaction } from "../src/infrastructure/db/research-store.js";
 
@@ -31,6 +33,11 @@ class ReviewFixtureModel implements ResearchModel {
     };
     return { value: schema.parse(payload), raw: JSON.stringify(payload), usage: { totalTokens: 0 } };
   }
+}
+
+class FactDriftModel implements ResearchModel{
+  readonly id="fixture/drift-reviewer";
+  async generate<T>(_stage:string,_input:unknown,schema:z.ZodType<T>):Promise<ModelOutput<T>>{const payload={verdict:"sound",confidence:"high",summary:"The supplied result appears internally consistent but contains an injected factual error.",factAssertions:[{factId:"result.effect",assertedValue:.05,context:"primary effect"}],findings:[]};return{value:schema.parse(payload),raw:JSON.stringify(payload),usage:{totalTokens:0}};}
 }
 
 test("H four-dimensional review blocks unresolved findings and emits a bounded report", async (t) => {
@@ -66,21 +73,23 @@ test("H four-dimensional review blocks unresolved findings and emits a bounded r
 
   const store = await ReviewStore.open(dbPath);
   assert.ok(store.migrationBackupPath);
-  const assessment = store.addClaimAssessment({
+  const factStore=await FactAuditStore.open(dbPath);const ledger=factStore.addLedger(createFactLedger({id:"fixture-ledger",programId:"program",studyId:"study",facts:[{id:"result.effect",kind:"result",value:.1,unit:"proportion",sourceObjectId:"estimate",sourcePath:"estimate",sourceHash:"a".repeat(64)}],requiredFactIds:["result.effect"]}));
+  const assessment = new ReviewWorkflow(store,undefined,dir).addFactBoundAssessment({
     programId: "program", studyId: "study", claimId: "claim",
-    claimText: "The candidate showed a bounded descriptive improvement.",
+    claimTemplate: "The candidate effect was {{result.effect}}.",factLedgerId:ledger.id,claimFactIds:["result.effect"],
     scope: "Only the declared fixture seeds and groups.", protocolId: "protocol", evidenceMapId: "map",
     analysisRunId: "analysis", estimateIds: ["estimate"], supportingEvidenceIds: ["estimate", "evidence-entry"], opposingEvidenceIds: [],
     alternativeExplanations: ["Training-seed variation may explain part of the estimate."],
     invalidationConditions: ["A larger confirmation run reverses the effect."], grade: "suggestive",
   });
   store.addThreat({ claimAssessmentId: assessment.id, kind: "external", severity: "high", description: "The fixture does not establish cross-dataset generalization.", mitigation: "Restrict the claim scope." });
+  const driftWorkflow=new ReviewWorkflow(store,new FactDriftModel(),dir,factStore);await assert.rejects(driftWorkflow.review({programId:"program",studyId:"study",dimension:"evidence",auditSnapshot:{estimate:.1},factLedger:ledger}),/Fact audit failed: value_mismatch:result.effect/);assert.equal(factStore.audits(ledger.id)[0]!.status,"fail");
   const workflow = new ReviewWorkflow(store, new ReviewFixtureModel(), dir);
   const snapshot = { assessmentId: assessment.id, protocolId: "protocol", analysisRunId: "analysis", evidenceMapId: "map" };
   for (const dimension of ["evidence", "methods", "statistics", "reproducibility"] as const) {
     await workflow.review({ programId: "program", studyId: "study", dimension, auditSnapshot: snapshot });
   }
-  assert.equal(store.modelInvocations("program").length, 4);
+  assert.equal(store.modelInvocations("program").length, 5);
   assert.equal(store.reviews("study").length, 4);
   assert.throws(() => workflow.finalize({ programId: "program", studyId: "study", action: "publish_bounded_result", rationale: "The bounded fixture result can be reported with its limitations.", claimAssessmentIds: [assessment.id], approvedBy: "researcher" }), /Major review findings/);
   const major = store.findings("study").find((item) => item.severity === "major")!;
@@ -90,10 +99,12 @@ test("H four-dimensional review blocks unresolved findings and emits a bounded r
   const report = workflow.writeReport("program", "study", decision);
   assert.ok(existsSync(report.path));
   assert.match(readFileSync(report.path, "utf8"), /Only the declared fixture seeds/);
+  assert.match(readFileSync(report.path,"utf8"),/Structured fact references/);
   const statusDb = new Database(dbPath, { readonly: true });
   assert.equal((statusDb.prepare("SELECT status FROM studies WHERE id='study'").get() as { status: string }).status, "closed");
   assert.equal((statusDb.prepare("SELECT status FROM research_programs WHERE id='program'").get() as { status: string }).status, "closed");
   statusDb.close();
+  factStore.close();
   store.close();
 });
 

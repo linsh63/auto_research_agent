@@ -24,6 +24,11 @@ import { ReviewStore } from "./infrastructure/db/review-store.js";
 import { ReviewWorkflow } from "./application/review-workflow.js";
 import { PiResearchModel, piModelConfigFromEnv } from "./adapters/pi-model.js";
 import { ReviewDimensionSchema } from "./domain/review.js";
+import { FactAuditStore } from "./infrastructure/db/fact-audit-store.js";
+import { assertFactAudit,auditFactAssertions,FactAssertionSchema,FactLedgerSchema } from "./domain/facts.js";
+import { renderStructuredReport,StructuredReportSchema } from "./application/structured-report.js";
+import { preflightBubblewrap } from "./adapters/bubblewrap-runner.js";
+import { assessDatasetSubstitution,DatasetSubstitutionRequestSchema } from "./domain/data-substitution.js";
 
 const dataDir = resolve(process.env.AUTO_RESEARCH_DATA_DIR ?? ".research-data");
 const argv = process.argv.slice(2);
@@ -62,6 +67,7 @@ Usage:
   npm run dev -- retrieval-check
   npm run dev -- doctor
   npm run dev -- model-check
+  npm run dev -- runtime-preflight <bubblewrap-spec.json>
 
 Research graph (v1.2 E):
   npm run dev -- research new <intent.json>
@@ -93,6 +99,7 @@ Research graph (v1.2 E):
   npm run dev -- research freeze-evidence-map <program-id> <map-id>
   npm run dev -- research capabilities <build-evidence-map|generate-hypothesis-set>
   npm run dev -- research study-new <study.json>
+  npm run dev -- research study-units <study-id>
   npm run dev -- research study-outcome <study-id> <outcome.json>
   npm run dev -- research study-data-role <study-id> <role.json>
   npm run dev -- research study-analysis-plan <study-id> <plan.json>
@@ -105,7 +112,11 @@ Research graph (v1.2 E):
   npm run dev -- research confirmation-consume <study-id> <token> <run-id>
   npm run dev -- research claim-assessment <assessment.json>
   npm run dev -- research validity-threat <threat.json>
-  npm run dev -- research review <program-id> <study-id> <evidence|methods|statistics|reproducibility> <snapshot.json>
+  npm run dev -- research fact-ledger <ledger.json>
+  npm run dev -- research fact-audit <ledger-id> <stage> <assertions.json>
+  npm run dev -- research fact-report <ledger-id> <report.json>
+  npm run dev -- research assess-data-substitution <request.json>
+  npm run dev -- research review <program-id> <study-id> <evidence|methods|statistics|reproducibility> <snapshot.json> [fact-ledger-id]
   npm run dev -- research respond-review <response.json>
   npm run dev -- research reproduction-manifest <manifest.json>
   npm run dev -- research decision <decision.json>
@@ -125,6 +136,7 @@ async function main(): Promise<void> {
     const synthesisStore = await EvidenceSynthesisStore.open(join(dataDir, "research.db"));
     const studyStore = await StudyStore.open(join(dataDir, "research.db"));
     const reviewStore = await ReviewStore.open(join(dataDir, "research.db"));
+    const factStore = await FactAuditStore.open(join(dataDir,"research.db"));
     const searchStore = new SearchStore(join(dataDir, "research.db"));
     const workflow = new WorkflowCoordinator(store);
     const synthesis = new EvidenceSynthesisService(synthesisStore, store);
@@ -169,6 +181,7 @@ async function main(): Promise<void> {
       else if (command === "freeze-evidence-map") console.log(JSON.stringify(synthesisStore.freezeEvidenceMap(args[0]!, args[1]!), null, 2));
       else if (command === "capabilities") console.log(JSON.stringify(synthesis.registerCapabilities(args[0] as "build-evidence-map" | "generate-hypothesis-set"), null, 2));
       else if (command === "study-new") console.log(JSON.stringify(studyStore.createStudy(readJson(args[0]) as never), null, 2));
+      else if (command === "study-units") console.log(JSON.stringify(studyStore.units(args[0]!),null,2));
       else if (command === "study-outcome") console.log(JSON.stringify(studyStore.addOutcome(args[0]!, readJson(args[1]) as never), null, 2));
       else if (command === "study-data-role") console.log(JSON.stringify(studyStore.addDataRole(args[0]!, readJson(args[1]) as never), null, 2));
       else if (command === "study-analysis-plan") console.log(JSON.stringify(studyStore.addAnalysisPlan(args[0]!, readJson(args[1]) as never), null, 2));
@@ -181,10 +194,14 @@ async function main(): Promise<void> {
       else if (command === "confirmation-consume") console.log(JSON.stringify(studyStore.consumeConfirmationToken(args[0]!, args[1]!, args[2]!), null, 2));
       else if (command === "claim-assessment") console.log(JSON.stringify(reviewStore.addClaimAssessment(readJson(args[0]) as never), null, 2));
       else if (command === "validity-threat") console.log(JSON.stringify(reviewStore.addThreat(readJson(args[0]) as never), null, 2));
+      else if(command==="fact-ledger")console.log(JSON.stringify(factStore.addLedger(FactLedgerSchema.parse(readJson(args[0]))),null,2));
+      else if(command==="fact-audit"){const raw=readJson(args[2]),assertions=Array.isArray(raw)?raw.map(item=>FactAssertionSchema.parse(item)):FactAssertionSchema.array().parse((raw as{assertions?:unknown}).assertions),audit=factStore.addAudit(auditFactAssertions(factStore.getLedger(args[0]!),args[1]!,assertions,{requireAll:true}));console.log(JSON.stringify(audit,null,2));assertFactAudit(audit);}
+      else if(command==="fact-report")console.log(renderStructuredReport(StructuredReportSchema.parse(readJson(args[1])),factStore.getLedger(args[0]!)));
+      else if(command==="assess-data-substitution")console.log(JSON.stringify(assessDatasetSubstitution(DatasetSubstitutionRequestSchema.parse(readJson(args[0]))),null,2));
       else if (command === "review") {
         const model = await PiResearchModel.create(piModelConfigFromEnv());
-        const review = new ReviewWorkflow(reviewStore, model, dataDir);
-        console.log(JSON.stringify(await review.review({programId:args[0]!,studyId:args[1]!,dimension:ReviewDimensionSchema.parse(args[2]),auditSnapshot:readJson(args[3]),independence:"session"}),null,2));
+        const review = new ReviewWorkflow(reviewStore, model, dataDir,factStore);
+        console.log(JSON.stringify(await review.review({programId:args[0]!,studyId:args[1]!,dimension:ReviewDimensionSchema.parse(args[2]),auditSnapshot:readJson(args[3]),factLedger:args[4]?factStore.getLedger(args[4]):undefined,independence:"session"}),null,2));
       } else if (command === "respond-review") console.log(JSON.stringify(reviewStore.respond(readJson(args[0]) as never), null, 2));
       else if (command === "reproduction-manifest") console.log(JSON.stringify(reviewStore.addReproductionManifest(readJson(args[0]) as never), null, 2));
       else if (command === "decision") {
@@ -195,7 +212,7 @@ async function main(): Promise<void> {
         console.log(JSON.stringify(new ReviewWorkflow(reviewStore,undefined,dataDir).writeReport(args[0]!,args[1]!,decision),null,2));
       } else if (command === "model-invocations") console.log(JSON.stringify(reviewStore.modelInvocations(args[0]!),null,2));
       else throw new Error(`Unknown research command: ${command}`);
-    } finally { reviewStore.close(); searchStore.close(); studyStore.close(); synthesisStore.close(); store.close(); }
+    } finally { factStore.close();reviewStore.close(); searchStore.close(); studyStore.close(); synthesisStore.close(); store.close(); }
     return;
   }
   if (command === "skills") {
@@ -217,6 +234,7 @@ async function main(): Promise<void> {
     console.log(`Data directory: ${dataDir}`);
     return;
   }
+  if(command==="runtime-preflight"){if(!args[0])throw new Error("Bubblewrap spec JSON path is required");console.log(JSON.stringify(preflightBubblewrap(JSON.parse(readFileSync(resolve(args[0]),"utf8"))),null,2));return;}
   if (command === "retrieval-check") {
     const worker = new RetrievalWorkerClient({ projectRoot: process.cwd() });
     try {

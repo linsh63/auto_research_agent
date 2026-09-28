@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   AnalysisRunSchema, DiagnosticResultSchema, MultiplicityRecordSchema, SensitivityAnalysisSchema, StatisticalEstimateSchema,
-  type AnalysisPlan, type AnalysisRun, type DiagnosticResult, type MultiplicityRecord, type Observation,
+  observationUnitId,type AnalysisPlan,type AnalysisRun,type DiagnosticResult,type MultiplicityRecord,type ObservationRecord,
   type OutcomeDefinition, type SensitivityAnalysis, type StatisticalEstimate,
 } from "../domain/study.js";
 import { hashPayload } from "../domain/research.js";
@@ -15,24 +15,24 @@ function erf(x:number):number{const sign=x<0?-1:1;const a=Math.abs(x);const t=1/
 function normalTwoSided(z:number):number{return Math.max(0,Math.min(1,1-erf(Math.abs(z)/Math.sqrt(2))));}
 function holm(values:number[]):number[]{const indexed=values.map((value,index)=>({value,index})).sort((a,b)=>a.value-b.value);const out=new Array(values.length).fill(0);let previous=0;for(let rank=0;rank<indexed.length;rank++){const adjusted=Math.max(previous,Math.min(1,indexed[rank]!.value*(indexed.length-rank)));out[indexed[rank]!.index]=adjusted;previous=adjusted;}return out;}
 
-export function analyzePairedObservations(observations: Observation[], plan: AnalysisPlan, outcome: OutcomeDefinition): StatisticalAnalysisResult {
+export function analyzePairedObservations(observations:ObservationRecord[],plan:AnalysisPlan,outcome:OutcomeDefinition):StatisticalAnalysisResult{
   const relevant=observations.filter(item=>item.outcomeId===outcome.id&&item.phase==="confirmation");
   const missing=relevant.filter(item=>item.value===null);
   if(missing.length&&plan.missingPolicy==="fail")throw new Error("Analysis plan requires failure when observations are missing");
-  const byKey=new Map<string,{seed:number;group:string|null;baseline?:number;candidate?:number}>();
-  for(const item of relevant){if(item.value===null)continue;const key=`${item.seed}|${item.group??""}`;const row=byKey.get(key)??{seed:item.seed,group:item.group};row[item.variant]=item.value;byKey.set(key,row);}
-  const pairs=[...byKey.values()].filter((row):row is {seed:number;group:string|null;baseline:number;candidate:number}=>row.baseline!==undefined&&row.candidate!==undefined);
+  const byKey=new Map<string,{unitId:string;group:string|null;baseline?:number;candidate?:number}>();
+  for(const item of relevant){if(item.value===null)continue;const unitId=observationUnitId(item),key=`${unitId}|${item.group??""}`;const row=byKey.get(key)??{unitId,group:item.group};row[item.variant]=item.value;byKey.set(key,row);}
+  const pairs=[...byKey.values()].filter((row):row is {unitId:string;group:string|null;baseline:number;candidate:number}=>row.baseline!==undefined&&row.candidate!==undefined);
   if(!pairs.length)throw new Error("No complete baseline/candidate pairs for analysis");
-  const bySeed=new Map<number,number[]>();for(const pair of pairs)bySeed.set(pair.seed,[...(bySeed.get(pair.seed)??[]),pair.candidate-pair.baseline]);
-  const unitDifferences=[...bySeed.values()].map(mean);if(unitDifferences.length<2)throw new Error("At least two independent training seeds are required");
+  const byUnit=new Map<string,number[]>();for(const pair of pairs)byUnit.set(pair.unitId,[...(byUnit.get(pair.unitId)??[]),pair.candidate-pair.baseline]);
+  const unitDifferences=[...byUnit.values()].map(mean);if(unitDifferences.length<2)throw new Error("At least two independent experimental units are required");const legacy=relevant.every(item=>!("unitId" in item)),unitLabel=legacy?"training seeds":"experimental units";
   const estimate=mean(unitDifferences),sd=sampleSd(unitDifferences),se=sd/Math.sqrt(unitDifferences.length),critical=tCritical95(unitDifferences.length-1);
   const now=new Date().toISOString();const runId=`analysis-${randomUUID()}`;
   const run=AnalysisRunSchema.parse({id:runId,studyId:plan.studyId,analysisPlanId:plan.id,design:plan.design,status:"completed",inputHash:hashPayload(relevant),implementation:"typescript-paired-v1",createdAt:now});
-  const estimates:StatisticalEstimate[]=[StatisticalEstimateSchema.parse({id:`estimate-${randomUUID()}`,analysisRunId:runId,outcomeId:outcome.id,estimand:"candidate_minus_baseline_by_training_seed",estimate,standardError:se,intervalLow:estimate-critical*se,intervalHigh:estimate+critical*se,effectSize:sd===0?null:estimate/sd,method:plan.design==="paired_repeated_run"?"paired seed mean with t interval":"seed-level mean across corruption groups with t interval",nUnits:unitDifferences.length,createdAt:now})];
+  const estimates:StatisticalEstimate[]=[StatisticalEstimateSchema.parse({id:`estimate-${randomUUID()}`,analysisRunId:runId,outcomeId:outcome.id,estimand:legacy?"candidate_minus_baseline_by_training_seed":"candidate_minus_baseline_by_experimental_unit",estimate,standardError:se,intervalLow:estimate-critical*se,intervalHigh:estimate+critical*se,effectSize:sd===0?null:estimate/sd,method:legacy?(plan.design==="paired_repeated_run"?"paired seed mean with t interval":"seed-level mean across corruption groups with t interval"):(plan.design==="paired_repeated_run"?"paired experimental-unit mean with t interval":"experimental-unit mean across repeated groups with t interval"),nUnits:unitDifferences.length,createdAt:now})];
   const diagnostics:DiagnosticResult[]=[
     DiagnosticResultSchema.parse({id:`diagnostic-${randomUUID()}`,analysisRunId:runId,name:"pair_completeness",status:missing.length?"warn":"pass",details:`${pairs.length} complete pairs; ${missing.length} missing observations.`,createdAt:now}),
-    DiagnosticResultSchema.parse({id:`diagnostic-${randomUUID()}`,analysisRunId:runId,name:"experimental_unit",status:"pass",details:`Inference uses ${unitDifferences.length} training seeds as independent units; corruption groups are repeated measures.`,createdAt:now}),
-    DiagnosticResultSchema.parse({id:`diagnostic-${randomUUID()}`,analysisRunId:runId,name:"small_sample",status:unitDifferences.length<5?"warn":"pass",details:`Independent seed count is ${unitDifferences.length}.`,createdAt:now}),
+    DiagnosticResultSchema.parse({id:`diagnostic-${randomUUID()}`,analysisRunId:runId,name:"experimental_unit",status:"pass",details:`Inference uses ${unitDifferences.length} ${unitLabel} as independent units; groups are repeated measures.`,createdAt:now}),
+    DiagnosticResultSchema.parse({id:`diagnostic-${randomUUID()}`,analysisRunId:runId,name:"small_sample",status:unitDifferences.length<5?"warn":"pass",details:`Independent ${legacy?"seed":"unit"} count is ${unitDifferences.length}.`,createdAt:now}),
   ];
   const multiplicity:MultiplicityRecord[]=[];
   if(plan.design==="seed_by_corruption"){
@@ -40,6 +40,6 @@ export function analyzePairedObservations(observations: Observation[], plan: Ana
     multiplicity.push(MultiplicityRecordSchema.parse({id:`multiplicity-${randomUUID()}`,analysisRunId:runId,family:"corruption_groups",comparisons:groups.length,method:plan.multiplicityMethod,adjustedValues:plan.multiplicityMethod==="holm"?holm(pValues):pValues,createdAt:now}));
   }
   const leaveOneOut=unitDifferences.map((_,index)=>mean(unitDifferences.filter((__,other)=>other!==index)));
-  const sensitivity=[SensitivityAnalysisSchema.parse({id:`sensitivity-${randomUUID()}`,analysisRunId:runId,name:"leave_one_seed_out",estimates:leaveOneOut,conclusionStable:leaveOneOut.every(value=>Math.sign(value)===Math.sign(estimate)||value===0),createdAt:now})];
+  const sensitivity=[SensitivityAnalysisSchema.parse({id:`sensitivity-${randomUUID()}`,analysisRunId:runId,name:legacy?"leave_one_seed_out":"leave_one_unit_out",estimates:leaveOneOut,conclusionStable:leaveOneOut.every(value=>Math.sign(value)===Math.sign(estimate)||value===0),createdAt:now})];
   return{run,estimates,diagnostics,multiplicity,sensitivity};
 }

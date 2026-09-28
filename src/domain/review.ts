@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FactAssertionSchema } from "./facts.js";
 
 export const ReviewDimensionSchema=z.enum(["evidence","methods","statistics","reproducibility"]);
 export type ReviewDimension=z.infer<typeof ReviewDimensionSchema>;
@@ -11,8 +12,9 @@ export const ClaimAssessmentSchema=z.object({
   scope:z.string().min(10),protocolId:z.string().min(1),evidenceMapId:z.string().min(1),analysisRunId:z.string().min(1),estimateIds:z.array(z.string()).min(1),
   supportingEvidenceIds:z.array(z.string()).min(1),opposingEvidenceIds:z.array(z.string()).default([]),alternativeExplanations:z.array(z.string()).min(1),
   invalidationConditions:z.array(z.string()).min(1),grade:z.enum(["observed","suggestive","supported","replicated","unresolved","refuted"]),
+  factLedgerId:z.string().min(1).nullable().default(null),claimFactIds:z.array(z.string()).default([]),
   contentHash:z.string().regex(/^[a-f0-9]{64}$/),createdAt:z.string(),
-});
+}).superRefine((value,ctx)=>{if((value.factLedgerId===null)!==(value.claimFactIds.length===0))ctx.addIssue({code:"custom",message:"factLedgerId and claimFactIds must be supplied together"});});
 export type ClaimAssessment=z.infer<typeof ClaimAssessmentSchema>;
 
 export const ReviewFindingSchema=z.object({id:z.string().min(1),reviewId:z.string().min(1),severity:z.enum(["major","minor","note"]),location:z.string().min(3),observation:z.string().min(10),criterion:z.string().min(5),whyItMatters:z.string().min(10),requestedAction:z.string().min(5),status:z.enum(["open","addressed","accepted_limitation"]),createdAt:z.string()});
@@ -41,5 +43,5 @@ export const ReproductionManifestSchema=z.object({id:z.string().min(1),programId
 export type ReproductionManifest=z.infer<typeof ReproductionManifestSchema>;
 
 const ReviewSeverityInputSchema=z.preprocess(value=>value==="high"?"major":value==="medium"?"minor":value==="low"?"note":value,z.enum(["major","minor","note"]));
-export const ReviewModelOutputSchema=z.object({verdict:z.enum(["sound","needs_work","invalid"]).default("needs_work"),confidence:z.enum(["low","medium","high"]).default("medium"),summary:z.string().min(20),findings:z.array(z.object({severity:ReviewSeverityInputSchema,location:z.string().min(3),observation:z.string().min(10),criterion:z.string().min(5),whyItMatters:z.string().min(10),requestedAction:z.string().min(5)}))});
+export const ReviewModelOutputSchema=z.object({verdict:z.enum(["sound","needs_work","invalid"]).default("needs_work"),confidence:z.enum(["low","medium","high"]).default("medium"),summary:z.string().min(20),factAssertions:z.array(FactAssertionSchema).default([]),findings:z.array(z.object({severity:ReviewSeverityInputSchema,location:z.string().min(3),observation:z.string().min(10),criterion:z.string().min(5),whyItMatters:z.string().min(10),requestedAction:z.string().min(5)}))});
 export type ReviewModelOutput=z.infer<typeof ReviewModelOutputSchema>;

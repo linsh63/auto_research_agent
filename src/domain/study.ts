@@ -3,12 +3,19 @@ import { z } from "zod";
 export const StudyStatusSchema = z.enum(["draft", "frozen", "baseline_passed", "baseline_failed", "exploring", "candidate_frozen", "confirmation_ready", "confirmation_consumed", "analyzed", "closed"]);
 export const AnalysisDesignSchema = z.enum(["paired_repeated_run", "seed_by_corruption"]);
 
+const UnitAttributeSchema=z.union([z.string(),z.number().finite(),z.boolean(),z.null()]);
+export const ExperimentalUnitSchema=z.object({
+  id:z.string().min(1),kind:z.string().min(2),clusterId:z.string().min(1).nullable().default(null),
+  attributes:z.record(z.string(),UnitAttributeSchema).default({}),legacySeed:z.number().int().nullable().default(null),
+});
+export type ExperimentalUnit=z.infer<typeof ExperimentalUnitSchema>;
+
 export const StudyDesignSchema = z.object({
   id: z.string().min(1), programId: z.string().min(1), protocolId: z.string().min(1), hypothesisSetId: z.string().min(1), evidenceMapId: z.string().min(1),
   status: StudyStatusSchema, experimentalUnit: z.string().min(5), design: AnalysisDesignSchema,
-  seeds: z.array(z.number().int()).min(2), blockingFactors: z.array(z.string()).default([]), nuisanceFactors: z.array(z.string()).default([]),
+  units:z.array(ExperimentalUnitSchema).default([]),seeds:z.array(z.number().int()).default([]),blockingFactors:z.array(z.string()).default([]),nuisanceFactors:z.array(z.string()).default([]),
   randomizationSeed: z.number().int(), contentHash: z.string().regex(/^[a-f0-9]{64}$/), createdAt: z.string(), updatedAt: z.string(),
-});
+}).superRefine((value,ctx)=>{const ids=value.units.map(unit=>unit.id);if(Math.max(ids.length,value.seeds.length)<2)ctx.addIssue({code:"custom",message:"At least two experimental units or legacy seeds are required"});if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Experimental unit IDs must be unique"});if(new Set(value.seeds).size!==value.seeds.length)ctx.addIssue({code:"custom",message:"Legacy seeds must be unique"});});
 export type StudyDesign = z.infer<typeof StudyDesignSchema>;
 
 export const OutcomeDefinitionSchema = z.object({
@@ -66,6 +73,16 @@ export const ObservationSchema = z.object({
   value: z.number().finite().nullable(), missingReason: z.string().nullable().default(null), runId: z.string().min(1), createdAt: z.string(),
 }).refine((value) => (value.value === null) !== (value.missingReason === null), { message: "Exactly one of value or missingReason is required" });
 export type Observation = z.infer<typeof ObservationSchema>;
+
+export const UnitObservationSchema=z.object({
+  id:z.string().min(1),studyId:z.string().min(1),phase:z.enum(["baseline","exploration","confirmation"]),
+  variant:z.enum(["baseline","candidate"]),unitId:z.string().min(1),group:z.string().nullable().default(null),outcomeId:z.string().min(1),
+  value:z.number().finite().nullable(),missingReason:z.string().nullable().default(null),runId:z.string().min(1),createdAt:z.string(),
+}).refine(value=>(value.value===null)!==(value.missingReason===null),{message:"Exactly one of value or missingReason is required"});
+export type UnitObservation=z.infer<typeof UnitObservationSchema>;
+export type ObservationRecord=Observation|UnitObservation;
+
+export function observationUnitId(observation:ObservationRecord):string{return "unitId" in observation?observation.unitId:`seed:${observation.seed}`;}
 
 export const StatisticalEstimateSchema = z.object({
   id: z.string().min(1), analysisRunId: z.string().min(1), outcomeId: z.string().min(1), estimand: z.string().min(3),
