@@ -15,7 +15,7 @@ import { VisibilityEventSchema, type VisibilityEvent } from "../../domain/resear
 import { applyMigrationTransaction, snapshotArtifactManifest } from "./research-store.js";
 
 interface PayloadRow { payload_json: string }
-type StudyDraft = Omit<StudyDesign, "id" | "status" | "contentHash" | "createdAt" | "updatedAt"|"units"|"seeds">&{units?:ExperimentalUnit[];seeds?:number[]};
+type StudyDraft = Omit<StudyDesign,"id"|"status"|"contentHash"|"createdAt"|"updatedAt"|"units"|"seeds"|"reliabilityPolicy">&{units?:ExperimentalUnit[];seeds?:number[];reliabilityPolicy?:StudyDesign["reliabilityPolicy"]};
 type AnalysisPlanDraft = Omit<AnalysisPlan, "id" | "studyId" | "status" | "contentHash" | "createdAt">;
 type DeviationPolicyDraft = Omit<DeviationPolicy, "id" | "studyId" | "contentHash" | "createdAt">;
 
@@ -26,9 +26,9 @@ export class StudyStore {
     mkdirSync(dirname(path), { recursive: true }); const db = new Database(path); db.pragma("journal_mode = WAL"); db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
     if (version < 5) { db.close(); throw new Error("F schema version 5 is required before G migration"); }
-    if (version > 8) { db.close(); throw new Error(`Study database ${version} is newer than supported version 8`); }
+    if(version>9){db.close();throw new Error(`Study database ${version} is newer than supported version 9`);}
     let backup:string|null=null,manifest:string|null=null;
-    if(version<8){const backupDir=resolve(dirname(path),"backups");mkdirSync(backupDir,{recursive:true});backup=resolve(backupDir,`research-before-007-${new Date().toISOString().replaceAll(":","-")}.db`);await db.backup(backup);manifest=snapshotArtifactManifest(path,backupDir,"007");}
+    if(version<9){const backupDir=resolve(dirname(path),"backups");mkdirSync(backupDir,{recursive:true});backup=resolve(backupDir,`research-before-008-${new Date().toISOString().replaceAll(":","-")}.db`);await db.backup(backup);manifest=snapshotArtifactManifest(path,backupDir,"008");}
     if (version < 6) {
       const backupDir = resolve(dirname(path), "backups"); mkdirSync(backupDir, { recursive: true });
       try { applyMigrationTransaction(db, readFileSync(resolve("migrations/005_study_analysis.sql"), "utf8")); } catch (error) { db.close(); throw error; }
@@ -36,7 +36,8 @@ export class StudyStore {
     let current=db.pragma("user_version", { simple: true }) as number;
     if(current<7){try{applyMigrationTransaction(db,readFileSync(resolve("migrations/006_claim_review_decision.sql"),"utf8"));}catch(error){db.close();throw error;}current=7;}
     if(current<8){try{applyMigrationTransaction(db,readFileSync(resolve("migrations/007_reliability_foundations.sql"),"utf8"));}catch(error){db.close();throw error;}current=8;}
-    if(current!==8){db.close();throw new Error(`Study schema compatibility failed at version ${current}`);}
+    if(current<9){try{applyMigrationTransaction(db,readFileSync(resolve("migrations/008_enforced_reliability_gates.sql"),"utf8"));}catch(error){db.close();throw error;}current=9;}
+    if(current!==9){db.close();throw new Error(`Study schema compatibility failed at version ${current}`);}
     return new StudyStore(db, backup, manifest);
   }
 
@@ -50,7 +51,7 @@ export class StudyStore {
     const protocolPayload = JSON.parse(protocol.payload_json) as { hypothesisSetId?: string; assumptionRegisterId?: string };
     const hypothesisPayload = JSON.parse(hypotheses.payload_json) as { evidenceMapId?: string };
     if (protocolPayload.hypothesisSetId !== input.hypothesisSetId || hypothesisPayload.evidenceMapId !== input.evidenceMapId) throw new Error("Study references do not match the frozen research lineage");
-    const now = new Date().toISOString();const seeds=input.seeds??[];const units=input.units??seeds.map(seed=>({id:`seed:${seed}`,kind:"training_seed",clusterId:null,attributes:{},legacySeed:seed}));const body={...input,seeds,units};
+    const now=new Date().toISOString(),seeds=input.seeds??[],units=input.units??seeds.map(seed=>({id:`seed:${seed}`,kind:"training_seed",clusterId:null,attributes:{},legacySeed:seed})),body={...input,seeds,units,reliabilityPolicy:input.reliabilityPolicy??"fact_bound_v1"};
     const study = StudyDesignSchema.parse({ ...body, id: `study-${randomUUID()}`, status: "draft", contentHash: hashPayload(body), createdAt: now, updatedAt: now });
     const tx=this.db.transaction(()=>{this.db.prepare("INSERT INTO studies(id,program_id,protocol_id,hypothesis_set_id,evidence_map_id,status,payload_json,content_hash,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)")
       .run(study.id,study.programId,study.protocolId,study.hypothesisSetId,study.evidenceMapId,study.status,JSON.stringify(study),study.contentHash,study.createdAt,study.updatedAt);for(const unit of study.units)this.db.prepare("INSERT INTO experimental_units(study_id,unit_id,kind,payload_json,created_at) VALUES(?,?,?,?,?)").run(study.id,unit.id,unit.kind,JSON.stringify(unit),study.createdAt);});tx();

@@ -16,6 +16,7 @@ import { applyMigrationTransaction } from "../src/infrastructure/db/research-sto
 class ReviewFixtureModel implements ResearchModel {
   readonly id = "fixture/reviewer";
   async generate<T>(stage: string, _input: unknown, schema: z.ZodType<T>): Promise<ModelOutput<T>> {
+    if(stage==="result-interpretation"){const payload={summary:"The bounded deterministic result supports a cautious interpretation.",claim:"The candidate has a bounded positive effect.",scope:"Only the frozen fixture study.",grade:"suggestive",alternativeExplanations:["Sampling variation may contribute."],invalidationConditions:["A replication reverses the direction."],recommendedAction:"publish_bounded_result",factAssertions:[{factId:"result.effect",assertedValue:.1,context:"primary effect"}]};return{value:schema.parse(payload),raw:JSON.stringify(payload),usage:{totalTokens:0}};}
     const needsWork = stage === "review-methods";
     const payload = {
       verdict: needsWork ? "needs_work" : "sound",
@@ -29,7 +30,7 @@ class ReviewFixtureModel implements ResearchModel {
         criterion: "Precision and independent replication",
         whyItMatters: "The effect interval is wide and generalization is limited.",
         requestedAction: "Restrict the claim and retain the small-seed limitation.",
-      }] : [],
+      }] : [],factAssertions:[{factId:"result.effect",assertedValue:.1,context:"primary effect"}],
     };
     return { value: schema.parse(payload), raw: JSON.stringify(payload), usage: { totalTokens: 0 } };
   }
@@ -54,7 +55,7 @@ test("H four-dimensional review blocks unresolved findings and emits a bounded r
   raw.prepare("INSERT INTO research_programs(id,profile,status,payload_json,content_hash,created_at,updated_at) VALUES(?,?,?,?,?,?,?)")
     .run("program", "confirmatory", "frozen", "{}", "a".repeat(64), now, now);
   raw.prepare("INSERT INTO studies(id,program_id,protocol_id,hypothesis_set_id,evidence_map_id,status,payload_json,content_hash,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)")
-    .run("study", "program", "protocol", "hypotheses", "map", "analyzed", "{}", "b".repeat(64), now, now);
+    .run("study", "program", "protocol", "hypotheses", "map", "analyzed", JSON.stringify({reliabilityPolicy:"fact_bound_v1"}), "b".repeat(64), now, now);
   raw.prepare("INSERT INTO analysis_plans(id,study_id,status,payload_json,content_hash,created_at) VALUES(?,?,?,?,?,?)")
     .run("plan", "study", "frozen", "{}", "c".repeat(64), now);
   raw.prepare("INSERT INTO analysis_runs(id,study_id,analysis_plan_id,status,payload_json,created_at) VALUES(?,?,?,?,?,?)")
@@ -74,6 +75,7 @@ test("H four-dimensional review blocks unresolved findings and emits a bounded r
   const store = await ReviewStore.open(dbPath);
   assert.ok(store.migrationBackupPath);
   const factStore=await FactAuditStore.open(dbPath);const ledger=factStore.addLedger(createFactLedger({id:"fixture-ledger",programId:"program",studyId:"study",facts:[{id:"result.effect",kind:"result",value:.1,unit:"proportion",sourceObjectId:"estimate",sourcePath:"estimate",sourceHash:"a".repeat(64)}],requiredFactIds:["result.effect"]}));
+  assert.throws(()=>store.addClaimAssessment({programId:"program",studyId:"study",claimId:"claim",claimText:"The effect was 0.05.",scope:"Only the bounded fixture study.",protocolId:"protocol",evidenceMapId:"map",analysisRunId:"analysis",estimateIds:["estimate"],supportingEvidenceIds:["estimate"],opposingEvidenceIds:[],alternativeExplanations:["Sampling variation."],invalidationConditions:["Replication reverses it."],grade:"suggestive",factLedgerId:null,claimFactIds:[],claimTemplate:null}),/Fact-bound study requires/);
   const assessment = new ReviewWorkflow(store,undefined,dir).addFactBoundAssessment({
     programId: "program", studyId: "study", claimId: "claim",
     claimTemplate: "The candidate effect was {{result.effect}}.",factLedgerId:ledger.id,claimFactIds:["result.effect"],
@@ -85,15 +87,20 @@ test("H four-dimensional review blocks unresolved findings and emits a bounded r
   store.addThreat({ claimAssessmentId: assessment.id, kind: "external", severity: "high", description: "The fixture does not establish cross-dataset generalization.", mitigation: "Restrict the claim scope." });
   const driftWorkflow=new ReviewWorkflow(store,new FactDriftModel(),dir,factStore);await assert.rejects(driftWorkflow.review({programId:"program",studyId:"study",dimension:"evidence",auditSnapshot:{estimate:.1},factLedger:ledger}),/Fact audit failed: value_mismatch:result.effect/);assert.equal(factStore.audits(ledger.id)[0]!.status,"fail");
   const workflow = new ReviewWorkflow(store, new ReviewFixtureModel(), dir);
+  await assert.rejects(workflow.review({programId:"program",studyId:"study",dimension:"evidence",auditSnapshot:{},independence:"session"}),/requires a FactLedger/);
+  const auditedWorkflow=new ReviewWorkflow(store,new ReviewFixtureModel(),dir,factStore);
   const snapshot = { assessmentId: assessment.id, protocolId: "protocol", analysisRunId: "analysis", evidenceMapId: "map" };
   for (const dimension of ["evidence", "methods", "statistics", "reproducibility"] as const) {
-    await workflow.review({ programId: "program", studyId: "study", dimension, auditSnapshot: snapshot });
+    await auditedWorkflow.review({programId:"program",studyId:"study",dimension,auditSnapshot:snapshot,factLedger:ledger});
   }
-  assert.equal(store.modelInvocations("program").length, 5);
+  assert.equal(store.modelInvocations("program").length,5);
   assert.equal(store.reviews("study").length, 4);
   assert.throws(() => workflow.finalize({ programId: "program", studyId: "study", action: "publish_bounded_result", rationale: "The bounded fixture result can be reported with its limitations.", claimAssessmentIds: [assessment.id], approvedBy: "researcher" }), /Major review findings/);
   const major = store.findings("study").find((item) => item.severity === "major")!;
   store.respond({ reviewId: major.reviewId, findingId: major.id, disposition: "accepted_limitation", response: "The claim is restricted to three seeds and no broader generalization is asserted.", evidenceIds: [assessment.id], actor: "researcher" });
+  assert.throws(()=>workflow.finalize({programId:"program",studyId:"study",action:"publish_bounded_result",rationale:"The bounded result passed all required gates.",claimAssessmentIds:[assessment.id],approvedBy:"researcher"}),/requires passing audit interpretation/);
+  await auditedWorkflow.interpret({programId:"program",studyId:"study",auditSnapshot:snapshot,factLedger:ledger});
+  assert.equal(store.modelInvocations("program").length,6);
   store.addReproductionManifest({ programId: "program", studyId: "study", codeHashes: ["e".repeat(64)], dataManifestHashes: ["f".repeat(64)], protocolHash: "1".repeat(64), analysisPlanHash: "2".repeat(64), environment: { node: process.version }, commands: [["npm", "test"]], artifactHashes: [] });
   const decision = workflow.finalize({ programId: "program", studyId: "study", action: "publish_bounded_result", rationale: "All major findings are resolved and the claim remains explicitly bounded to the fixture.", claimAssessmentIds: [assessment.id], approvedBy: "researcher" });
   const report = workflow.writeReport("program", "study", decision);

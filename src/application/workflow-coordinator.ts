@@ -1,5 +1,6 @@
 import type { ResearchProfile, ResearchProtocol, ResearchQuestion, ResearchProgram, ProtocolDeviation, ProtocolFreeze, Approval, Assumption, AssumptionRegister, HypothesisSet, RunDerivation, VisibilityEvent } from "../domain/research.js";
 import { ResearchStore, type DeviationRequest, type HypothesisSetDraft, type ProtocolDraft, type QuestionDraft, type ResearchStatus } from "../infrastructure/db/research-store.js";
+import type { DatasetSubstitutionRecord,DatasetSubstitutionRequest } from "../domain/data-substitution.js";
 
 export class WorkflowCoordinator {
   constructor(readonly store: ResearchStore) {}
@@ -8,6 +9,7 @@ export class WorkflowCoordinator {
   proposeQuestion(programId: string, input: QuestionDraft): ResearchQuestion { return this.store.addQuestion(programId, input); }
   selectQuestion(programId: string, questionId: string): ResearchQuestion { return this.store.selectQuestion(programId, questionId); }
   approveScope(programId: string, actor = "researcher", note = ""): Approval { return this.store.approveScope(programId, actor, note); }
+  recordDatasetSubstitution(programId:string,protocolId:string|null,input:DatasetSubstitutionRequest):DatasetSubstitutionRecord{return this.store.recordDatasetSubstitution(programId,protocolId,input);}
   draftProtocol(programId: string, input: ProtocolDraft): ResearchProtocol { return this.store.addProtocol(programId, input); }
   reviseDraftProtocol(programId: string, protocolId: string, input: ProtocolDraft): ResearchProtocol { return this.store.reviseDraftProtocol(programId, protocolId, input); }
   approveProtocol(programId: string, protocolId: string, actor = "researcher", note = ""): Approval { return this.store.approveProtocol(programId, protocolId, actor, note); }

@@ -16,7 +16,7 @@
 
 ## 兼容性
 
-schema 8 新增 `experimental_units`、`unit_observations`、`fact_ledgers` 和 `fact_audits`。旧 seeds 和 observations 不删除；迁移生成相应 training-seed 单位，统计 adapter 同时支持两种记录。已有无 FactLedger 的 v1.2 ClaimAssessment 继续读取，新声明应使用 fact-bound 接口。
+schema 8 新增 `experimental_units`、`unit_observations`、`fact_ledgers` 和 `fact_audits`；schema 9 新增持久化 dataset substitution，并把新 study 默认策略设为 `fact_bound_v1`。旧 seeds 和 observations 不删除；迁移生成相应 training-seed 单位。已有无 FactLedger 的 v1.2 对象以 `legacy_v1_2` 明确读取，新研究强制使用 fact-bound 接口。
 
 ## 限制
 

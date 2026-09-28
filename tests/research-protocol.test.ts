@@ -60,13 +60,12 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   const legacyDb = new Database(db);
   legacyDb.prepare("UPDATE runs SET brief_json=? WHERE id=?").run(JSON.stringify(legacyPayload), legacyRun.id);
   legacyDb.close();
-  const store = await ResearchStore.open(db);
-  const workflow = new WorkflowCoordinator(store);
-  assert.ok(store.migrationBackupPath());
-  assert.ok(existsSync(store.migrationBackupPath()!));
-  assert.ok(store.artifactManifestSnapshotPath());
-  assert.ok(existsSync(store.artifactManifestSnapshotPath()!));
-  const backupDb = new Database(store.migrationBackupPath()!);
+  const initialStore=await ResearchStore.open(db);const migrationBackup=initialStore.migrationBackupPath(),artifactManifest=initialStore.artifactManifestSnapshotPath();initialStore.close();const upgradeDb=new Database(db);upgradeDb.pragma("foreign_keys = OFF");for(const file of ["migrations/004_evidence_synthesis.sql","migrations/005_study_analysis.sql","migrations/006_claim_review_decision.sql","migrations/007_reliability_foundations.sql","migrations/008_enforced_reliability_gates.sql"])upgradeDb.exec(readFileSync(resolve(file),"utf8"));upgradeDb.close();const store=await ResearchStore.open(db);const workflow=new WorkflowCoordinator(store);
+  assert.ok(migrationBackup);
+  assert.ok(existsSync(migrationBackup!));
+  assert.ok(artifactManifest);
+  assert.ok(existsSync(artifactManifest!));
+  const backupDb = new Database(migrationBackup!);
   assert.equal(backupDb.pragma("user_version", { simple: true }), 1);
   assert.equal((backupDb.prepare("SELECT count(*) n FROM runs").get() as { n: number }).n, 1);
   backupDb.close();
@@ -109,7 +108,8 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   assert.equal(store.getHypothesisSet(hypothesisSet.id).status, "superseded");
   assert.throws(() => workflow.draftProtocol(program.id, protocol(register.id, hypothesisSet.id)), /must be frozen/);
   const originalDraft = workflow.draftProtocol(program.id, protocol(registerV2.id, hypothesisSetV2.id));
-  const drafted = workflow.reviseDraftProtocol(program.id, originalDraft.id, { ...protocol(registerV2.id, hypothesisSetV2.id), parentId: originalDraft.id, analysisPlan: "A corrected pre-approval paired analysis plan with immutable revision history." });
+  const changedRoles={...protocol(registerV2.id,hypothesisSetV2.id).dataRoles,validation:"replacement-validation"};assert.throws(()=>workflow.reviseDraftProtocol(program.id,originalDraft.id,{...protocol(registerV2.id,hypothesisSetV2.id),parentId:originalDraft.id,dataRoles:changedRoles}),/requires an accepted dataset substitution/);const substitution=workflow.recordDatasetSubstitution(program.id,originalDraft.id,{original:{id:"cifar-original",experimentalUnit:"training seed",primaryOutcome:"corruption accuracy",targetConstruct:"distribution shift robustness"},replacement:{id:"replacement-validation",experimentalUnit:"training seed",primaryOutcome:"corruption accuracy",targetConstruct:"distribution shift robustness"},unavailabilityEvidence:["original validation endpoint unavailable"],protocolFrozen:false,approvedDeviationId:null,scopeRevision:"Use replacement-validation under the unchanged scientific contract."});assert.equal(substitution.assessment.decision,"accepted_pre_freeze");
+  const drafted = workflow.reviseDraftProtocol(program.id, originalDraft.id, { ...protocol(registerV2.id, hypothesisSetV2.id), parentId: originalDraft.id,dataRoles:changedRoles,datasetSubstitutionIds:[substitution.id], analysisPlan: "A corrected pre-approval paired analysis plan with immutable revision history." });
   assert.equal(store.getProtocol(originalDraft.id).status, "superseded");
   assert.equal(drafted.version, originalDraft.version + 1);
   assert.throws(() => workflow.freezeProtocol(program.id, drafted.id), /approved before freeze/);
@@ -120,7 +120,8 @@ test("E state graph enforces scope, protocol freeze, visibility and derivation",
   assert.throws(() => workflow.freezeProtocol(program.id, drafted.id), /already frozen/);
 
   const requestedDeviation = workflow.recordDeviation(program.id, { reason: "Change the declared primary analysis after the initial freeze.", observedData: false, requestedChange: "Use the predeclared grouped robustness outcome.", actor: "agent" });
-  const approvedDeviation = workflow.approveDeviation(program.id, requestedDeviation.id, { ...protocol(registerV2.id, hypothesisSetV2.id), analysisPlan: "Use the revised grouped robustness outcome with the predeclared paired interval." }, "researcher");
+  const frozenChangedRoles={...drafted.dataRoles,confirmation:"replacement-confirmation"};assert.throws(()=>workflow.approveDeviation(program.id,requestedDeviation.id,{...protocol(registerV2.id,hypothesisSetV2.id),dataRoles:frozenChangedRoles,analysisPlan:"Use the revised grouped robustness outcome with the predeclared paired interval."},"researcher"),/requires a dataset substitution/);const frozenSubstitution=workflow.recordDatasetSubstitution(program.id,drafted.id,{original:{id:"cifar-confirmation-sealed",experimentalUnit:"training seed",primaryOutcome:"corruption accuracy",targetConstruct:"distribution shift robustness"},replacement:{id:"replacement-confirmation",experimentalUnit:"training seed",primaryOutcome:"corruption accuracy",targetConstruct:"distribution shift robustness"},unavailabilityEvidence:["confirmation archive unavailable"],protocolFrozen:true,approvedDeviationId:requestedDeviation.id,scopeRevision:"Use replacement-confirmation after approved deviation review."});
+  const approvedDeviation = workflow.approveDeviation(program.id, requestedDeviation.id, { ...protocol(registerV2.id, hypothesisSetV2.id),dataRoles:frozenChangedRoles,datasetSubstitutionIds:[frozenSubstitution.id], analysisPlan: "Use the revised grouped robustness outcome with the predeclared paired interval." }, "researcher");
   assert.equal(approvedDeviation.deviation.resolution, "approved");
   const revisedProtocol = approvedDeviation.protocol;
   assert.equal(revisedProtocol.analysisPlan, "Use the revised grouped robustness outcome with the predeclared paired interval.");

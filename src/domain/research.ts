@@ -142,6 +142,7 @@ export const ResearchProtocolSchema = z.object({
   exploratoryOutcomes: z.array(z.string().min(3)).default([]),
   experimentUnit: z.string().min(3),
   dataRoles: z.object({ train: z.string().min(1), validation: z.string().min(1), confirmation: z.string().min(1) }),
+  datasetSubstitutionIds:z.array(z.string()).default([]),
   analysisPlan: z.string().min(20),
   stoppingRules: z.array(z.string().min(5)).min(1),
   allowedChanges: z.array(z.string().min(3)).default([]),

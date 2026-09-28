@@ -13,8 +13,9 @@ export const ClaimAssessmentSchema=z.object({
   supportingEvidenceIds:z.array(z.string()).min(1),opposingEvidenceIds:z.array(z.string()).default([]),alternativeExplanations:z.array(z.string()).min(1),
   invalidationConditions:z.array(z.string()).min(1),grade:z.enum(["observed","suggestive","supported","replicated","unresolved","refuted"]),
   factLedgerId:z.string().min(1).nullable().default(null),claimFactIds:z.array(z.string()).default([]),
+  claimTemplate:z.string().min(1).nullable().default(null),
   contentHash:z.string().regex(/^[a-f0-9]{64}$/),createdAt:z.string(),
-}).superRefine((value,ctx)=>{if((value.factLedgerId===null)!==(value.claimFactIds.length===0))ctx.addIssue({code:"custom",message:"factLedgerId and claimFactIds must be supplied together"});});
+}).superRefine((value,ctx)=>{if((value.factLedgerId===null)!==(value.claimFactIds.length===0)||((value.factLedgerId===null)!==(value.claimTemplate===null)))ctx.addIssue({code:"custom",message:"factLedgerId, claimFactIds and claimTemplate must be supplied together"});});
 export type ClaimAssessment=z.infer<typeof ClaimAssessmentSchema>;
 
 export const ReviewFindingSchema=z.object({id:z.string().min(1),reviewId:z.string().min(1),severity:z.enum(["major","minor","note"]),location:z.string().min(3),observation:z.string().min(10),criterion:z.string().min(5),whyItMatters:z.string().min(10),requestedAction:z.string().min(5),status:z.enum(["open","addressed","accepted_limitation"]),createdAt:z.string()});

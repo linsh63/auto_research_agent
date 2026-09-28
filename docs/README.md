@@ -77,6 +77,7 @@ docs/
 - [v1.2.0：正式发布验收](reports/releases/v1.2.0-report.md)
 - [v1.3.0-alpha.1：A 可靠性基础设施](reports/releases/v1.3.0-alpha.1-report.md)
 - [v1.3.0-alpha.1：A 阶段严格重新验收](reports/releases/v1.3.0-alpha.1-a-reacceptance.md)
+- [v1.3.0-alpha.2：A 阶段强制门禁整改](reports/releases/v1.3.0-alpha.2-report.md)
 
 ### 自动验证产物
 

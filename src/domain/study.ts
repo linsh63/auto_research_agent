@@ -13,6 +13,7 @@ export type ExperimentalUnit=z.infer<typeof ExperimentalUnitSchema>;
 export const StudyDesignSchema = z.object({
   id: z.string().min(1), programId: z.string().min(1), protocolId: z.string().min(1), hypothesisSetId: z.string().min(1), evidenceMapId: z.string().min(1),
   status: StudyStatusSchema, experimentalUnit: z.string().min(5), design: AnalysisDesignSchema,
+  reliabilityPolicy:z.enum(["legacy_v1_2","fact_bound_v1"]).default("legacy_v1_2"),
   units:z.array(ExperimentalUnitSchema).default([]),seeds:z.array(z.number().int()).default([]),blockingFactors:z.array(z.string()).default([]),nuisanceFactors:z.array(z.string()).default([]),
   randomizationSeed: z.number().int(), contentHash: z.string().regex(/^[a-f0-9]{64}$/), createdAt: z.string(), updatedAt: z.string(),
 }).superRefine((value,ctx)=>{const ids=value.units.map(unit=>unit.id);if(Math.max(ids.length,value.seeds.length)<2)ctx.addIssue({code:"custom",message:"At least two experimental units or legacy seeds are required"});if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Experimental unit IDs must be unique"});if(new Set(value.seeds).size!==value.seeds.length)ctx.addIssue({code:"custom",message:"Legacy seeds must be unique"});});

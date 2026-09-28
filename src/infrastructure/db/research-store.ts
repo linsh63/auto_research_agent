@@ -11,10 +11,11 @@ import {
   type ResearchProfile, type RunDerivation, type VisibilityEvent, type HypothesisItem,
   assertAggregateCanFreeze, assertConfirmationAllowed, assertHypothesisSetComplete, assertProtocolCanFreeze, hashPayload,
 } from "../../domain/research.js";
+import { createDatasetSubstitutionRecord,DatasetSubstitutionRecordSchema,type DatasetSubstitutionRecord,type DatasetSubstitutionRequest } from "../../domain/data-substitution.js";
 
 export type QuestionDraft = Omit<ResearchQuestion, "id" | "programId" | "version" | "status" | "contentHash" | "supersedesId" | "createdAt"> & { supersedesId?: string | null };
-export type ProtocolDraft = Omit<ResearchProtocol, "id" | "programId" | "questionId" | "version" | "profile" | "status" | "contentHash" | "parentId" | "createdAt" | "assumptionRegisterId" | "hypothesisSetId"> & {
-  profile?: ResearchProfile; parentId?: string | null; assumptionRegisterId: string; hypothesisSetId: string;
+export type ProtocolDraft = Omit<ResearchProtocol,"id"|"programId"|"questionId"|"version"|"profile"|"status"|"contentHash"|"parentId"|"createdAt"|"assumptionRegisterId"|"hypothesisSetId"|"datasetSubstitutionIds"> & {
+  profile?:ResearchProfile;parentId?:string|null;assumptionRegisterId:string;hypothesisSetId:string;datasetSubstitutionIds?:string[];
 };
 export type HypothesisSetDraft = { hypotheses: Array<Omit<HypothesisItem, "id">>; evidenceMapId?: string | null; rivalAbsenceJustification?: string | null; parentId?: string | null };
 export type DeviationRequest = Omit<ProtocolDeviation, "id" | "protocolId" | "approved" | "resolution" | "approvedBy" | "resolvedAt" | "createdAt">;
@@ -84,9 +85,9 @@ export class ResearchStore {
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
-    if (version > 8) {
+    if(version>9){
       db.close();
-      throw new Error(`Research database ${version} is newer than supported version 8`);
+      throw new Error(`Research database ${version} is newer than supported version 9`);
     }
     let backupPath: string | null = null;
     let artifactManifestPath: string | null = null;
@@ -116,6 +117,10 @@ export class ResearchStore {
       current = db.pragma("user_version", { simple: true }) as number;
       if (current !== 4) { db.close(); throw new Error(`Research migration 003b did not reach schema version 4 (got ${current})`); }
     }
+    // Dataset substitution belongs to the protocol graph and must be usable before
+    // a StudyStore is opened. The global schema migration remains idempotent and
+    // later advances user_version after the remaining study/review tables exist.
+    db.exec("CREATE TABLE IF NOT EXISTS dataset_substitutions (id TEXT PRIMARY KEY,program_id TEXT NOT NULL REFERENCES research_programs(id),protocol_id TEXT REFERENCES research_protocols(id),decision TEXT NOT NULL,payload_json TEXT NOT NULL,content_hash TEXT NOT NULL,created_at TEXT NOT NULL)");
     return new ResearchStore(path, db, backupPath, artifactManifestPath, maxDerivedRuns);
   }
 
@@ -250,6 +255,9 @@ export class ResearchStore {
     const set = this.getHypothesisSet(hypothesisSetId);
     if (set.programId !== programId || set.questionId !== questionId || set.status !== "frozen") throw new Error("Protocol hypothesis set must be frozen and belong to the selected program/question");
   }
+  recordDatasetSubstitution(programId:string,protocolId:string|null,request:DatasetSubstitutionRequest):DatasetSubstitutionRecord{this.getProgram(programId);this.assertProgramMutable(programId);if(protocolId&&this.getProtocol(protocolId).programId!==programId)throw new Error("Dataset substitution protocol does not belong to program");if(request.approvedDeviationId&&!this.deviations(programId).some(item=>item.id===request.approvedDeviationId))throw new Error("Dataset substitution references an unknown deviation");const record=createDatasetSubstitutionRecord({id:`dataset-substitution-${randomUUID()}`,programId,protocolId,request});this.db.prepare("INSERT INTO dataset_substitutions(id,program_id,protocol_id,decision,payload_json,content_hash,created_at) VALUES(?,?,?,?,?,?,?)").run(record.id,programId,protocolId,record.assessment.decision,JSON.stringify(record),record.contentHash,record.createdAt);return record;}
+  datasetSubstitutions(programId:string):DatasetSubstitutionRecord[]{return(this.db.prepare("SELECT payload_json FROM dataset_substitutions WHERE program_id=? ORDER BY created_at").all(programId) as ProgramRow[]).map(row=>DatasetSubstitutionRecordSchema.parse(JSON.parse(row.payload_json)));}
+  private assertDatasetSubstitutions(programId:string,ids:string[],requiredDecision?:"accepted_with_deviation"):void{if(!ids.length)return;const records=this.datasetSubstitutions(programId);for(const id of ids){const record=records.find(item=>item.id===id);if(!record)throw new Error(`Unknown dataset substitution ${id}`);if(!["accepted_pre_freeze","accepted_with_deviation"].includes(record.assessment.decision))throw new Error(`Dataset substitution ${id} is not accepted`);if(requiredDecision&&record.assessment.decision!==requiredDecision)throw new Error(`Dataset substitution ${id} requires ${requiredDecision}`);}}
 
   addProtocol(programId: string, input: ProtocolDraft): ResearchProtocol {
     const program = this.getProgram(programId);
@@ -265,7 +273,7 @@ export class ResearchStore {
       if (latestProtocol.questionId !== question.id || latestProtocol.status !== "frozen") throw new Error("Protocol parent must be the frozen latest version for the selected question");
     } else if (input.parentId) throw new Error("Initial protocol cannot have a parent");
     const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
-    const body = { ...input, profile: input.profile ?? program.profile, parentId: input.parentId ?? null };
+    const datasetSubstitutionIds=input.datasetSubstitutionIds??[];this.assertDatasetSubstitutions(programId,datasetSubstitutionIds);const body={...input,datasetSubstitutionIds,profile:input.profile??program.profile,parentId:input.parentId??null};
     const protocol = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: question.id, version: (latest.version ?? 0) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {
       if (latestProtocol) {
@@ -288,7 +296,7 @@ export class ResearchStore {
     if (!latest || latest.id !== original.id || original.programId !== programId || original.status !== "draft") throw new Error("Only the latest draft protocol can be revised");
     if (input.parentId && input.parentId !== original.id) throw new Error("Draft revision parent must be the latest draft protocol");
     this.assertProtocolCognitiveRefs(programId, original.questionId, input.assumptionRegisterId, input.hypothesisSetId);
-    const body = { ...input, profile: input.profile ?? program.profile, parentId: original.id };
+    const datasetSubstitutionIds=input.datasetSubstitutionIds??[];if(JSON.stringify(input.dataRoles)!==JSON.stringify(original.dataRoles)&&!datasetSubstitutionIds.length)throw new Error("Changing protocol data roles requires an accepted dataset substitution");this.assertDatasetSubstitutions(programId,datasetSubstitutionIds);const body={...input,datasetSubstitutionIds,profile:input.profile??program.profile,parentId:original.id};
     const revised = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: original.questionId, version: original.version + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {
       const superseded = { ...original, status: "superseded" as const };
@@ -375,7 +383,7 @@ export class ResearchStore {
     if (this.listProtocols(programId).at(-1)?.id !== original.id) throw new Error("Deviation must target the latest protocol version");
     this.assertProtocolCognitiveRefs(programId, original.questionId, revisedInput.assumptionRegisterId, revisedInput.hypothesisSetId);
     const latest = this.db.prepare("SELECT max(version) version FROM research_protocols WHERE program_id=?").get(programId) as { version: number | null };
-    const body = { ...revisedInput, profile: revisedInput.profile ?? program.profile, parentId: original.id };
+    const datasetSubstitutionIds=revisedInput.datasetSubstitutionIds??[];if(JSON.stringify(revisedInput.dataRoles)!==JSON.stringify(original.dataRoles)){if(!datasetSubstitutionIds.length)throw new Error("Changing frozen protocol data roles requires a dataset substitution tied to the approved deviation");this.assertDatasetSubstitutions(programId,datasetSubstitutionIds,"accepted_with_deviation");const records=this.datasetSubstitutions(programId).filter(item=>datasetSubstitutionIds.includes(item.id));if(records.some(item=>item.request.approvedDeviationId!==deviation.id))throw new Error("Dataset substitution must reference this approved deviation");}const body={...revisedInput,datasetSubstitutionIds,profile:revisedInput.profile??program.profile,parentId:original.id};
     const revised = ResearchProtocolSchema.parse({ ...body, id: `protocol-${randomUUID()}`, programId, questionId: original.questionId, version: (latest.version ?? original.version) + 1, status: "draft", contentHash: hashPayload(body), createdAt: new Date().toISOString() });
     const resolved = ProtocolDeviationSchema.parse({ ...deviation, approved: true, resolution: "approved", approvedBy: actor, resolvedBy: actor, resolvedAt: new Date().toISOString() });
     const tx = this.db.transaction(() => {

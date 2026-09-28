@@ -116,6 +116,8 @@ Research graph (v1.2 E):
   npm run dev -- research fact-audit <ledger-id> <stage> <assertions.json>
   npm run dev -- research fact-report <ledger-id> <report.json>
   npm run dev -- research assess-data-substitution <request.json>
+  npm run dev -- research dataset-substitution <program-id> <protocol-id|none> <request.json>
+  npm run dev -- research interpret <program-id> <study-id> <snapshot.json> <fact-ledger-id>
   npm run dev -- research review <program-id> <study-id> <evidence|methods|statistics|reproducibility> <snapshot.json> [fact-ledger-id]
   npm run dev -- research respond-review <response.json>
   npm run dev -- research reproduction-manifest <manifest.json>
@@ -198,6 +200,8 @@ async function main(): Promise<void> {
       else if(command==="fact-audit"){const raw=readJson(args[2]),assertions=Array.isArray(raw)?raw.map(item=>FactAssertionSchema.parse(item)):FactAssertionSchema.array().parse((raw as{assertions?:unknown}).assertions),audit=factStore.addAudit(auditFactAssertions(factStore.getLedger(args[0]!),args[1]!,assertions,{requireAll:true}));console.log(JSON.stringify(audit,null,2));assertFactAudit(audit);}
       else if(command==="fact-report")console.log(renderStructuredReport(StructuredReportSchema.parse(readJson(args[1])),factStore.getLedger(args[0]!)));
       else if(command==="assess-data-substitution")console.log(JSON.stringify(assessDatasetSubstitution(DatasetSubstitutionRequestSchema.parse(readJson(args[0]))),null,2));
+      else if(command==="dataset-substitution")console.log(JSON.stringify(workflow.recordDatasetSubstitution(args[0]!,args[1]==="none"?null:args[1]!,DatasetSubstitutionRequestSchema.parse(readJson(args[2]))),null,2));
+      else if(command==="interpret"){const model=await PiResearchModel.create(piModelConfigFromEnv()),review=new ReviewWorkflow(reviewStore,model,dataDir,factStore);console.log(JSON.stringify(await review.interpret({programId:args[0]!,studyId:args[1]!,auditSnapshot:readJson(args[2]),factLedger:factStore.getLedger(args[3]!)}),null,2));}
       else if (command === "review") {
         const model = await PiResearchModel.create(piModelConfigFromEnv());
         const review = new ReviewWorkflow(reviewStore, model, dataDir,factStore);

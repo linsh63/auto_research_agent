@@ -1,0 +1,8 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { createFactLedger,type FactLedger } from "../src/domain/facts.js";
+import { FactAuditStore } from "../src/infrastructure/db/fact-audit-store.js";
+import { hCaseDb,hCaseRoot,hStudyContext } from "./h_case_context.js";
+
+export async function ensureHFactLedger():Promise<FactLedger>{const id="h-result-facts",path=join(hCaseRoot,"analysis.json"),analysis=JSON.parse(readFileSync(path,"utf8")),estimate=analysis.analysis.estimates[0],sourceHash=createHash("sha256").update(readFileSync(path)).digest("hex"),store=await FactAuditStore.open(hCaseDb);try{try{return store.getLedger(id);}catch{}return store.addLedger(createFactLedger({id,programId:hStudyContext().programId,studyId:hStudyContext().id,requiredFactIds:["result.effect","result.interval_low","result.interval_high","result.n_units"],facts:[{id:"result.effect",kind:"result",value:estimate.estimate,unit:"proportion",sourceObjectId:estimate.id,sourcePath:"analysis.estimates[0].estimate",sourceHash},{id:"result.interval_low",kind:"result",value:estimate.intervalLow,unit:"proportion",sourceObjectId:estimate.id,sourcePath:"analysis.estimates[0].intervalLow",sourceHash},{id:"result.interval_high",kind:"result",value:estimate.intervalHigh,unit:"proportion",sourceObjectId:estimate.id,sourcePath:"analysis.estimates[0].intervalHigh",sourceHash},{id:"result.n_units",kind:"design",value:estimate.nUnits,unit:"training seeds",sourceObjectId:estimate.id,sourcePath:"analysis.estimates[0].nUnits",sourceHash}]}));}finally{store.close();}}
