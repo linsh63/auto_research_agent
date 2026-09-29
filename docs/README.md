@@ -35,6 +35,7 @@ docs/
 - [v1.2 完整实施规划](planning/v1.2-plan.md)
 - [v1.3 规划](planning/v1.3-plan.md)
 - [v1.3 B/C 联合迭代计划](planning/v1.3-bc-plan.md)
+- [v1.4 泛化与隔离确认计划](planning/v1.4-plan.md)
 - [下一阶段备选方案](planning/next-stage-options.md)
 
 ### 架构与配置
