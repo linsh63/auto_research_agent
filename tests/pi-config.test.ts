@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { resolve } from "node:path";
 import test from "node:test";
-import { PiResearchModel, piModelConfigFromEnv } from "../src/adapters/pi-model.js";
+import { PiResearchModel, parseJson, piModelConfigFromEnv } from "../src/adapters/pi-model.js";
 
 test("environment maps to pi-native provider selection", () => {
   const config = piModelConfigFromEnv({
@@ -24,4 +24,9 @@ test("pi loads the DeepSeek models.json without a network request", async () => 
     providerId: "deepseek", modelId: "deepseek-flash", apiKey: "test-only",
   });
   assert.equal(model.id, "deepseek/deepseek-flash");
+});
+
+test("pi JSON repair keeps the first balanced object before trailing reasoning", () => {
+  assert.deepEqual(parseJson('output:{"ok":true}}\n<think>later {"noise":1}</think>'), { ok: true });
+  assert.deepEqual(parseJson('{"text":"brace } inside string","nested":{"x":1}} trailing'), { text: "brace } inside string", nested: { x: 1 } });
 });

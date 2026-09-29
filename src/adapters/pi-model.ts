@@ -46,10 +46,32 @@ export function piModelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PiMo
   };
 }
 
-function parseJson(text: string): unknown {
+export function parseJson(text: string): unknown {
   const afterReasoning = text.includes("</think>") ? text.slice(text.lastIndexOf("</think>") + "</think>".length) : text;
   const clean = afterReasoning.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
   try { return JSON.parse(clean); } catch { /* Try text around the JSON object. */ }
+  // Some local reasoning servers emit a valid object before trailing reasoning or
+  // duplicate braces. Prefer the first balanced, string-aware object instead of
+  // spanning from the first opening brace to the last closing brace.
+  for (const source of [...new Set([clean, text.trim()])]) {
+    for (let start = source.indexOf("{"); start >= 0; start = source.indexOf("{", start + 1)) {
+      let depth = 0; let quoted = false; let escaped = false;
+      for (let index = start; index < source.length; index++) {
+        const char = source[index]!;
+        if (quoted) {
+          if (char === '"' && !escaped) quoted = false;
+          escaped = char === "\\" && !escaped;
+          if (char !== "\\") escaped = false;
+          continue;
+        }
+        if (char === '"') { quoted = true; escaped = false; continue; }
+        if (char === "{") depth++;
+        else if (char === "}" && --depth === 0) {
+          try { return JSON.parse(source.slice(start, index + 1)); } catch { break; }
+        }
+      }
+    }
+  }
   if (/^\s*"[^\n]+"\s*:/.test(clean) && clean.trimEnd().endsWith("}")) {
     try { return JSON.parse(`{${clean}`); } catch { /* Continue with bounded repair. */ }
   }
