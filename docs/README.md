@@ -60,6 +60,7 @@ docs/
 - [v1.1 阶段进度](reports/stages/v1.1-progress.md)
 - [v1.2 阶段进度](reports/stages/v1.2-progress.md)
 - [v1.3 A 阶段进度](reports/stages/v1.3-a-progress.md)
+- [v1.3 B/C 联合迭代进度](reports/stages/v1.3-bc-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)

@@ -25,6 +25,7 @@ import { ReviewWorkflow } from "./application/review-workflow.js";
 import { PiResearchModel, piModelConfigFromEnv } from "./adapters/pi-model.js";
 import { ReviewDimensionSchema } from "./domain/review.js";
 import { FactAuditStore } from "./infrastructure/db/fact-audit-store.js";
+import { ScientificDecisionStore } from "./infrastructure/db/scientific-decision-store.js";
 import { assertFactAudit,auditFactAssertions,FactAssertionSchema,FactLedgerSchema } from "./domain/facts.js";
 import { renderStructuredReport,StructuredReportSchema } from "./application/structured-report.js";
 import { preflightBubblewrap } from "./adapters/bubblewrap-runner.js";
@@ -118,6 +119,9 @@ Research graph (v1.2 E):
   npm run dev -- research assess-data-substitution <request.json>
   npm run dev -- research dataset-substitution <program-id> <protocol-id|none> <request.json>
   npm run dev -- research interpret <program-id> <study-id> <snapshot.json> <fact-ledger-id>
+  npm run dev -- research scientific-decision <decision.json>
+  npm run dev -- research scientific-decision-result <result.json>
+  npm run dev -- research scientific-decisions <study-id>
   npm run dev -- research review <program-id> <study-id> <evidence|methods|statistics|reproducibility> <snapshot.json> [fact-ledger-id]
   npm run dev -- research respond-review <response.json>
   npm run dev -- research reproduction-manifest <manifest.json>
@@ -139,6 +143,7 @@ async function main(): Promise<void> {
     const studyStore = await StudyStore.open(join(dataDir, "research.db"));
     const reviewStore = await ReviewStore.open(join(dataDir, "research.db"));
     const factStore = await FactAuditStore.open(join(dataDir,"research.db"));
+    const decisionStore=await ScientificDecisionStore.open(join(dataDir,"research.db"));
     const searchStore = new SearchStore(join(dataDir, "research.db"));
     const workflow = new WorkflowCoordinator(store);
     const synthesis = new EvidenceSynthesisService(synthesisStore, store);
@@ -202,6 +207,9 @@ async function main(): Promise<void> {
       else if(command==="assess-data-substitution")console.log(JSON.stringify(assessDatasetSubstitution(DatasetSubstitutionRequestSchema.parse(readJson(args[0]))),null,2));
       else if(command==="dataset-substitution")console.log(JSON.stringify(workflow.recordDatasetSubstitution(args[0]!,args[1]==="none"?null:args[1]!,DatasetSubstitutionRequestSchema.parse(readJson(args[2]))),null,2));
       else if(command==="interpret"){const model=await PiResearchModel.create(piModelConfigFromEnv()),review=new ReviewWorkflow(reviewStore,model,dataDir,factStore);console.log(JSON.stringify(await review.interpret({programId:args[0]!,studyId:args[1]!,auditSnapshot:readJson(args[2]),factLedger:factStore.getLedger(args[3]!)}),null,2));}
+      else if(command==="scientific-decision")console.log(JSON.stringify(decisionStore.register(readJson(args[0]) as never),null,2));
+      else if(command==="scientific-decision-result")console.log(JSON.stringify(decisionStore.recordResult(readJson(args[0]) as never),null,2));
+      else if(command==="scientific-decisions")console.log(JSON.stringify({decisions:decisionStore.decisions(args[0]!),results:decisionStore.results(args[0]!)},null,2));
       else if (command === "review") {
         const model = await PiResearchModel.create(piModelConfigFromEnv());
         const review = new ReviewWorkflow(reviewStore, model, dataDir,factStore);
@@ -216,7 +224,7 @@ async function main(): Promise<void> {
         console.log(JSON.stringify(new ReviewWorkflow(reviewStore,undefined,dataDir).writeReport(args[0]!,args[1]!,decision),null,2));
       } else if (command === "model-invocations") console.log(JSON.stringify(reviewStore.modelInvocations(args[0]!),null,2));
       else throw new Error(`Unknown research command: ${command}`);
-    } finally { factStore.close();reviewStore.close(); searchStore.close(); studyStore.close(); synthesisStore.close(); store.close(); }
+    } finally {decisionStore.close();factStore.close();reviewStore.close(); searchStore.close(); studyStore.close(); synthesisStore.close(); store.close(); }
     return;
   }
   if (command === "skills") {
