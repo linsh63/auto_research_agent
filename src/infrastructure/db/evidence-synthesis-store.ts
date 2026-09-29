@@ -58,6 +58,8 @@ export class EvidenceSynthesisStore {
 
   createSearchProtocol(programId: string, input: SearchProtocolDraft): SearchProtocol {
     this.assertProgramMutable(programId);
+    const kinds=new Set(input.queryFamilies.map(family=>family.kind));
+    if(!["problem","method","adjacent"].every(kind=>kinds.has(kind as "problem"|"method"|"adjacent")))throw new Error("Search protocol requires problem, method and adjacent query families");
     const question = this.selectedQuestion(programId);
     const existing = this.listSearchProtocols(programId);
     const latest = existing.at(-1);

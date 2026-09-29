@@ -39,6 +39,8 @@ test("F evidence map enforces provenance, novelty and explicit capability invoca
   const synthesis = await EvidenceSynthesisStore.open(db);
   assert.ok(synthesis.migrationBackupPath && existsSync(synthesis.migrationBackupPath));
   assert.ok(synthesis.artifactManifestSnapshotPath && existsSync(synthesis.artifactManifestSnapshotPath));
+  assert.throws(()=>synthesis.createSearchProtocol(program.id,{queryFamilies:[{id:"only-problem",kind:"problem",queries:["incomplete search"],rationale:"This invalid draft must never be persisted."}],databases:["fixture"],startYear:2020,endYear:2026,inclusionCriteria:["Relevant"],exclusionCriteria:["Irrelevant"],stopConditions:["Stop"]}),/requires problem, method and adjacent/);
+  assert.equal(synthesis.listSearchProtocols(program.id).length,0);
   const search = synthesis.createSearchProtocol(program.id, { queryFamilies: [
     { id: "q-problem", kind: "problem", queries: ["image classifier distribution shift"], rationale: "Find work defining the deployment problem." },
     { id: "q-method", kind: "method", queries: ["training method corruption robustness"], rationale: "Find directly comparable training methods." },
