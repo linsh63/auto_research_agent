@@ -11,8 +11,7 @@ export function assertSupportedSchema(version: unknown): asserts version is type
 
 export function assertCommandContext(command: PublicCommand): void {
   assertSupportedSchema(command.schemaVersion);
-  if (command.type === "project.create" && command.projectId !== null) throw new PublicKernelError("INVALID_COMMAND", "project.create requires projectId=null", false);
-  if (command.type !== "project.create" && !command.projectId) throw new PublicKernelError("INVALID_COMMAND", `${command.type} requires projectId`, false);
+  if (command.type!=="project.create"&&command.type!=="project.import"&&!command.projectId) throw new PublicKernelError("INVALID_COMMAND", `${command.type} requires projectId`, false);
 }
 
 export function assertQueryContext(query: PublicQuery): void {
@@ -35,7 +34,7 @@ export function toPublicError(error: unknown): PublicError {
   const lower = message.toLowerCase();
   let code: PublicErrorCode = "INTERNAL";
   if (/unknown|not found/.test(lower)) code = "NOT_FOUND";
-  else if (/mismatch|conflict|already|latest/.test(lower)) code = "CONFLICT";
+  else if (/mismatch|conflict|already|latest|in doubt/.test(lower)) code = "CONFLICT";
   else if (/required|requires|cannot|closed|not allowed|only .* can|sealed/.test(lower)) code = "GATE_REJECTED";
   else if (/invalid|must|expected/.test(lower)) code = "INVALID_COMMAND";
   return PublicErrorSchema.parse({ code, message: code === "INTERNAL" ? "Internal research kernel error" : message, retryable: false, details: {} });

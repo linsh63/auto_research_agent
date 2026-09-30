@@ -26,7 +26,7 @@ export class EvidenceSynthesisStore {
     db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
     if (version < 4) { db.close(); throw new Error("E schema version 4 is required before F migration"); }
-    if(version>10){db.close();throw new Error(`Evidence synthesis database ${version} is newer than supported version 10`);}
+    if(version>11){db.close();throw new Error(`Evidence synthesis database ${version} is newer than supported version 11`);}
     let backup: string | null = null;
     let artifactManifest: string | null = null;
     if (version < 5) {
@@ -39,7 +39,7 @@ export class EvidenceSynthesisStore {
       catch (error) { db.close(); throw error; }
     }
     const current = db.pragma("user_version", { simple: true }) as number;
-    if(current<5||current>10){db.close();throw new Error(`F schema compatibility failed at version ${current}`);}
+    if(current<5||current>11){db.close();throw new Error(`F schema compatibility failed at version ${current}`);}
     return new EvidenceSynthesisStore(db, backup, artifactManifest);
   }
 

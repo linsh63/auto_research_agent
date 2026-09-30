@@ -2,12 +2,14 @@
   "schemaVersion": "1.0.0",
   "jsonSchemaDraft": "2020-12",
   "files": {
-    "command.schema.json": "9cdbb0aa500ff8efcb5217af5b62fc1bf97489ac40aa65ea812721f9b2b113a2",
+    "command.schema.json": "97659d3008f845975d3a6bec00bd33bf3d6f8199fa6976833fded97e3fc3e3fc",
     "command-result.schema.json": "22892d9ec59899763a457d5cf395ab065f0f43fae8ba9362c1f4d87fd37416a4",
-    "query.schema.json": "f4e095d8579cab67a538eab3799320bbd97c44efc339627a98ccd485f3467f1d",
-    "query-result.schema.json": "b6566b75b9d37549db7846d6fbbd49a7357bec38d8bfe42d962ddb2ad6577295",
-    "project-status.schema.json": "8cc99881611fc16b7d3aab66b7717ed560dd3444e26fc3d551bdee997ef1abe8",
-    "event.schema.json": "26ba4062647c89b459db8ed0cb8a715d798d325563b3f75c23980f411728bdea",
+    "query.schema.json": "49d764ad385916cfb929ae7de305fe0bda5213fbdc2747e915eadf7457c32bd1",
+    "query-result.schema.json": "c09c85649db55bcaef061c9b645a260454e21a5bda32e9ae30199844f33b1669",
+    "project-status.schema.json": "cc38842d28a682d3740a28a9479965b6efdcd88daf1c3104b72156cb7c94e331",
+    "project-events.schema.json": "153e7a7ae1e3cf0b45f5221f1561c5e7599760b4a3b1f475b42ecc74dd9e8ce5",
+    "project-bundle.schema.json": "4015c564c0220a51939b72e68ac3bc2251d4bfaca136825ad597f72be2ed9af6",
+    "event.schema.json": "4a5a1a6280edd27233931c9a1df25cced6910106e3f3fa32a6be1da98ea06d4d",
     "error.schema.json": "619593a1b25395f46e842d7e8b20da5cdbf59f5bf5337e217acd3ce758795c1d"
   }
 }

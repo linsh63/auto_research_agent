@@ -73,11 +73,25 @@ export const ApproveScopeCommandSchema = CommandContextSchema.extend({
   payload: z.object({ note: z.string().default("") }).strict(),
 }).strict();
 
+export const ForkProjectCommandSchema = CommandContextSchema.extend({
+  type: z.literal("project.fork"),
+  projectId: z.string().min(1),
+  payload: z.object({ branchName: z.string().min(1), reason: z.string().min(10) }).strict(),
+}).strict();
+
+export const ImportProjectBundleCommandSchema = CommandContextSchema.extend({
+  type: z.literal("project.import"),
+  projectId: z.null(),
+  payload: z.object({ bundle: z.lazy(() => PublicProjectBundleSchema) }).strict(),
+}).strict();
+
 export const PublicCommandSchema = z.discriminatedUnion("type", [
   CreateProjectCommandSchema,
   ProposeQuestionCommandSchema,
   SelectQuestionCommandSchema,
   ApproveScopeCommandSchema,
+  ForkProjectCommandSchema,
+  ImportProjectBundleCommandSchema,
 ]);
 export type PublicCommand = z.infer<typeof PublicCommandSchema>;
 
@@ -89,7 +103,16 @@ export const GetProjectStatusQuerySchema = z.object({
   projectId: z.string().min(1),
   actor: ActorSchema,
 }).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema]);
+export const GetProjectEventsQuerySchema = z.object({
+  schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("project.events"),
+  workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,
+  fromSequence: z.number().int().positive().default(1), limit: z.number().int().positive().max(1000).default(200),
+}).strict();
+export const ExportProjectBundleQuerySchema = z.object({
+  schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("project.bundle"),
+  workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,
+}).strict();
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -156,6 +179,13 @@ export const ProjectStatusReadModelSchema = z.object({
     derivations: z.number().int().nonnegative(),
   }).strict(),
   confirmationObserved: z.boolean(),
+  persistence: z.object({
+    rootProjectId: z.string().min(1),
+    parentProjectId: z.string().min(1).nullable(),
+    branchName: z.string().min(1),
+    lastEventSequence: z.number().int().nonnegative(),
+    eventCount: z.number().int().nonnegative(),
+  }).strict(),
 }).strict();
 export type ProjectStatusReadModel = z.infer<typeof ProjectStatusReadModelSchema>;
 
@@ -165,7 +195,7 @@ export const QueryResultSchema = z.object({
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: ProjectStatusReadModelSchema.nullable(),
+  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema)]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {
@@ -179,6 +209,7 @@ export const ResearchEventEnvelopeSchema = z.object({
   type: z.string().min(1),
   workspaceId: z.string().min(1),
   projectId: z.string().min(1),
+  sequence: z.number().int().positive(),
   actor: ActorSchema,
   causationId: z.string().min(1),
   correlationId: z.string().min(1),
@@ -187,3 +218,29 @@ export const ResearchEventEnvelopeSchema = z.object({
   payload: z.unknown(),
 }).strict();
 export type ResearchEventEnvelope = z.infer<typeof ResearchEventEnvelopeSchema>;
+
+export const ProjectEventListSchema=z.object({
+  schemaVersion:PublicSchemaVersionSchema,workspaceId:z.string().min(1),projectId:z.string().min(1),
+  events:z.array(ResearchEventEnvelopeSchema),nextSequence:z.number().int().positive().nullable(),
+}).strict();
+export type ProjectEventList=z.infer<typeof ProjectEventListSchema>;
+
+export const PublicProjectRecordSchema=z.object({
+  id:z.string().min(1),workspaceId:z.string().min(1),rootProjectId:z.string().min(1),parentProjectId:z.string().min(1).nullable(),
+  forkedFromEventId:z.string().min(1).nullable(),branchName:z.string().min(1),status:z.enum(["active","archived"]),
+  contentHash:z.string().regex(/^[a-f0-9]{64}$/),createdAt:z.string(),updatedAt:z.string(),
+}).strict();
+export const PublicProjectProjectionSchema=z.object({
+  projectId:z.string().min(1),workspaceId:z.string().min(1),rootProjectId:z.string().min(1),parentProjectId:z.string().min(1).nullable(),
+  branchName:z.string().min(1),projectStatus:z.enum(["active","archived"]),researchStatus:z.string().min(1),
+  lastSequence:z.number().int().nonnegative(),eventCount:z.number().int().nonnegative(),lastEventType:z.string().min(1).nullable(),updatedAt:z.string(),
+  projectionHash:z.string().regex(/^[a-f0-9]{64}$/),
+}).strict();
+export const PublicProjectBundleSchema=z.object({
+  bundleVersion:z.literal("1"),publicSchemaVersion:z.string().min(1),exportedAt:z.string(),
+  source:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1)}).strict(),
+  project:PublicProjectRecordSchema,events:z.array(ResearchEventEnvelopeSchema),projection:PublicProjectProjectionSchema,
+  state:z.object({format:z.literal("research-scope-snapshot-v1"),program:z.unknown(),questions:z.array(z.unknown()),approvals:z.array(z.unknown()),stateHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict(),
+  contentHash:z.string().regex(/^[a-f0-9]{64}$/),
+}).strict();
+export type PublicProjectBundle=z.infer<typeof PublicProjectBundleSchema>;

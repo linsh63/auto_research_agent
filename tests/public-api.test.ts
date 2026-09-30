@@ -79,7 +79,7 @@ test("public contracts fail closed with stable error codes", async (t) => {
   assert.equal(unsupported.error?.code, "INCOMPATIBLE_VERSION");
 });
 
-test("legacy projects require an explicit workspace compatibility binding", async (t) => {
+test("project workspace binding persists across application restarts", async (t) => {
   const directory = mkdtempSync(join(tmpdir(), "ara-public-legacy-"));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const path = join(directory, "research.db");
@@ -91,13 +91,10 @@ test("legacy projects require an explicit workspace compatibility binding", asyn
   creator.close();
   const projectId = created.projectId!;
 
-  const unbound = await ResearchApplication.open({ databasePath: path });
-  assert.equal((await unbound.query({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: "legacy:unbound", type: "project.status",
-    workspaceId: base.workspaceId, projectId, actor })).error?.code, "NOT_FOUND");
-  unbound.close();
-
-  const adopted = await ResearchApplication.open({ databasePath: path, workspaceBindings: { [projectId]: base.workspaceId } });
-  assert.equal((await adopted.query({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: "legacy:bound", type: "project.status",
+  const reopened = await ResearchApplication.open({ databasePath: path });
+  assert.equal((await reopened.query({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: "persisted:bound", type: "project.status",
     workspaceId: base.workspaceId, projectId, actor })).status, "ok");
-  adopted.close();
+  assert.equal((await reopened.query({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: "persisted:wrong-workspace", type: "project.status",
+    workspaceId: "workspace:other", projectId, actor })).error?.code, "FORBIDDEN");
+  reopened.close();
 });

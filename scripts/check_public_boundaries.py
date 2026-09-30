@@ -9,8 +9,7 @@ PUBLIC = ROOT / "src/public"
 IMPORT = re.compile(r'(?:from\s+|import\s*)["\']([^"\']+)["\']')
 FORBIDDEN_PREFIXES = ("../domain/", "../application/", "../infrastructure/", "../adapters/", "../core/")
 APPLICATION_ALLOWLIST = {
-    "../application/workflow-coordinator.js",
-    "../infrastructure/db/research-store.js",
+    "../application/public-application-backend.js",
 }
 issues = []
 for path in sorted(PUBLIC.glob("*.ts")):

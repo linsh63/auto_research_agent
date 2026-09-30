@@ -4,7 +4,7 @@
 
 `src/public/index.ts` 是 v1.5 起唯一面向客户端和场景开发者的 TypeScript 入口。客户端不得导入 `src/infrastructure`、`src/application`、`src/domain` 或数据库迁移文件。
 
-当前接口属于 N 阶段兼容 facade，用来冻结公共契约并验证现有科研门禁。事件、Job、Scenario 和服务端接口将在后续阶段补充。
+当前接口已完成 N、O 阶段：公共契约、持久 Project、事件、分支和范围阶段 Bundle 可用。Job、Scenario 和服务端推送将在后续阶段补充。
 
 ## 公共导出
 
@@ -62,8 +62,10 @@ app.close();
 - `question.propose`
 - `question.select`
 - `scope.approve`
+- `project.fork`
+- `project.import`
 
-当前查询只有 `project.status`。返回值是稳定 read model，不是数据库记录。
+查询包括 `project.status`、`project.events` 和 `project.bundle`。返回值是稳定 read model 或版本化 Bundle，不是数据库记录。
 
 ## 错误语义
 
@@ -79,9 +81,9 @@ app.close();
 
 内部异常不向客户端泄露堆栈。科研状态门禁失败使用 `GATE_REJECTED`；跨 Workspace 访问使用 `FORBIDDEN`；相同幂等键提交不同命令使用 `CONFLICT`。
 
-## 幂等与 Workspace
+## 持久幂等与 Workspace
 
-N 阶段在单个 ResearchApplication 实例内保存幂等结果和 Workspace binding。重启后接管旧 Project 时必须显式传入：
+新 Project 的幂等结果和 Workspace binding 已持久化，服务重启后继续有效。接管 schema 11 之前创建的旧 Project 时必须显式传入：
 
 ```ts
 await ResearchApplication.open({
@@ -90,7 +92,9 @@ await ResearchApplication.open({
 });
 ```
 
-没有显式绑定时查询会 fail closed。O 阶段会把 Workspace、Project、事件和幂等记录持久化，此过渡参数届时废弃。
+没有显式绑定时旧 Project 查询会 fail closed。该参数只用于兼容迁移，不用于新 Project。
+
+如果科研状态已经改变但事件提交失败，命令收据保持 pending，后续重试返回 `CONFLICT/in-doubt`。核心不会猜测命令是否可以安全重放。
 
 ## 语言无关契约
 

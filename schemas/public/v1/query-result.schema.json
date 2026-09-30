@@ -43,165 +43,672 @@
     "data": {
       "anyOf": [
         {
-          "type": "object",
-          "properties": {
-            "schemaVersion": {
-              "type": "string",
-              "const": "1.0.0"
-            },
-            "workspaceId": {
-              "type": "string",
-              "minLength": 1
-            },
-            "project": {
+          "anyOf": [
+            {
               "type": "object",
               "properties": {
-                "id": {
+                "schemaVersion": {
+                  "type": "string",
+                  "const": "1.0.0"
+                },
+                "workspaceId": {
                   "type": "string",
                   "minLength": 1
                 },
-                "title": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "direction": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "domain": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "profile": {
-                  "type": "string",
-                  "enum": [
-                    "smoke",
-                    "exploratory",
-                    "confirmatory"
-                  ]
-                },
-                "status": {
-                  "type": "string",
-                  "enum": [
-                    "draft",
-                    "scoped",
-                    "protocol_ready",
-                    "frozen",
-                    "confirmation_observed",
-                    "closed",
-                    "derived"
-                  ]
-                },
-                "updatedAt": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              },
-              "required": [
-                "id",
-                "title",
-                "direction",
-                "domain",
-                "profile",
-                "status",
-                "updatedAt"
-              ],
-              "additionalProperties": false
-            },
-            "questions": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string",
-                    "minLength": 1
+                "project": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "direction": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "domain": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "profile": {
+                      "type": "string",
+                      "enum": [
+                        "smoke",
+                        "exploratory",
+                        "confirmatory"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "scoped",
+                        "protocol_ready",
+                        "frozen",
+                        "confirmation_observed",
+                        "closed",
+                        "derived"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "minLength": 1
+                    }
                   },
-                  "version": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "maximum": 9007199254740991
-                  },
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "proposed",
-                      "selected",
-                      "superseded",
-                      "rejected"
-                    ]
-                  },
-                  "question": {
-                    "type": "string",
-                    "minLength": 1
+                  "required": [
+                    "id",
+                    "title",
+                    "direction",
+                    "domain",
+                    "profile",
+                    "status",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "proposed",
+                          "selected",
+                          "superseded",
+                          "rejected"
+                        ]
+                      },
+                      "question": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "status",
+                      "question"
+                    ],
+                    "additionalProperties": false
                   }
                 },
-                "required": [
-                  "id",
-                  "version",
-                  "status",
-                  "question"
-                ],
-                "additionalProperties": false
-              }
-            },
-            "counts": {
-              "type": "object",
-              "properties": {
-                "assumptions": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
+                "counts": {
+                  "type": "object",
+                  "properties": {
+                    "assumptions": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "hypothesisSets": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "protocols": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "approvals": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "deviations": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "derivations": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "assumptions",
+                    "hypothesisSets",
+                    "protocols",
+                    "approvals",
+                    "deviations",
+                    "derivations"
+                  ],
+                  "additionalProperties": false
                 },
-                "hypothesisSets": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
+                "confirmationObserved": {
+                  "type": "boolean"
                 },
-                "protocols": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
-                },
-                "approvals": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
-                },
-                "deviations": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
-                },
-                "derivations": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
+                "persistence": {
+                  "type": "object",
+                  "properties": {
+                    "rootProjectId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parentProjectId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "branchName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lastEventSequence": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "eventCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "rootProjectId",
+                    "parentProjectId",
+                    "branchName",
+                    "lastEventSequence",
+                    "eventCount"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
-                "assumptions",
-                "hypothesisSets",
-                "protocols",
-                "approvals",
-                "deviations",
-                "derivations"
+                "schemaVersion",
+                "workspaceId",
+                "project",
+                "questions",
+                "counts",
+                "confirmationObserved",
+                "persistence"
               ],
               "additionalProperties": false
             },
-            "confirmationObserved": {
-              "type": "boolean"
+            {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string",
+                  "const": "1.0.0"
+                },
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "projectId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "schemaVersion": {
+                        "type": "string",
+                        "const": "1.0.0"
+                      },
+                      "eventId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "type": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "actor": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "agent",
+                              "worker",
+                              "system"
+                            ]
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "causationId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "correlationId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "payloadHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "payload": {}
+                    },
+                    "required": [
+                      "schemaVersion",
+                      "eventId",
+                      "type",
+                      "workspaceId",
+                      "projectId",
+                      "sequence",
+                      "actor",
+                      "causationId",
+                      "correlationId",
+                      "occurredAt",
+                      "payloadHash",
+                      "payload"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "nextSequence": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "workspaceId",
+                "projectId",
+                "events",
+                "nextSequence"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "bundleVersion": {
+                  "type": "string",
+                  "const": "1"
+                },
+                "publicSchemaVersion": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "exportedAt": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "projectId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "workspaceId",
+                    "projectId"
+                  ],
+                  "additionalProperties": false
+                },
+                "project": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "workspaceId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "rootProjectId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parentProjectId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "forkedFromEventId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "branchName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived"
+                      ]
+                    },
+                    "contentHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "workspaceId",
+                    "rootProjectId",
+                    "parentProjectId",
+                    "forkedFromEventId",
+                    "branchName",
+                    "status",
+                    "contentHash",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "schemaVersion": {
+                        "type": "string",
+                        "const": "1.0.0"
+                      },
+                      "eventId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "type": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "actor": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "user",
+                              "agent",
+                              "worker",
+                              "system"
+                            ]
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "causationId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "correlationId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "payloadHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "payload": {}
+                    },
+                    "required": [
+                      "schemaVersion",
+                      "eventId",
+                      "type",
+                      "workspaceId",
+                      "projectId",
+                      "sequence",
+                      "actor",
+                      "causationId",
+                      "correlationId",
+                      "occurredAt",
+                      "payloadHash",
+                      "payload"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "projection": {
+                  "type": "object",
+                  "properties": {
+                    "projectId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "workspaceId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "rootProjectId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parentProjectId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "branchName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "projectStatus": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived"
+                      ]
+                    },
+                    "researchStatus": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lastSequence": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "eventCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "lastEventType": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "projectionHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "projectId",
+                    "workspaceId",
+                    "rootProjectId",
+                    "parentProjectId",
+                    "branchName",
+                    "projectStatus",
+                    "researchStatus",
+                    "lastSequence",
+                    "eventCount",
+                    "lastEventType",
+                    "updatedAt",
+                    "projectionHash"
+                  ],
+                  "additionalProperties": false
+                },
+                "state": {
+                  "type": "object",
+                  "properties": {
+                    "format": {
+                      "type": "string",
+                      "const": "research-scope-snapshot-v1"
+                    },
+                    "program": {},
+                    "questions": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "approvals": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "stateHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "format",
+                    "program",
+                    "questions",
+                    "approvals",
+                    "stateHash"
+                  ],
+                  "additionalProperties": false
+                },
+                "contentHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "bundleVersion",
+                "publicSchemaVersion",
+                "exportedAt",
+                "source",
+                "project",
+                "events",
+                "projection",
+                "state",
+                "contentHash"
+              ],
+              "additionalProperties": false
             }
-          },
-          "required": [
-            "schemaVersion",
-            "workspaceId",
-            "project",
-            "questions",
-            "counts",
-            "confirmationObserved"
-          ],
-          "additionalProperties": false
+          ]
         },
         {
           "type": "null"

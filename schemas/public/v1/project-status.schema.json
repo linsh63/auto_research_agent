@@ -149,6 +149,48 @@
     },
     "confirmationObserved": {
       "type": "boolean"
+    },
+    "persistence": {
+      "type": "object",
+      "properties": {
+        "rootProjectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parentProjectId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "branchName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lastEventSequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "eventCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "rootProjectId",
+        "parentProjectId",
+        "branchName",
+        "lastEventSequence",
+        "eventCount"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -157,7 +199,8 @@
     "project",
     "questions",
     "counts",
-    "confirmationObserved"
+    "confirmationObserved",
+    "persistence"
   ],
   "additionalProperties": false
 }
