@@ -1,0 +1,41 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/error.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "enum": [
+        "INVALID_COMMAND",
+        "INCOMPATIBLE_VERSION",
+        "NOT_FOUND",
+        "CONFLICT",
+        "FORBIDDEN",
+        "GATE_REJECTED",
+        "INTERNAL"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "details": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "code",
+    "message",
+    "retryable",
+    "details"
+  ],
+  "additionalProperties": false
+}

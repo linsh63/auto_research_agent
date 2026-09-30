@@ -1,0 +1,273 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/query-result.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "queryId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspaceId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "projectId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "rejected"
+      ]
+    },
+    "data": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "workspaceId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "project": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "direction": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "domain": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "profile": {
+                  "type": "string",
+                  "enum": [
+                    "smoke",
+                    "exploratory",
+                    "confirmatory"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "scoped",
+                    "protocol_ready",
+                    "frozen",
+                    "confirmation_observed",
+                    "closed",
+                    "derived"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "direction",
+                "domain",
+                "profile",
+                "status",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            "questions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "proposed",
+                      "selected",
+                      "superseded",
+                      "rejected"
+                    ]
+                  },
+                  "question": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "version",
+                  "status",
+                  "question"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "counts": {
+              "type": "object",
+              "properties": {
+                "assumptions": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "hypothesisSets": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "protocols": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "approvals": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "deviations": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "derivations": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "assumptions",
+                "hypothesisSets",
+                "protocols",
+                "approvals",
+                "deviations",
+                "derivations"
+              ],
+              "additionalProperties": false
+            },
+            "confirmationObserved": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "workspaceId",
+            "project",
+            "questions",
+            "counts",
+            "confirmationObserved"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_COMMAND",
+                "INCOMPATIBLE_VERSION",
+                "NOT_FOUND",
+                "CONFLICT",
+                "FORBIDDEN",
+                "GATE_REJECTED",
+                "INTERNAL"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "details": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "retryable",
+            "details"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "handledAt": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "queryId",
+    "workspaceId",
+    "projectId",
+    "status",
+    "data",
+    "error",
+    "handledAt"
+  ],
+  "additionalProperties": false
+}

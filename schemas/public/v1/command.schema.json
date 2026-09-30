@@ -1,0 +1,507 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/command.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "null"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "project.create"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "intent": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "direction": {
+                  "type": "string",
+                  "minLength": 20
+                },
+                "domain": {
+                  "default": "AI/ML",
+                  "type": "string",
+                  "minLength": 2
+                },
+                "constraints": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 2
+                  }
+                },
+                "allowedData": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 2
+                  }
+                },
+                "prohibitions": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 2
+                  }
+                },
+                "profile": {
+                  "default": "confirmatory",
+                  "type": "string",
+                  "enum": [
+                    "smoke",
+                    "exploratory",
+                    "confirmatory"
+                  ]
+                },
+                "budget": {
+                  "default": {
+                    "gpuHours": 12,
+                    "wallHours": 24,
+                    "diskGiB": 20,
+                    "modelCalls": 20,
+                    "knownCostUsd": 10
+                  },
+                  "type": "object",
+                  "properties": {
+                    "gpuHours": {
+                      "default": 12,
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "wallHours": {
+                      "default": 24,
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "diskGiB": {
+                      "default": 20,
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "modelCalls": {
+                      "default": 20,
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "knownCostUsd": {
+                      "default": 10,
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "gpuHours",
+                    "wallHours",
+                    "diskGiB",
+                    "modelCalls",
+                    "knownCostUsd"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "title",
+                "direction",
+                "domain",
+                "constraints",
+                "allowedData",
+                "prohibitions",
+                "profile",
+                "budget"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "intent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "question.propose"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 20
+                },
+                "rationale": {
+                  "type": "string",
+                  "minLength": 20
+                },
+                "targetPopulation": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "intervention": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "comparator": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "primaryOutcome": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "scope": {
+                  "type": "string",
+                  "minLength": 10
+                },
+                "sourceIds": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "supersedesId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "question",
+                "rationale",
+                "targetPopulation",
+                "intervention",
+                "comparator",
+                "primaryOutcome",
+                "scope",
+                "sourceIds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "question"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "question.select"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "questionId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "questionId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "scope.approve"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "note": {
+              "default": "",
+              "type": "string"
+            }
+          },
+          "required": [
+            "note"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

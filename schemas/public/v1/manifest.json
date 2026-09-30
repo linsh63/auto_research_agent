@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0.0",
+  "jsonSchemaDraft": "2020-12",
+  "files": {
+    "command.schema.json": "9cdbb0aa500ff8efcb5217af5b62fc1bf97489ac40aa65ea812721f9b2b113a2",
+    "command-result.schema.json": "22892d9ec59899763a457d5cf395ab065f0f43fae8ba9362c1f4d87fd37416a4",
+    "query.schema.json": "f4e095d8579cab67a538eab3799320bbd97c44efc339627a98ccd485f3467f1d",
+    "query-result.schema.json": "b6566b75b9d37549db7846d6fbbd49a7357bec38d8bfe42d962ddb2ad6577295",
+    "project-status.schema.json": "8cc99881611fc16b7d3aab66b7717ed560dd3444e26fc3d551bdee997ef1abe8",
+    "event.schema.json": "26ba4062647c89b459db8ed0cb8a715d798d325563b3f75c23980f411728bdea",
+    "error.schema.json": "619593a1b25395f46e842d7e8b20da5cdbf59f5bf5337e217acd3ce758795c1d"
+  }
+}
