@@ -18,13 +18,12 @@ docs/
 
 ## 推荐阅读顺序
 
-1. [v1.3 规划](planning/v1.3-plan.md)：可靠性基础设施，以及后续 B/C 联合迭代。
-2. [v1.2 完整实施规划](planning/v1.2-plan.md)：上一版本的确定决策、任务顺序、验收案例和发布门禁。
-2. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
-3. [V1 阶段总结](reports/stages/v1-summary.md)：最小科研闭环的实际完成情况。
-4. [v1.1 实施规划](planning/v1.1-plan.md)：证据、记忆、实验搜索和第二场景的完整设计。
-5. [v1.1 进度登记](reports/stages/v1.1-progress.md)：A–D 各阶段的实施与验收状态。
-6. [v1.1.0 发布报告](reports/releases/v1.1.0-report.md)：当前版本的最终门禁与已知限制。
+1. [v1.5 核心产品化规划](planning/v1.5-plan.md)：下一阶段的 Headless Research Kernel、SDK、Worker、Scenario 和项目存档。
+2. [v1.4 规划](planning/v1.4-plan.md)：泛化、机制诊断和隔离确认。
+3. [v1.4 阶段报告](reports/stages/v1.4-progress.md)：最近一次真实研究和能力边界。
+4. [v1.3 规划](planning/v1.3-plan.md)：可靠性基础设施，以及 B/C 联合迭代。
+5. [v1.2 完整实施规划](planning/v1.2-plan.md)：确认性科研工作流与发布门禁。
+6. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
 
 ## 按主题查找
 
@@ -36,6 +35,7 @@ docs/
 - [v1.3 规划](planning/v1.3-plan.md)
 - [v1.3 B/C 联合迭代计划](planning/v1.3-bc-plan.md)
 - [v1.4 泛化与隔离确认计划](planning/v1.4-plan.md)
+- [v1.5 Headless Research Kernel 产品化](planning/v1.5-plan.md)
 - [下一阶段备选方案](planning/next-stage-options.md)
 
 ### 架构与配置

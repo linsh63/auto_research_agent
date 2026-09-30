@@ -8,7 +8,7 @@ V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实�
 
 v1.2 已正式发布：confirmatory workflow 包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。v1.3 A 阶段现已通过强制门禁整改：新研究默认使用通用实验单位、事实账本、LLM 事实审计、fact-bound 报告、持久化数据替换门和执行前环境预检。当前开发版本为 `1.3.0-alpha.2`，详情见 [v1.3 规划](docs/planning/v1.3-plan.md)和[alpha.2 整改报告](docs/reports/releases/v1.3.0-alpha.2-report.md)。
 
-v1.3 B/C 已完成一项 RIO/SCAM read-ignore 真实研究，并加入持久化 ScientificDecision。下一阶段为 [v1.4 泛化与隔离确认](docs/planning/v1.4-plan.md)：跨模板、跨任务、跨模型 transport test，以及强制 bubblewrap confirmation。
+v1.4 已完成跨模板、跨任务、跨模型的真实研究、强制 Bubblewrap confirmation、FactLedger 和四维评审。当前结果支持受限的 RIO 格式内 transport，并暴露出回答格式混杂等能力边界，详情见 [v1.4 阶段报告](docs/reports/stages/v1.4-progress.md)。下一阶段为 [v1.5 Headless Research Kernel 产品化](docs/planning/v1.5-plan.md)：公共协议、Project 存档、事件流、Job/Worker、Scenario SDK、Core Service 和双语言 SDK。正式 CLI、Web 和科研游戏归入 v2.0 项目集。
 
 [文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 
