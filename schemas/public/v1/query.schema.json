@@ -187,6 +187,92 @@
             "kind"
           ],
           "additionalProperties": false
+        },
+        "bundleVersion": {
+          "default": "2",
+          "type": "string",
+          "enum": [
+            "1",
+            "2"
+          ]
+        },
+        "artifactPolicy": {
+          "default": "embed",
+          "type": "string",
+          "enum": [
+            "embed",
+            "metadata"
+          ]
+        },
+        "maxEmbeddedBytes": {
+          "default": 20000000,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 100000000
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "queryId",
+        "type",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "bundleVersion",
+        "artifactPolicy",
+        "maxEmbeddedBytes"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "queryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "project.dependencies"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [

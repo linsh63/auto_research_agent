@@ -8,7 +8,7 @@ import { hashPayload } from "../src/domain/research.js";
 import { ProjectStore } from "../src/infrastructure/db/project-store.js";
 import { applyMigrationTransaction } from "../src/infrastructure/db/research-store.js";
 import {
-  PUBLIC_SCHEMA_VERSION, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicProjectBundleSchema,
+  PUBLIC_SCHEMA_VERSION, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicProjectBundleV1Schema,
   ResearchApplication, type Actor,
 } from "../src/public/index.js";
 
@@ -44,7 +44,7 @@ test("O public flow persists events, idempotency, projection and fork lineage",a
 });
 
 test("scope-stage bundle verifies hashes and imports into another instance",async t=>{
-  const dir=mkdtempSync(join(tmpdir(),"ara-o-bundle-"));t.after(()=>rmSync(dir,{recursive:true,force:true}));const sourcePath=join(dir,"source.db"),source=await ResearchApplication.open({databasePath:sourcePath}),{projectId}=await scopedProject(source),bundleResult=await source.query({schemaVersion:PUBLIC_SCHEMA_VERSION,queryId:"o:bundle",type:"project.bundle",workspaceId:base.workspaceId,projectId,actor}),bundle=PublicProjectBundleSchema.parse(bundleResult.data);source.close();
+  const dir=mkdtempSync(join(tmpdir(),"ara-o-bundle-"));t.after(()=>rmSync(dir,{recursive:true,force:true}));const sourcePath=join(dir,"source.db"),source=await ResearchApplication.open({databasePath:sourcePath}),{projectId}=await scopedProject(source),bundleResult=await source.query({schemaVersion:PUBLIC_SCHEMA_VERSION,queryId:"o:bundle",type:"project.bundle",workspaceId:base.workspaceId,projectId,actor,bundleVersion:"1",artifactPolicy:"metadata",maxEmbeddedBytes:1}),bundle=PublicProjectBundleV1Schema.parse(bundleResult.data);source.close();
   const tampered=structuredClone(bundle);tampered.project.branchName="tampered";const target=await ResearchApplication.open({databasePath:join(dir,"target.db")}),bad=await target.execute({schemaVersion:PUBLIC_SCHEMA_VERSION,commandId:"o:bad-import",idempotencyKey:"o-bad-import",workspaceId:"workspace:imported",projectId:null,actor,issuedAt:base.issuedAt,type:"project.import",payload:{bundle:tampered}});assert.equal(bad.status,"rejected");assert.equal(bad.error?.code,"CONFLICT");const imported=await target.execute({schemaVersion:PUBLIC_SCHEMA_VERSION,commandId:"o:import",idempotencyKey:"o-import",workspaceId:"workspace:imported",projectId:null,actor,issuedAt:base.issuedAt,type:"project.import",payload:{bundle}});assert.equal(imported.status,"accepted");assert.equal(imported.projectId,projectId);assert.equal((imported.data as{eventCount:number}).eventCount,bundle.events.length+1);const status=ProjectStatusReadModelSchema.parse((await target.query({schemaVersion:PUBLIC_SCHEMA_VERSION,queryId:"o:imported-status",type:"project.status",workspaceId:"workspace:imported",projectId,actor})).data);assert.equal(status.project.status,"scoped");assert.equal(status.questions.some(item=>item.status==="selected"),true);target.close();
   const store=await ProjectStore.open(join(dir,"target.db"));assert.equal(store.events(projectId).at(-1)?.type,"project.imported");assert.deepEqual(store.auditProject(projectId),{status:"pass",issues:[]});store.close();
 });

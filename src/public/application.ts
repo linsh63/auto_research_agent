@@ -4,7 +4,7 @@ import { PublicApplicationBackend } from "../application/public-application-back
 import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
   ExecutionPolicySchema, ProjectStatusReadModelSchema, PublicCommandSchema, ProjectEventListSchema,
-  JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
+  BundleDependencyReadModelSchema, JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
   PluginInspectionSchema, PluginInstallationsResultSchema, PluginInstallationSchema, PluginPermissionSchema, PluginRuntimeSelectionSchema, PluginSearchResultSchema, PluginSourceRecordSchema, PluginSourcesResultSchema,
   WorkerDescriptorSchema, WorkerRequestSchema, WorkerResultSchema,
   type Actor, type CommandResult, type ExecutionPolicy, type ProjectStatusReadModel, type PublicCommand,
@@ -15,6 +15,8 @@ import { assertCommandContext, assertQueryContext, PublicKernelError, toPublicEr
 export interface ResearchApplicationOptions {
   databasePath: string;
   maxDerivedRuns?: number;
+  artifactRoots?:string[];
+  artifactRoot?:string;
   /** Explicit compatibility bindings for projects created before Workspace persistence exists. */
   workspaceBindings?: Record<string, string>;
 }
@@ -35,7 +37,7 @@ export class ResearchApplication {
   private constructor(private readonly backend: PublicApplicationBackend) {}
 
   static async open(options: ResearchApplicationOptions): Promise<ResearchApplication> {
-    const backend=await PublicApplicationBackend.open(options.databasePath,{maxDerivedRuns:options.maxDerivedRuns});
+    const backend=await PublicApplicationBackend.open(options.databasePath,{maxDerivedRuns:options.maxDerivedRuns,artifactRoots:options.artifactRoots,artifactRoot:options.artifactRoot});
     try{for(const[projectId,workspaceId]of Object.entries(options.workspaceBindings??{}))backend.projects.adoptLegacyProject({projectId,workspaceId,actor:{id:"system:compatibility",kind:"system",displayName:"Compatibility importer"},schemaVersion:PUBLIC_SCHEMA_VERSION});return new ResearchApplication(backend);}catch(error){backend.close();throw error;}
   }
 
@@ -101,7 +103,7 @@ export class ResearchApplication {
       return { data:{ project: this.projectSummary(program), workspaceId: command.workspaceId },eventType:"project.created" };
     }
     if(command.type==="project.fork"){const derived=this.backend.workflow.derive(command.projectId,command.payload.reason,command.actor.id,[]);return{data:{project:this.projectSummary(derived.program),derivation:derived.derivation},eventType:null};}
-    if(command.type==="project.import"){const imported=this.backend.projects.importBundle(command.payload.bundle,command.workspaceId,command.actor),program=this.backend.research.getProgram(imported.project.id);return{data:{project:this.projectSummary(program),eventCount:this.backend.projects.events(imported.project.id).length,importEventId:imported.event.eventId},eventType:null};}
+    if(command.type==="project.import"){if(command.payload.bundle.bundleVersion==="2"){const imported=this.backend.bundles.import(command.payload.bundle,command.workspaceId,command.actor,PUBLIC_SCHEMA_VERSION),program=this.backend.research.getProgram(imported.project.id);return{data:{project:this.projectSummary(program),eventCount:this.backend.projects.events(imported.project.id).length,importEventId:imported.eventId,compatibility:imported.report},eventType:null};}const imported=this.backend.projects.importBundle(command.payload.bundle,command.workspaceId,command.actor),program=this.backend.research.getProgram(imported.project.id);return{data:{project:this.projectSummary(program),eventCount:this.backend.projects.events(imported.project.id).length,importEventId:imported.event.eventId,compatibility:{status:"ready",issues:[],checkedAt:new Date().toISOString()}},eventType:null};}
     if(command.type==="policy.set"){
       if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Only a user actor can change execution policy",false);
       const policy=this.backend.interactions.setPolicy(command.workspaceId,command.projectId,command.payload);
@@ -231,7 +233,8 @@ export class ResearchApplication {
 
   private queryData(query:PublicQuery):unknown{
     if(query.type==="project.status")return this.projectStatus(query);
-    if(query.type==="project.bundle")return PublicProjectBundleSchema.parse(this.backend.projects.exportBundle(query.projectId,PUBLIC_SCHEMA_VERSION));
+    if(query.type==="project.bundle")return PublicProjectBundleSchema.parse(query.bundleVersion==="1"?this.backend.projects.exportBundle(query.projectId,PUBLIC_SCHEMA_VERSION):this.backend.bundles.export(query.projectId,PUBLIC_SCHEMA_VERSION,query.artifactPolicy,query.maxEmbeddedBytes));
+    if(query.type==="project.dependencies")return BundleDependencyReadModelSchema.parse(this.backend.bundles.dependencies(query.projectId));
     if(query.type==="conversation.get")return ConversationReadModelSchema.parse(this.backend.interactions.conversation(query.workspaceId,query.projectId,query.sessionId));
     if(query.type==="policy.get")return ExecutionPolicySchema.parse(this.backend.interactions.policy(query.workspaceId,query.projectId));
     if(query.type==="job.get")return JobReadModelSchema.parse({job:this.backend.jobs.job(query.workspaceId,query.projectId,query.jobId),artifacts:this.backend.jobs.artifacts(query.workspaceId,query.projectId,query.jobId)});

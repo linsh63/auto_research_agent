@@ -1,0 +1,58 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/bundle-compatibility.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "degraded",
+        "blocked"
+      ]
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "warning",
+              "error"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "subject",
+          "message"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "checkedAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "issues",
+    "checkedAt"
+  ],
+  "additionalProperties": false
+}

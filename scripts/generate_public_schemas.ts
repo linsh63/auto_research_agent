@@ -5,7 +5,7 @@ import { z } from "zod";
 import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
   ExecutionPolicySchema, JobLogListSchema, JobReadModelSchema, JobSpecSchema, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicCommandSchema,
-  PluginDescriptorSchema, PluginInstallationSchema, PluginSourceRecordSchema, PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema, WorkerRequestSchema, WorkerResultSchema,
+  BundleCompatibilityReportSchema, BundleDependencyReadModelSchema, PluginDescriptorSchema, PluginInstallationSchema, PluginSourceRecordSchema, PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema, WorkerRequestSchema, WorkerResultSchema,
 } from "../src/public/contracts.js";
 import { AnalysisContractSchema, DataContractSchema, EvaluationContractSchema, ScenarioHandshakeRequestSchema, ScenarioHandshakeResultSchema, ScenarioManifestSchema } from "../src/public/scenario.js";
 import { ServiceCapabilitiesSchema } from "../src/public/service.js";
@@ -19,6 +19,8 @@ const definitions = {
   "project-status.schema.json": ProjectStatusReadModelSchema,
   "project-events.schema.json": ProjectEventListSchema,
   "project-bundle.schema.json": PublicProjectBundleSchema,
+  "project-dependencies.schema.json": BundleDependencyReadModelSchema,
+  "bundle-compatibility.schema.json": BundleCompatibilityReportSchema,
   "research-action.schema.json": ResearchActionSchema,
   "candidate-set.schema.json": CandidateSetReadModelSchema,
   "conversation.schema.json": ConversationReadModelSchema,

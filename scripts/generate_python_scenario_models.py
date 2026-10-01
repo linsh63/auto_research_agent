@@ -16,6 +16,7 @@ FILES = [
     "scenario-analysis.schema.json", "scenario-handshake-request.schema.json", "scenario-handshake-result.schema.json",
     "job-spec.schema.json", "worker-request.schema.json", "worker-result.schema.json",
     "command.schema.json", "command-result.schema.json", "query.schema.json", "query-result.schema.json", "service-capabilities.schema.json",
+    "project-bundle.schema.json", "project-dependencies.schema.json", "bundle-compatibility.schema.json",
 ]
 
 

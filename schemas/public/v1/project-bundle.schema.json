@@ -1,360 +1,709 @@
 {
   "$id": "https://auto-research.local/schemas/v1/project-bundle.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "properties": {
-    "bundleVersion": {
-      "type": "string",
-      "const": "1"
-    },
-    "publicSchemaVersion": {
-      "type": "string",
-      "minLength": 1
-    },
-    "exportedAt": {
-      "type": "string"
-    },
-    "source": {
+  "oneOf": [
+    {
       "type": "object",
       "properties": {
-        "workspaceId": {
+        "bundleVersion": {
+          "type": "string",
+          "const": "1"
+        },
+        "publicSchemaVersion": {
           "type": "string",
           "minLength": 1
         },
-        "projectId": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "workspaceId",
-        "projectId"
-      ],
-      "additionalProperties": false
-    },
-    "project": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
+        "exportedAt": {
+          "type": "string"
         },
-        "workspaceId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "rootProjectId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "parentProjectId": {
-          "anyOf": [
-            {
+        "source": {
+          "type": "object",
+          "properties": {
+            "workspaceId": {
               "type": "string",
               "minLength": 1
             },
-            {
-              "type": "null"
+            "projectId": {
+              "type": "string",
+              "minLength": 1
             }
-          ]
+          },
+          "required": [
+            "workspaceId",
+            "projectId"
+          ],
+          "additionalProperties": false
         },
-        "forkedFromEventId": {
-          "anyOf": [
-            {
+        "project": {
+          "type": "object",
+          "properties": {
+            "id": {
               "type": "string",
               "minLength": 1
             },
-            {
-              "type": "null"
+            "workspaceId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rootProjectId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "parentProjectId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "forkedFromEventId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "branchName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            },
+            "contentHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
             }
-          ]
+          },
+          "required": [
+            "id",
+            "workspaceId",
+            "rootProjectId",
+            "parentProjectId",
+            "forkedFromEventId",
+            "branchName",
+            "status",
+            "contentHash",
+            "createdAt",
+            "updatedAt"
+          ],
+          "additionalProperties": false
         },
-        "branchName": {
-          "type": "string",
-          "minLength": 1
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "const": "1.0.0"
+              },
+              "eventId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "type": "string",
+                "minLength": 1
+              },
+              "workspaceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projectId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sequence": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "actor": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "agent",
+                      "worker",
+                      "system"
+                    ]
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind"
+                ],
+                "additionalProperties": false
+              },
+              "causationId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "correlationId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "occurredAt": {
+                "type": "string",
+                "minLength": 1
+              },
+              "permissions": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "filesystem.read",
+                    "filesystem.write",
+                    "network",
+                    "process",
+                    "gpu",
+                    "model",
+                    "secrets",
+                    "confirmation",
+                    "host.full"
+                  ]
+                }
+              },
+              "externalServices": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "payloadHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "payload": {}
+            },
+            "required": [
+              "schemaVersion",
+              "eventId",
+              "type",
+              "workspaceId",
+              "projectId",
+              "sequence",
+              "actor",
+              "causationId",
+              "correlationId",
+              "occurredAt",
+              "permissions",
+              "externalServices",
+              "payloadHash",
+              "payload"
+            ],
+            "additionalProperties": false
+          }
         },
-        "status": {
-          "type": "string",
-          "enum": [
-            "active",
-            "archived"
-          ]
+        "projection": {
+          "type": "object",
+          "properties": {
+            "projectId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workspaceId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rootProjectId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "parentProjectId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "branchName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "projectStatus": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            },
+            "researchStatus": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lastSequence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "eventCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "lastEventType": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "updatedAt": {
+              "type": "string"
+            },
+            "projectionHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "projectId",
+            "workspaceId",
+            "rootProjectId",
+            "parentProjectId",
+            "branchName",
+            "projectStatus",
+            "researchStatus",
+            "lastSequence",
+            "eventCount",
+            "lastEventType",
+            "updatedAt",
+            "projectionHash"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "type": "string",
+              "const": "research-scope-snapshot-v1"
+            },
+            "program": {},
+            "questions": {
+              "type": "array",
+              "items": {}
+            },
+            "approvals": {
+              "type": "array",
+              "items": {}
+            },
+            "stateHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "format",
+            "program",
+            "questions",
+            "approvals",
+            "stateHash"
+          ],
+          "additionalProperties": false
         },
         "contentHash": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
-        },
-        "createdAt": {
-          "type": "string"
-        },
-        "updatedAt": {
-          "type": "string"
         }
       },
       "required": [
-        "id",
-        "workspaceId",
-        "rootProjectId",
-        "parentProjectId",
-        "forkedFromEventId",
-        "branchName",
-        "status",
-        "contentHash",
-        "createdAt",
-        "updatedAt"
+        "bundleVersion",
+        "publicSchemaVersion",
+        "exportedAt",
+        "source",
+        "project",
+        "events",
+        "projection",
+        "state",
+        "contentHash"
       ],
       "additionalProperties": false
     },
-    "events": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "schemaVersion": {
-            "type": "string",
-            "const": "1.0.0"
+    {
+      "type": "object",
+      "properties": {
+        "bundleVersion": {
+          "type": "string",
+          "const": "2"
+        },
+        "format": {
+          "type": "string",
+          "const": "research-project-bundle-v2"
+        },
+        "publicSchemaVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "databaseSchemaVersion": {
+          "type": "number",
+          "const": 16
+        },
+        "exportedAt": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object",
+          "properties": {
+            "workspaceId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "projectId": {
+              "type": "string",
+              "minLength": 1
+            }
           },
-          "eventId": {
-            "type": "string",
-            "minLength": 1
+          "required": [
+            "workspaceId",
+            "projectId"
+          ],
+          "additionalProperties": false
+        },
+        "manifest": {
+          "type": "object",
+          "properties": {
+            "sections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "rows": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "rootHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "name",
+                  "rows",
+                  "rootHash"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "pluginsRootHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "artifactsRootHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "redactions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "omissions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           },
-          "type": {
-            "type": "string",
-            "minLength": 1
-          },
-          "workspaceId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "projectId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "sequence": {
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
-          },
-          "actor": {
+          "required": [
+            "sections",
+            "pluginsRootHash",
+            "artifactsRootHash",
+            "redactions",
+            "omissions"
+          ],
+          "additionalProperties": false
+        },
+        "sections": {
+          "type": "array",
+          "items": {
             "type": "object",
             "properties": {
-              "id": {
+              "name": {
                 "type": "string",
                 "minLength": 1
               },
-              "kind": {
+              "schemaVersion": {
                 "type": "string",
-                "enum": [
-                  "user",
-                  "agent",
-                  "worker",
-                  "system"
-                ]
+                "const": "1"
               },
-              "displayName": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "table": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "key": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "data": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    "rowHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "table",
+                    "key",
+                    "data",
+                    "rowHash"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "rootHash": {
                 "type": "string",
-                "minLength": 1
+                "pattern": "^[a-f0-9]{64}$"
               }
             },
             "required": [
-              "id",
-              "kind"
+              "name",
+              "schemaVersion",
+              "rows",
+              "rootHash"
             ],
             "additionalProperties": false
-          },
-          "causationId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "correlationId": {
-            "type": "string",
-            "minLength": 1
-          },
-          "occurredAt": {
-            "type": "string",
-            "minLength": 1
-          },
-          "permissions": {
-            "default": [],
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "filesystem.read",
-                "filesystem.write",
-                "network",
-                "process",
-                "gpu",
-                "model",
-                "secrets",
-                "confirmation",
-                "host.full"
-              ]
-            }
-          },
-          "externalServices": {
-            "default": [],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "payloadHash": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "payload": {}
+          }
         },
-        "required": [
-          "schemaVersion",
-          "eventId",
-          "type",
-          "workspaceId",
-          "projectId",
-          "sequence",
-          "actor",
-          "causationId",
-          "correlationId",
-          "occurredAt",
-          "permissions",
-          "externalServices",
-          "payloadHash",
-          "payload"
-        ],
-        "additionalProperties": false
-      }
-    },
-    "projection": {
-      "type": "object",
-      "properties": {
-        "projectId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "workspaceId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "rootProjectId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "parentProjectId": {
-          "anyOf": [
-            {
-              "type": "string",
-              "minLength": 1
+        "pluginLocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pluginId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "originScope": {
+                "type": "string",
+                "enum": [
+                  "project",
+                  "workspace"
+                ]
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "descriptor": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "$ref": "#/$defs/__schema0"
+                }
+              },
+              "lockHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
             },
-            {
-              "type": "null"
-            }
-          ]
+            "required": [
+              "pluginId",
+              "version",
+              "contentHash",
+              "originScope",
+              "permissions",
+              "descriptor",
+              "lockHash"
+            ],
+            "additionalProperties": false
+          }
         },
-        "branchName": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectStatus": {
-          "type": "string",
-          "enum": [
-            "active",
-            "archived"
-          ]
-        },
-        "researchStatus": {
-          "type": "string",
-          "minLength": 1
-        },
-        "lastSequence": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 9007199254740991
-        },
-        "eventCount": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 9007199254740991
-        },
-        "lastEventType": {
-          "anyOf": [
-            {
-              "type": "string",
-              "minLength": 1
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "bytes": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "mediaType": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "access": {
+                "type": "string",
+                "enum": [
+                  "public",
+                  "project",
+                  "private"
+                ]
+              },
+              "disposition": {
+                "type": "string",
+                "enum": [
+                  "embedded",
+                  "content_addressed",
+                  "missing",
+                  "private_omitted"
+                ]
+              },
+              "uri": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "contentBase64": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "entryHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
             },
-            {
-              "type": "null"
-            }
-          ]
+            "required": [
+              "contentHash",
+              "bytes",
+              "mediaType",
+              "access",
+              "disposition",
+              "uri",
+              "contentBase64",
+              "entryHash"
+            ],
+            "additionalProperties": false
+          }
         },
-        "updatedAt": {
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "bundleVersion",
+        "format",
+        "publicSchemaVersion",
+        "databaseSchemaVersion",
+        "exportedAt",
+        "source",
+        "manifest",
+        "sections",
+        "pluginLocks",
+        "artifacts",
+        "contentHash"
+      ],
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "__schema0": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
           "type": "string"
         },
-        "projectionHash": {
-          "type": "string",
-          "pattern": "^[a-f0-9]{64}$"
-        }
-      },
-      "required": [
-        "projectId",
-        "workspaceId",
-        "rootProjectId",
-        "parentProjectId",
-        "branchName",
-        "projectStatus",
-        "researchStatus",
-        "lastSequence",
-        "eventCount",
-        "lastEventType",
-        "updatedAt",
-        "projectionHash"
-      ],
-      "additionalProperties": false
-    },
-    "state": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "type": "string",
-          "const": "research-scope-snapshot-v1"
-        },
-        "program": {},
-        "questions": {
+        {
           "type": "array",
-          "items": {}
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
         },
-        "approvals": {
-          "type": "array",
-          "items": {}
-        },
-        "stateHash": {
-          "type": "string",
-          "pattern": "^[a-f0-9]{64}$"
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
         }
-      },
-      "required": [
-        "format",
-        "program",
-        "questions",
-        "approvals",
-        "stateHash"
-      ],
-      "additionalProperties": false
-    },
-    "contentHash": {
-      "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
+      ]
     }
-  },
-  "required": [
-    "bundleVersion",
-    "publicSchemaVersion",
-    "exportedAt",
-    "source",
-    "project",
-    "events",
-    "projection",
-    "state",
-    "contentHash"
-  ],
-  "additionalProperties": false
+  }
 }

@@ -17,7 +17,7 @@ export class ChainedSecretProvider implements SecretProvider{constructor(private
 
 export interface CoreServiceOptions{
   databasePath:string;dataDir:string;host?:string;port?:number;allowRemote?:boolean;allowedOrigins?:string[];
-  allowedPermissions?:PluginPermission[];secretProvider?:SecretProvider;tokenSecretName?:string;maxBodyBytes?:number;streamPollMs?:number;
+  allowedPermissions?:PluginPermission[];secretProvider?:SecretProvider;tokenSecretName?:string;maxBodyBytes?:number;streamPollMs?:number;artifactRoot?:string;artifactRoots?:string[];
 }
 export interface CoreServiceAddress{baseUrl:string;host:string;port:number;discoveryFile:string;tokenFile:string|null;tokenSecretName:string;capabilities:ServiceCapabilities}
 export interface CoreServiceHandle{address:CoreServiceAddress;close():Promise<void>}

@@ -40,7 +40,7 @@ export type JobRecord=z.infer<typeof JobRecordSchema>;
 export const JobLogSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),sequence:z.number().int().positive(),stream:z.enum(["stdout","stderr","progress","system"]),message:z.string(),data:z.unknown().nullable(),createdAt:z.string().min(1)}).strict();
 export type JobLog=z.infer<typeof JobLogSchema>;
 
-export const JobArtifactSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),name:z.string().min(1),mediaType:z.string().min(1),contentHash:z.string().regex(/^[a-f0-9]{64}$/),bytes:z.number().int().nonnegative(),uri:z.string().min(1),createdAt:z.string().min(1)}).strict();
+export const JobArtifactSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),name:z.string().min(1),mediaType:z.string().min(1),contentHash:z.string().regex(/^[a-f0-9]{64}$/),bytes:z.number().int().nonnegative(),uri:z.string().min(1),access:z.enum(["public","project","private"]).default("project"),createdAt:z.string().min(1)}).strict();
 export type JobArtifact=z.infer<typeof JobArtifactSchema>;
 
 export const WorkerDescriptorSchema=z.object({

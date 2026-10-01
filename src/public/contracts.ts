@@ -119,7 +119,7 @@ export const JobSpecSchema=z.object({
 export type JobSpec=z.infer<typeof JobSpecSchema>;
 export const JobRecordSchema=z.object({id:z.string().min(1),workspaceId:z.string().min(1),projectId:z.string().min(1),status:z.enum(["queued","running","succeeded","failed","cancelled"]),spec:JobSpecSchema,currentAttempt:z.number().int().nonnegative(),cancelRequested:z.boolean(),failureClass:JobFailureClassSchema.nullable(),failureMessage:z.string().nullable(),createdAt:z.string().min(1),updatedAt:z.string().min(1),startedAt:z.string().nullable(),finishedAt:z.string().nullable()}).strict();
 export type JobRecord=z.infer<typeof JobRecordSchema>;
-export const JobArtifactSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),name:z.string().min(1),mediaType:z.string().min(1),contentHash:z.string().regex(/^[a-f0-9]{64}$/),bytes:z.number().int().nonnegative(),uri:z.string().min(1),createdAt:z.string().min(1)}).strict();
+export const JobArtifactSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),name:z.string().min(1),mediaType:z.string().min(1),contentHash:z.string().regex(/^[a-f0-9]{64}$/),bytes:z.number().int().nonnegative(),uri:z.string().min(1),access:z.enum(["public","project","private"]).default("project"),createdAt:z.string().min(1)}).strict();
 export const JobLogSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),sequence:z.number().int().positive(),stream:z.enum(["stdout","stderr","progress","system"]),message:z.string(),data:z.unknown().nullable(),createdAt:z.string().min(1)}).strict();
 export const JobReadModelSchema=z.object({job:JobRecordSchema,artifacts:z.array(JobArtifactSchema)}).strict();
 export const JobLogListSchema=z.object({jobId:z.string().min(1),logs:z.array(JobLogSchema),nextSequence:z.number().int().positive().nullable()}).strict();
@@ -244,7 +244,7 @@ export const GetProjectEventsQuerySchema = z.object({
 }).strict();
 export const ExportProjectBundleQuerySchema = z.object({
   schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("project.bundle"),
-  workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,
+  workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,bundleVersion:z.enum(["1","2"]).default("2"),artifactPolicy:z.enum(["embed","metadata"]).default("embed"),maxEmbeddedBytes:z.number().int().positive().max(100_000_000).default(20_000_000),
 }).strict();
 export const GetConversationQuerySchema = z.object({
   schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("conversation.get"),
@@ -261,7 +261,8 @@ export const InspectPluginQuerySchema=z.object({schemaVersion:PublicSchemaVersio
 export const PluginSourcesQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.sources"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema}).strict();
 export const PluginInstallationsQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.installations"),workspaceId:z.string().min(1),projectId:z.string().min(1).nullable(),actor:ActorSchema}).strict();
 export const PluginRuntimeQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.runtime"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema]);
+export const ProjectDependenciesQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("project.dependencies"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,ProjectDependenciesQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -344,7 +345,7 @@ export const QueryResultSchema = z.object({
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema]).nullable(),
+  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),z.lazy(()=>BundleDependencyReadModelSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {
@@ -387,14 +388,26 @@ export const PublicProjectProjectionSchema=z.object({
   lastSequence:z.number().int().nonnegative(),eventCount:z.number().int().nonnegative(),lastEventType:z.string().min(1).nullable(),updatedAt:z.string(),
   projectionHash:z.string().regex(/^[a-f0-9]{64}$/),
 }).strict();
-export const PublicProjectBundleSchema=z.object({
+export const PublicProjectBundleV1Schema=z.object({
   bundleVersion:z.literal("1"),publicSchemaVersion:z.string().min(1),exportedAt:z.string(),
   source:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1)}).strict(),
   project:PublicProjectRecordSchema,events:z.array(ResearchEventEnvelopeSchema),projection:PublicProjectProjectionSchema,
   state:z.object({format:z.literal("research-scope-snapshot-v1"),program:z.unknown(),questions:z.array(z.unknown()),approvals:z.array(z.unknown()),stateHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict(),
   contentHash:z.string().regex(/^[a-f0-9]{64}$/),
 }).strict();
+export type PublicProjectBundleV1=z.infer<typeof PublicProjectBundleV1Schema>;
+
+export const PublicBundleJsonValueSchema:z.ZodType<unknown>=z.lazy(()=>z.union([z.null(),z.boolean(),z.number(),z.string(),z.array(PublicBundleJsonValueSchema),z.record(z.string(),PublicBundleJsonValueSchema)]));
+export const PublicBundleRowSchema=z.object({table:z.string().min(1),key:z.string().min(1),data:z.record(z.string(),PublicBundleJsonValueSchema),rowHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export const PublicBundleSectionSchema=z.object({name:z.string().min(1),schemaVersion:z.literal("1"),rows:z.array(PublicBundleRowSchema),rootHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export const PublicBundlePluginLockSchema=z.object({pluginId:z.string().min(1),version:z.string().min(1),contentHash:z.string().regex(/^[a-f0-9]{64}$/),originScope:z.enum(["project","workspace"]),permissions:z.array(z.string()),descriptor:z.record(z.string(),PublicBundleJsonValueSchema),lockHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export const PublicBundleArtifactSchema=z.object({contentHash:z.string().regex(/^[a-f0-9]{64}$/),bytes:z.number().int().nonnegative().nullable(),mediaType:z.string().nullable(),access:z.enum(["public","project","private"]),disposition:z.enum(["embedded","content_addressed","missing","private_omitted"]),uri:z.string().nullable(),contentBase64:z.string().nullable(),entryHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export const BundleCompatibilityIssueSchema=z.object({code:z.string().min(1),severity:z.enum(["warning","error"]),subject:z.string().min(1),message:z.string().min(1)}).strict();
+export const BundleCompatibilityReportSchema=z.object({status:z.enum(["ready","degraded","blocked"]),issues:z.array(BundleCompatibilityIssueSchema),checkedAt:z.string()}).strict();
+export const PublicProjectBundleV2Schema=z.object({bundleVersion:z.literal("2"),format:z.literal("research-project-bundle-v2"),publicSchemaVersion:z.string().min(1),databaseSchemaVersion:z.literal(16),exportedAt:z.string(),source:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1)}).strict(),manifest:z.object({sections:z.array(z.object({name:z.string(),rows:z.number().int().nonnegative(),rootHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict()),pluginsRootHash:z.string().regex(/^[a-f0-9]{64}$/),artifactsRootHash:z.string().regex(/^[a-f0-9]{64}$/),redactions:z.array(z.string()),omissions:z.array(z.string())}).strict(),sections:z.array(PublicBundleSectionSchema),pluginLocks:z.array(PublicBundlePluginLockSchema),artifacts:z.array(PublicBundleArtifactSchema),contentHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export const PublicProjectBundleSchema=z.discriminatedUnion("bundleVersion",[PublicProjectBundleV1Schema,PublicProjectBundleV2Schema]);
 export type PublicProjectBundle=z.infer<typeof PublicProjectBundleSchema>;
+export const BundleDependencyReadModelSchema=z.object({projectId:z.string().min(1),lastImport:BundleCompatibilityReportSchema.nullable(),plugins:z.array(z.object({pluginId:z.string(),version:z.string(),contentHash:z.string(),originScope:z.enum(["project","workspace"]),status:z.enum(["available","missing","incompatible"]),permissions:z.array(z.string())}).strict()),artifacts:z.array(z.object({contentHash:z.string(),access:z.enum(["public","project","private"]),disposition:z.enum(["embedded","content_addressed","missing","private_omitted"]),status:z.enum(["available","missing","restricted"]),uri:z.string().nullable()}).strict())}).strict();
 
 export const WorkerDescriptorSchema=z.object({workerId:z.string().min(1),protocolVersion:z.literal("1"),executors:z.array(z.enum(["python","bubblewrap","pi"])).min(1),capacity:JobResourcesSchema,gpuDevices:z.array(z.string().regex(/^\d+$/)).default([]),leaseDurationMs:z.number().int().min(100).max(300000)}).strict().refine(value=>value.gpuDevices.length>=value.capacity.gpuCount,"gpuDevices must cover advertised GPU capacity");
 export type WorkerDescriptor=z.infer<typeof WorkerDescriptorSchema>;
