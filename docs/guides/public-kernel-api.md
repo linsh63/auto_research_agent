@@ -4,7 +4,7 @@
 
 `src/public/index.ts` 是 v1.5 起唯一面向客户端和场景开发者的 TypeScript 入口。客户端不得导入 `src/infrastructure`、`src/application`、`src/domain` 或数据库迁移文件。
 
-当前接口已完成 N、O 阶段：公共契约、持久 Project、事件、分支和范围阶段 Bundle 可用。Job、Scenario 和服务端推送将在后续阶段补充。
+当前接口已完成 N、O、P 阶段：公共契约、持久 Project、事件、分支、范围阶段 Bundle、ResearchAction、Conversation 和 ExecutionPolicy 可用。Job、Scenario 和服务端推送将在后续阶段补充。
 
 ## 公共导出
 
@@ -64,8 +64,12 @@ app.close();
 - `scope.approve`
 - `project.fork`
 - `project.import`
+- `action.execute`
+- `conversation.send`
+- `candidate.choose`
+- `policy.set`
 
-查询包括 `project.status`、`project.events` 和 `project.bundle`。返回值是稳定 read model 或版本化 Bundle，不是数据库记录。
+查询包括 `project.status`、`project.events`、`project.bundle`、`conversation.get` 和 `policy.get`。返回值是稳定 read model 或版本化 Bundle，不是数据库记录。聊天、候选和执行策略的示例见 [ResearchAction 指南](research-actions-and-policies.md)。
 
 ## 错误语义
 

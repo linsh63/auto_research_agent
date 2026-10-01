@@ -49,6 +49,61 @@ export const PublicQuestionDraftSchema = z.object({
   supersedesId: z.string().min(1).nullable().optional(),
 }).strict();
 
+export const ExecutionModeSchema = z.enum(["manual", "candidate", "auto"]);
+export type ExecutionMode = z.infer<typeof ExecutionModeSchema>;
+export const ExecutionPolicySchema = z.object({
+  mode: ExecutionModeSchema,
+  maxAutoActionsPerTurn: z.number().int().min(0).max(10),
+  maxKnownCostUsdPerAction: z.number().finite().nonnegative(),
+  autoAllowedActionTypes: z.array(z.enum(["question.propose", "question.select"])),
+  updatedAt: z.string().min(1),
+}).strict();
+export type ExecutionPolicy = z.infer<typeof ExecutionPolicySchema>;
+
+const ResearchActionMetadataSchema = z.object({
+  id: z.string().min(1), title: z.string().min(1), description: z.string().min(1), rationale: z.string().min(1),
+  factRefs: z.array(z.string()).default([]), assumptionRefs: z.array(z.string()).default([]),
+  expectedInformationGain: z.enum(["low", "medium", "high"]), estimatedCostUsd: z.number().finite().nonnegative(),
+  estimatedMinutes: z.number().int().nonnegative(), risks: z.array(z.string().min(1)),
+  stoppingConditions: z.array(z.string().min(1)), requiredPermissions: z.array(z.string().min(1)),
+  requiresHumanApproval: z.boolean(),
+}).strict();
+export const ResearchActionSchema = z.discriminatedUnion("type", [
+  ResearchActionMetadataSchema.extend({ type: z.literal("question.propose"), input: z.object({ question: PublicQuestionDraftSchema }).strict() }).strict(),
+  ResearchActionMetadataSchema.extend({ type: z.literal("question.select"), input: z.object({ questionId: z.string().min(1) }).strict() }).strict(),
+  ResearchActionMetadataSchema.extend({ type: z.literal("scope.approve"), input: z.object({ note: z.string() }).strict() }).strict(),
+]);
+export type ResearchAction = z.infer<typeof ResearchActionSchema>;
+
+export const ResearchActionCandidateSchema = z.object({
+  id: z.string().min(1), kind: z.enum(["action", "free_input"]), title: z.string().min(1),
+  description: z.string().min(1), action: ResearchActionSchema.nullable(),
+}).strict().superRefine((value, context) => {
+  if ((value.kind === "action") !== (value.action !== null)) context.addIssue({ code: "custom", message: "Candidate action shape is inconsistent" });
+});
+export type ResearchActionCandidate = z.infer<typeof ResearchActionCandidateSchema>;
+
+export const CandidateSetReadModelSchema = z.object({
+  id: z.string().min(1), workspaceId: z.string().min(1), projectId: z.string().min(1), sessionId: z.string().min(1),
+  status: z.enum(["open", "consumed", "superseded"]), candidates: z.array(ResearchActionCandidateSchema).min(1),
+  freeInputAllowed: z.literal(true), createdAt: z.string().min(1), consumedAt: z.string().nullable(),
+}).strict().refine(value => value.candidates.at(-1)?.kind === "free_input", "Free input must be the final candidate");
+export type CandidateSetReadModel = z.infer<typeof CandidateSetReadModelSchema>;
+
+export const ConversationSessionSchema = z.object({
+  id: z.string().min(1), workspaceId: z.string().min(1), projectId: z.string().min(1), title: z.string().min(1),
+  status: z.enum(["active", "closed"]), createdAt: z.string().min(1), updatedAt: z.string().min(1),
+}).strict();
+export const ConversationMessageSchema = z.object({
+  id: z.string().min(1), sessionId: z.string().min(1), sequence: z.number().int().positive(),
+  role: z.enum(["user", "assistant"]), content: z.string().min(1), createdAt: z.string().min(1),
+}).strict();
+export const ConversationReadModelSchema = z.object({
+  session: ConversationSessionSchema, messages: z.array(ConversationMessageSchema),
+  latestCandidates: CandidateSetReadModelSchema.nullable(), policy: ExecutionPolicySchema,
+}).strict();
+export type ConversationReadModel = z.infer<typeof ConversationReadModelSchema>;
+
 export const CreateProjectCommandSchema = CommandContextSchema.extend({
   type: z.literal("project.create"),
   projectId: z.null(),
@@ -85,6 +140,27 @@ export const ImportProjectBundleCommandSchema = CommandContextSchema.extend({
   payload: z.object({ bundle: z.lazy(() => PublicProjectBundleSchema) }).strict(),
 }).strict();
 
+export const ExecuteResearchActionCommandSchema = CommandContextSchema.extend({
+  type: z.literal("action.execute"), projectId: z.string().min(1),
+  payload: z.object({ action: ResearchActionSchema }).strict(),
+}).strict();
+export const SendConversationMessageCommandSchema = CommandContextSchema.extend({
+  type: z.literal("conversation.send"), projectId: z.string().min(1),
+  payload: z.object({ sessionId: z.string().min(1).nullable().default(null), message: z.string().min(1).max(20000) }).strict(),
+}).strict();
+export const ChooseCandidateCommandSchema = CommandContextSchema.extend({
+  type: z.literal("candidate.choose"), projectId: z.string().min(1),
+  payload: z.object({
+    sessionId: z.string().min(1), candidateSetId: z.string().min(1),
+    candidateId: z.string().min(1).nullable().default(null), freeInput: z.string().min(1).max(20000).nullable().default(null),
+  }).strict().refine(value => (value.candidateId === null) !== (value.freeInput === null), "Provide exactly one of candidateId or freeInput"),
+}).strict();
+export const SetExecutionPolicyCommandSchema = CommandContextSchema.extend({
+  type: z.literal("policy.set"), projectId: z.string().min(1),
+  payload: z.object({ mode: ExecutionModeSchema, maxAutoActionsPerTurn: z.number().int().min(0).max(10),
+    maxKnownCostUsdPerAction: z.number().finite().nonnegative(), autoAllowedActionTypes: z.array(z.enum(["question.propose", "question.select"])) }).strict(),
+}).strict();
+
 export const PublicCommandSchema = z.discriminatedUnion("type", [
   CreateProjectCommandSchema,
   ProposeQuestionCommandSchema,
@@ -92,6 +168,10 @@ export const PublicCommandSchema = z.discriminatedUnion("type", [
   ApproveScopeCommandSchema,
   ForkProjectCommandSchema,
   ImportProjectBundleCommandSchema,
+  ExecuteResearchActionCommandSchema,
+  SendConversationMessageCommandSchema,
+  ChooseCandidateCommandSchema,
+  SetExecutionPolicyCommandSchema,
 ]);
 export type PublicCommand = z.infer<typeof PublicCommandSchema>;
 
@@ -112,7 +192,15 @@ export const ExportProjectBundleQuerySchema = z.object({
   schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("project.bundle"),
   workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,
 }).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema]);
+export const GetConversationQuerySchema = z.object({
+  schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("conversation.get"),
+  workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema, sessionId: z.string().min(1),
+}).strict();
+export const GetExecutionPolicyQuerySchema = z.object({
+  schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("policy.get"),
+  workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,
+}).strict();
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -195,7 +283,7 @@ export const QueryResultSchema = z.object({
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema)]).nullable(),
+  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),ConversationReadModelSchema,ExecutionPolicySchema]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {

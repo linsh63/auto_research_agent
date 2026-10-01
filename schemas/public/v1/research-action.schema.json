@@ -1,0 +1,396 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/research-action.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "factRefs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "assumptionRefs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expectedInformationGain": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "estimatedCostUsd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "estimatedMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "stoppingConditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiredPermissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiresHumanApproval": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "const": "question.propose"
+        },
+        "input": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "minLength": 20
+                },
+                "rationale": {
+                  "type": "string",
+                  "minLength": 20
+                },
+                "targetPopulation": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "intervention": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "comparator": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "primaryOutcome": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "scope": {
+                  "type": "string",
+                  "minLength": 10
+                },
+                "sourceIds": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "supersedesId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "question",
+                "rationale",
+                "targetPopulation",
+                "intervention",
+                "comparator",
+                "primaryOutcome",
+                "scope",
+                "sourceIds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "question"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "rationale",
+        "factRefs",
+        "assumptionRefs",
+        "expectedInformationGain",
+        "estimatedCostUsd",
+        "estimatedMinutes",
+        "risks",
+        "stoppingConditions",
+        "requiredPermissions",
+        "requiresHumanApproval",
+        "type",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "factRefs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "assumptionRefs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expectedInformationGain": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "estimatedCostUsd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "estimatedMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "stoppingConditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiredPermissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiresHumanApproval": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "const": "question.select"
+        },
+        "input": {
+          "type": "object",
+          "properties": {
+            "questionId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "questionId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "rationale",
+        "factRefs",
+        "assumptionRefs",
+        "expectedInformationGain",
+        "estimatedCostUsd",
+        "estimatedMinutes",
+        "risks",
+        "stoppingConditions",
+        "requiredPermissions",
+        "requiresHumanApproval",
+        "type",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "factRefs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "assumptionRefs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expectedInformationGain": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "estimatedCostUsd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "estimatedMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "stoppingConditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiredPermissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiresHumanApproval": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "const": "scope.approve"
+        },
+        "input": {
+          "type": "object",
+          "properties": {
+            "note": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "note"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "rationale",
+        "factRefs",
+        "assumptionRefs",
+        "expectedInformationGain",
+        "estimatedCostUsd",
+        "estimatedMinutes",
+        "risks",
+        "stoppingConditions",
+        "requiredPermissions",
+        "requiresHumanApproval",
+        "type",
+        "input"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

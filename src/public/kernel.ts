@@ -33,7 +33,8 @@ export function toPublicError(error: unknown): PublicError {
   const message = error instanceof Error ? error.message : String(error);
   const lower = message.toLowerCase();
   let code: PublicErrorCode = "INTERNAL";
-  if (/unknown|not found/.test(lower)) code = "NOT_FOUND";
+  if (/does not belong|forbidden|permission denied/.test(lower)) code = "FORBIDDEN";
+  else if (/unknown|not found/.test(lower)) code = "NOT_FOUND";
   else if (/mismatch|conflict|already|latest|in doubt/.test(lower)) code = "CONFLICT";
   else if (/required|requires|cannot|closed|not allowed|only .* can|sealed/.test(lower)) code = "GATE_REJECTED";
   else if (/invalid|must|expected/.test(lower)) code = "INVALID_COMMAND";

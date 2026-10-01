@@ -3,8 +3,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { z } from "zod";
 import {
-  PUBLIC_SCHEMA_VERSION, CommandResultSchema, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicCommandSchema,
-  PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchEventEnvelopeSchema,
+  PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
+  ExecutionPolicySchema, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicCommandSchema,
+  PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema,
 } from "../src/public/contracts.js";
 
 const root = resolve("schemas/public/v1");
@@ -16,6 +17,10 @@ const definitions = {
   "project-status.schema.json": ProjectStatusReadModelSchema,
   "project-events.schema.json": ProjectEventListSchema,
   "project-bundle.schema.json": PublicProjectBundleSchema,
+  "research-action.schema.json": ResearchActionSchema,
+  "candidate-set.schema.json": CandidateSetReadModelSchema,
+  "conversation.schema.json": ConversationReadModelSchema,
+  "execution-policy.schema.json": ExecutionPolicySchema,
   "event.schema.json": ResearchEventEnvelopeSchema,
   "error.schema.json": PublicErrorSchema,
 };

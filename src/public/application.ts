@@ -2,9 +2,11 @@ import { createHash } from "node:crypto";
 import { randomUUID } from "node:crypto";
 import { PublicApplicationBackend } from "../application/public-application-backend.js";
 import {
-  PUBLIC_SCHEMA_VERSION, CommandResultSchema, ProjectStatusReadModelSchema, PublicCommandSchema,
-  ProjectEventListSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema,
-  type Actor, type CommandResult, type ProjectStatusReadModel, type PublicCommand, type PublicProjectBundle, type PublicQuery, type QueryResult,
+  PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
+  ExecutionPolicySchema, ProjectStatusReadModelSchema, PublicCommandSchema, ProjectEventListSchema,
+  PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
+  type Actor, type CommandResult, type ExecutionPolicy, type ProjectStatusReadModel, type PublicCommand,
+  type PublicProjectBundle, type PublicQuery, type QueryResult, type ResearchAction, type ResearchActionCandidate,
 } from "./contracts.js";
 import { assertCommandContext, assertQueryContext, PublicKernelError, toPublicError } from "./kernel.js";
 
@@ -13,6 +15,13 @@ export interface ResearchApplicationOptions {
   maxDerivedRuns?: number;
   /** Explicit compatibility bindings for projects created before Workspace persistence exists. */
   workspaceBindings?: Record<string, string>;
+}
+
+interface DispatchOutcome {
+  data: unknown;
+  eventType: string | null;
+  eventPayload?: unknown;
+  projectionPatch?: { researchStatus?: string };
 }
 
 export class ResearchApplication {
@@ -35,14 +44,15 @@ export class ResearchApplication {
     catch(error){return this.reject(command,error);}
     if(prepared.kind==="replay")return CommandResultSchema.parse(prepared.receipt.result);
     try{assertCommandContext(command);}catch(error){const result=this.reject(command,error);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result});return result;}
-    let data:unknown;
-    try{data=this.dispatch(command);}catch(error){const eventId=command.projectId?`event-${randomUUID()}`:null,result=this.reject(command,error,eventId?[eventId]:[]);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:eventId?{eventId,type:"command.rejected",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{commandType:command.type,error:result.error}}:undefined});return result;}
-    const eventIds=command.type==="project.fork"?[`event-${randomUUID()}`,`event-${randomUUID()}`]:command.type==="project.import"?[(data as any).importEventId]:[`event-${randomUUID()}`],result=this.accept(command,data,eventIds);
+    let outcome:DispatchOutcome;
+    try{outcome=this.dispatch(command);}catch(error){const eventId=command.projectId?`event-${randomUUID()}`:null,result=this.reject(command,error,eventId?[eventId]:[]);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:eventId?{eventId,type:"command.rejected",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{commandType:command.type,error:result.error}}:undefined});return result;}
+    const data=outcome.data;
+    const eventIds=command.type==="project.fork"?[`event-${randomUUID()}`,`event-${randomUUID()}`]:command.type==="project.import"?[(data as any).importEventId]:outcome.eventType?[`event-${randomUUID()}`]:[],result=this.accept(command,data,eventIds);
     try{
       if(command.type==="project.create")this.backend.projects.completeProjectCreation({receipt:prepared.receipt,projectId:result.projectId!,branchName:"main",researchStatus:"draft",result,event:{eventId:eventIds[0]!,type:"project.created",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{intent:command.payload.intent,project:(data as any).project,projectionPatch:{researchStatus:"draft"}},projectionPatch:{researchStatus:"draft"}}});
       else if(command.type==="project.fork"){const child=(data as any).project;this.backend.projects.completeFork({receipt:prepared.receipt,childProjectId:child.id,branchName:command.payload.branchName,researchStatus:child.status,result,parentEvent:{eventId:eventIds[0]!,type:"branch.created",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{childProjectId:child.id,branchName:command.payload.branchName}},childEvent:{eventId:eventIds[1]!,type:"project.forked",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{parentProjectId:command.projectId,branchName:command.payload.branchName,reason:command.payload.reason,projectionPatch:{researchStatus:child.status}},projectionPatch:{researchStatus:child.status}}});}
       else if(command.type==="project.import")this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result});
-      else this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:{eventId:eventIds[0]!,type:this.eventType(command),schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{commandType:command.type,data,projectionPatch:command.type==="scope.approve"?{researchStatus:"scoped"}:undefined},projectionPatch:command.type==="scope.approve"?{researchStatus:"scoped"}:undefined}});
+      else this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:outcome.eventType?{eventId:eventIds[0]!,type:outcome.eventType,schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:outcome.eventPayload??{commandType:command.type,data,projectionPatch:outcome.projectionPatch},projectionPatch:outcome.projectionPatch}:undefined});
       return result;
     }catch(error){return this.reject(command,new PublicKernelError("CONFLICT",`Command ${command.commandId} is in doubt after domain mutation`,false,{cause:error instanceof Error?error.message:String(error)}));}
   }
@@ -62,24 +72,106 @@ export class ResearchApplication {
     }
   }
 
-  private dispatch(command: PublicCommand): unknown {
+  private dispatch(command: PublicCommand): DispatchOutcome {
     if (command.type === "project.create") {
       const program = this.backend.workflow.createIntent(command.payload.intent);
-      return { project: this.projectSummary(program), workspaceId: command.workspaceId };
+      return { data:{ project: this.projectSummary(program), workspaceId: command.workspaceId },eventType:"project.created" };
     }
-    if (command.type === "question.propose") {
-      const question = this.backend.workflow.proposeQuestion(command.projectId, command.payload.question);
-      return { question: { id: question.id, version: question.version, status: question.status, question: question.question } };
+    if(command.type==="project.fork"){const derived=this.backend.workflow.derive(command.projectId,command.payload.reason,command.actor.id,[]);return{data:{project:this.projectSummary(derived.program),derivation:derived.derivation},eventType:null};}
+    if(command.type==="project.import"){const imported=this.backend.projects.importBundle(command.payload.bundle,command.workspaceId,command.actor),program=this.backend.research.getProgram(imported.project.id);return{data:{project:this.projectSummary(program),eventCount:this.backend.projects.events(imported.project.id).length,importEventId:imported.event.eventId},eventType:null};}
+    if(command.type==="policy.set"){
+      if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Only a user actor can change execution policy",false);
+      const policy=this.backend.interactions.setPolicy(command.workspaceId,command.projectId,command.payload);
+      return{data:{policy:ExecutionPolicySchema.parse(policy)},eventType:"policy.updated",eventPayload:{policy}};
     }
-    if (command.type === "question.select") {
-      const question = this.backend.workflow.selectQuestion(command.projectId, command.payload.questionId);
-      return { question: { id: question.id, version: question.version, status: question.status, question: question.question } };
-    }
-    if(command.type==="project.fork"){const derived=this.backend.workflow.derive(command.projectId,command.payload.reason,command.actor.id,[]);return{project:this.projectSummary(derived.program),derivation:derived.derivation};}
-    if(command.type==="project.import"){const imported=this.backend.projects.importBundle(command.payload.bundle,command.workspaceId,command.actor),program=this.backend.research.getProgram(imported.project.id);return{project:this.projectSummary(program),eventCount:this.backend.projects.events(imported.project.id).length,importEventId:imported.event.eventId};}
-    const approval = this.backend.workflow.approveScope(command.projectId, command.actor.id, command.payload.note);
-    return { approval: { id: approval.id, kind: approval.kind, decision: approval.decision, actor: approval.actor, createdAt: approval.createdAt } };
+    if(command.type==="conversation.send")return this.handleConversation(command,command.payload.sessionId,command.payload.message,"chat");
+    if(command.type==="candidate.choose")return this.handleCandidateChoice(command);
+    if(command.type==="action.execute")return this.executeAction(command,command.payload.action,"api",null,null);
+    const action=this.legacyAction(command);
+    return this.executeAction(command,action,"api",null,null,true);
   }
+
+  private legacyAction(command:Extract<PublicCommand,{type:"question.propose"|"question.select"|"scope.approve"}>):ResearchAction{
+    const common={id:`action:${command.commandId}`,factRefs:[],assumptionRefs:[],estimatedCostUsd:0,estimatedMinutes:1,risks:["Research state may become stale before execution"],stoppingConditions:["Kernel gate rejects the transition"],requiredPermissions:[],expectedInformationGain:"medium" as const};
+    if(command.type==="question.propose")return ResearchActionSchema.parse({...common,type:command.type,title:"Propose research question",description:"Add a scoped research question",rationale:command.payload.question.rationale,requiresHumanApproval:false,input:{question:command.payload.question}});
+    if(command.type==="question.select")return ResearchActionSchema.parse({...common,type:command.type,title:"Select research question",description:"Select the question that the project will pursue",rationale:"The selected question defines the next scope gate.",requiresHumanApproval:false,input:{questionId:command.payload.questionId}});
+    return ResearchActionSchema.parse({...common,type:command.type,title:"Approve research scope",description:"Record explicit human approval of the selected scope",rationale:"Scope approval is a mandatory human gate.",expectedInformationGain:"low",requiresHumanApproval:true,input:{note:command.payload.note}});
+  }
+
+  private executeAction(command:PublicCommand,rawAction:ResearchAction,source:"api"|"chat"|"candidate",sessionId:string|null,candidateSetId:string|null,legacyResult=false):DispatchOutcome{
+    const action=ResearchActionSchema.parse(rawAction),workspaceId=command.workspaceId,projectId=command.projectId!;
+    if(action.type==="scope.approve"&&(!action.requiresHumanApproval||command.actor.kind!=="user"||source==="chat"))throw new PublicKernelError("GATE_REJECTED","Scope approval requires an explicit user action",false,{actionType:action.type});
+    this.backend.interactions.recordAction({workspaceId,projectId,sessionId,candidateSetId,source,action,status:"proposed"});
+    try{
+      let result:unknown;
+      if(action.type==="question.propose"){
+        const question=this.backend.workflow.proposeQuestion(projectId,action.input.question);
+        result={question:{id:question.id,version:question.version,status:question.status,question:question.question}};
+      }else if(action.type==="question.select"){
+        const question=this.backend.workflow.selectQuestion(projectId,action.input.questionId);
+        result={question:{id:question.id,version:question.version,status:question.status,question:question.question}};
+      }else{
+        const approval=this.backend.workflow.approveScope(projectId,command.actor.id,action.input.note);
+        result={approval:{id:approval.id,kind:approval.kind,decision:approval.decision,actor:approval.actor,createdAt:approval.createdAt}};
+      }
+      this.backend.interactions.recordAction({workspaceId,projectId,sessionId,candidateSetId,source,action,status:"accepted",result});
+      const projectionPatch=action.type==="scope.approve"?{researchStatus:"scoped"}:undefined;
+      return{data:legacyResult?result:{action,result},eventType:this.actionEventType(action),eventPayload:{action,result,projectionPatch},projectionPatch};
+    }catch(error){
+      this.backend.interactions.recordAction({workspaceId,projectId,sessionId,candidateSetId,source,action,status:"rejected",result:{error:error instanceof Error?error.message:String(error)}});
+      throw error;
+    }
+  }
+
+  private handleConversation(command:Extract<PublicCommand,{type:"conversation.send"|"candidate.choose"}>,sessionId:string|null,message:string,source:"chat"|"candidate"):DispatchOutcome{
+    const session=this.backend.interactions.openSession({workspaceId:command.workspaceId,projectId:command.projectId,sessionId,title:message.slice(0,80)});
+    this.backend.interactions.appendMessage(session,"user",message);
+    const policy=this.backend.interactions.policy(command.workspaceId,command.projectId),actions=this.nextActions(command.projectId),auto=policy.mode==="auto"?actions.find(action=>this.canAutoExecute(action,policy)):undefined;
+    if(auto){
+      const outcome=this.executeAction(command,auto,source,session.id,null),reply=`已执行：${auto.title}`;
+      this.backend.interactions.appendMessage(session,"assistant",reply);
+      return{...outcome,data:{sessionId:session.id,reply,executedAction:auto,actionResult:outcome.data,candidates:null,policy}};
+    }
+    const visible=policy.mode==="manual"?actions.slice(0,1):actions;
+    const freeInput:ResearchActionCandidate={id:`candidate-${randomUUID()}`,kind:"free_input",title:"其他 / 自由输入",description:"输入你希望采取的研究行动，由核心重新解析。",action:null};
+    const candidates:ResearchActionCandidate[]=[...visible.map(action=>({id:`candidate-${randomUUID()}`,kind:"action" as const,title:action.title,description:action.description,action})),freeInput];
+    const set=this.backend.interactions.saveCandidates({workspaceId:command.workspaceId,projectId:command.projectId,sessionId:session.id,candidates});
+    for(const candidate of candidates)if(candidate.action)this.backend.interactions.recordAction({workspaceId:command.workspaceId,projectId:command.projectId,sessionId:session.id,candidateSetId:set.id,source:"chat",action:candidate.action,status:"proposed"});
+    const blocked=policy.mode==="auto"&&actions.length>0,reply=blocked?"下一步触及人工门禁、权限或预算限制，请由用户选择。":actions.length?"请选择下一步研究行动，或使用自由输入。":"当前阶段没有可自动推进的行动，你仍可自由输入。";
+    this.backend.interactions.appendMessage(session,"assistant",reply);
+    return{data:{sessionId:session.id,reply,executedAction:null,candidates:CandidateSetReadModelSchema.parse(set),policy},eventType:"conversation.responded",eventPayload:{sessionId:session.id,candidateSetId:set.id,policyMode:policy.mode,autoBlocked:blocked}};
+  }
+
+  private handleCandidateChoice(command:Extract<PublicCommand,{type:"candidate.choose"}>):DispatchOutcome{
+    if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Candidate selection requires a user actor",false);
+    const set=this.backend.interactions.candidateSet(command.workspaceId,command.projectId,command.payload.sessionId,command.payload.candidateSetId);
+    if(set.status!=="open")throw new PublicKernelError("CONFLICT",`Candidate set ${set.id} is ${set.status}`,false);
+    if(command.payload.freeInput!==null){this.backend.interactions.consumeCandidateSet(set);return this.handleConversation(command,set.sessionId,command.payload.freeInput,"candidate");}
+    const candidate=set.candidates.find(item=>item.id===command.payload.candidateId);
+    if(!candidate)throw new PublicKernelError("NOT_FOUND",`Unknown candidate ${command.payload.candidateId}`,false);
+    if(candidate.kind!=="action"||!candidate.action)throw new PublicKernelError("INVALID_COMMAND","Choose the free-input option by providing freeInput",false);
+    this.backend.interactions.consumeCandidateSet(set);
+    const session=this.backend.interactions.session(command.workspaceId,command.projectId,set.sessionId);
+    this.backend.interactions.appendMessage(session,"user",`选择候选：${candidate.title}`);
+    const outcome=this.executeAction(command,candidate.action,"candidate",session.id,set.id),reply=`已执行：${candidate.title}`;
+    this.backend.interactions.appendMessage(session,"assistant",reply);
+    return{...outcome,data:{sessionId:session.id,reply,executedAction:candidate.action,actionResult:outcome.data,candidates:null,policy:this.backend.interactions.policy(command.workspaceId,command.projectId)}};
+  }
+
+  private nextActions(projectId:string):ResearchAction[]{
+    const status=this.backend.workflow.status(projectId),common={factRefs:[] as string[],assumptionRefs:[] as string[],estimatedCostUsd:0,estimatedMinutes:1,risks:["The proposed transition may need revision after new evidence"],stoppingConditions:["Kernel gate rejects the transition"],requiredPermissions:[] as string[]};
+    const proposed=status.questions.filter(item=>item.status==="proposed");
+    if(status.questions.length===0){const direction=status.program.direction,question=`How does the proposed approach affect the primary measurable outcome for ${status.program.domain} research?`;return[ResearchActionSchema.parse({...common,id:`action-${randomUUID()}`,type:"question.propose",title:"提出首个研究问题",description:"根据项目方向形成可审查的研究问题。",rationale:`The project direction requires a concrete and falsifiable question: ${direction}`,expectedInformationGain:"high",requiresHumanApproval:false,input:{question:{question,rationale:`A scoped question is required before evidence collection and protocol design can begin for: ${direction}`,targetPopulation:`${status.program.domain} research tasks`,intervention:direction.slice(0,200),comparator:"An established baseline under the same evaluation protocol",primaryOutcome:"A preregistered primary metric",scope:"The approved project constraints and allowed data sources",sourceIds:[]}}})];}
+    if(proposed.length)return proposed.map(item=>ResearchActionSchema.parse({...common,id:`action-${randomUUID()}`,type:"question.select",title:`选择问题 v${item.version}`,description:item.question,rationale:"Selecting one proposed question is required before scope approval.",expectedInformationGain:"medium",requiresHumanApproval:false,input:{questionId:item.id}}));
+    if(status.program.status==="draft"&&status.questions.some(item=>item.status==="selected"))return[ResearchActionSchema.parse({...common,id:`action-${randomUUID()}`,type:"scope.approve",title:"批准研究范围",description:"人工确认已选择的问题和项目边界。",rationale:"Scope approval is a non-bypassable human research gate.",expectedInformationGain:"low",requiresHumanApproval:true,input:{note:"Explicit approval from candidate selection."}})];
+    return[];
+  }
+
+  private canAutoExecute(action:ResearchAction,policy:ExecutionPolicy):boolean{
+    return policy.maxAutoActionsPerTurn>0&&action.type!=="scope.approve"&&!action.requiresHumanApproval&&action.requiredPermissions.length===0&&action.estimatedCostUsd<=policy.maxKnownCostUsdPerAction&&policy.autoAllowedActionTypes.includes(action.type);
+  }
+
+  private actionEventType(action:ResearchAction):string{return action.type==="question.propose"?"question.proposed":action.type==="question.select"?"question.selected":"scope.approved";}
 
   private projectStatus(query: PublicQuery): ProjectStatusReadModel {
     const status = this.backend.workflow.status(query.projectId),projection=this.backend.projects.projection(query.projectId);
@@ -96,6 +188,8 @@ export class ResearchApplication {
   private queryData(query:PublicQuery):unknown{
     if(query.type==="project.status")return this.projectStatus(query);
     if(query.type==="project.bundle")return PublicProjectBundleSchema.parse(this.backend.projects.exportBundle(query.projectId,PUBLIC_SCHEMA_VERSION));
+    if(query.type==="conversation.get")return ConversationReadModelSchema.parse(this.backend.interactions.conversation(query.workspaceId,query.projectId,query.sessionId));
+    if(query.type==="policy.get")return ExecutionPolicySchema.parse(this.backend.interactions.policy(query.workspaceId,query.projectId));
     const all=this.backend.projects.events(query.projectId),events=all.filter(item=>item.sequence>=query.fromSequence).slice(0,query.limit),last=events.at(-1)?.sequence??query.fromSequence-1,nextSequence=all.some(item=>item.sequence>last)?last+1:null;
     return ProjectEventListSchema.parse({schemaVersion:PUBLIC_SCHEMA_VERSION,workspaceId:query.workspaceId,projectId:query.projectId,events,nextSequence});
   }
@@ -105,7 +199,6 @@ export class ResearchApplication {
       status: program.status, updatedAt: program.updatedAt };
   }
 
-  private eventType(command:PublicCommand):string{return command.type==="question.propose"?"question.proposed":command.type==="question.select"?"question.selected":"scope.approved";}
   private accept(command: PublicCommand, data: unknown,eventIds:string[]): CommandResult {
     const projectId = command.type === "project.create"||command.type==="project.import" ? (data as { project: { id: string } }).project.id : command.projectId;
     return CommandResultSchema.parse({ schemaVersion: PUBLIC_SCHEMA_VERSION, commandId: command.commandId, workspaceId: command.workspaceId,

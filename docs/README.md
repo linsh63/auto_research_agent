@@ -48,10 +48,12 @@ docs/
 - [ADR 006：v1.3 可靠性基础设施](architecture/decisions/006-v13-reliability-foundations.md)
 - [ADR 007：v1.5 公共契约与兼容 Facade](architecture/decisions/007-v15-public-contract-boundary.md)
 - [ADR 008：v1.5 Project 事件、命令收据与 Bundle](architecture/decisions/008-v15-project-events-and-bundles.md)
+- [ADR 009：v1.5 ResearchAction 与执行策略](architecture/decisions/009-v15-research-actions-and-execution-policy.md)
 - [模型 Provider 配置](guides/model-providers.md)
 - [H 审查与真实验收指南](guides/h-review-and-acceptance.md)
 - [v1.5 公共 Kernel API](guides/public-kernel-api.md)
 - [Project、事件、分支与 Bundle](guides/project-events-and-bundles.md)
+- [ResearchAction、聊天候选与执行策略](guides/research-actions-and-policies.md)
 
 ### 研究案例
 
@@ -69,6 +71,7 @@ docs/
 - [v1.4 泛化、诊断与受限发布](reports/stages/v1.4-progress.md)
 - [v1.5 N 阶段：公共契约与包边界](reports/stages/v1.5-n-progress.md)
 - [v1.5 O 阶段：Project 存档、事件与分支](reports/stages/v1.5-o-progress.md)
+- [v1.5 P 阶段：聊天、候选与执行策略](reports/stages/v1.5-p-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)

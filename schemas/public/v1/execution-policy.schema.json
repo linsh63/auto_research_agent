@@ -1,0 +1,46 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/execution-policy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "candidate",
+        "auto"
+      ]
+    },
+    "maxAutoActionsPerTurn": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10
+    },
+    "maxKnownCostUsdPerAction": {
+      "type": "number",
+      "minimum": 0
+    },
+    "autoAllowedActionTypes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "question.propose",
+          "question.select"
+        ]
+      }
+    },
+    "updatedAt": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "mode",
+    "maxAutoActionsPerTurn",
+    "maxKnownCostUsdPerAction",
+    "autoAllowedActionTypes",
+    "updatedAt"
+  ],
+  "additionalProperties": false
+}
