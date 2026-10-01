@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d03-success",
+  "dimensionId": "03-novelty-boundary",
+  "dimensionTitle": "创新性边界",
+  "kind": "success",
+  "handler": "novelty_bounded",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "novelty_bounded",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 创新性边界 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

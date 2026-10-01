@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d01-success",
+  "dimensionId": "01-question-scope",
+  "dimensionTitle": "问题与范围",
+  "kind": "success",
+  "handler": "scope_success",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
+  "input": {
+    "fixtureClass": "scope_success",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 问题与范围 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

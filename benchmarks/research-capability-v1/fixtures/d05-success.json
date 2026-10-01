@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d05-success",
+  "dimensionId": "05-design-confounding",
+  "dimensionTitle": "实验设计与混杂",
+  "kind": "success",
+  "handler": "design_controls",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "design_controls",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 实验设计与混杂 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

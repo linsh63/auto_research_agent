@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d09-adversarial",
+  "dimensionId": "09-failure-diagnosis",
+  "dimensionTitle": "失败诊断",
+  "kind": "adversarial",
+  "handler": "invalid_failure_class",
+  "expectedOutcome": "rejected",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
+  "input": {
+    "fixtureClass": "invalid_failure_class",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 失败诊断 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

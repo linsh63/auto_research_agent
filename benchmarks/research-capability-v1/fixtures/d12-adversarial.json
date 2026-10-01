@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d12-adversarial",
+  "dimensionId": "12-reproduction-release",
+  "dimensionTitle": "复现与发布",
+  "kind": "adversarial",
+  "handler": "tampered_bundle",
+  "expectedOutcome": "rejected",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
+  "input": {
+    "fixtureClass": "tampered_bundle",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 复现与发布 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "benchmarkId": "research-capability-v1",
+  "benchmarkVersion": "1.0.0",
+  "publicSchemaVersion": "1.0.0",
+  "resultSchema": "result.schema.json",
+  "dimensions": [
+    {
+      "id": "01-question-scope",
+      "title": "问题与范围",
+      "successFixture": "fixtures/d01-success.json",
+      "adversarialFixture": "fixtures/d01-adversarial.json",
+      "coverage": "full"
+    },
+    {
+      "id": "02-literature-evidence",
+      "title": "文献检索与全文证据",
+      "successFixture": "fixtures/d02-success.json",
+      "adversarialFixture": "fixtures/d02-adversarial.json",
+      "coverage": "not_evaluated"
+    },
+    {
+      "id": "03-novelty-boundary",
+      "title": "创新性边界",
+      "successFixture": "fixtures/d03-success.json",
+      "adversarialFixture": "fixtures/d03-adversarial.json",
+      "coverage": "not_evaluated"
+    },
+    {
+      "id": "04-rival-hypotheses",
+      "title": "竞争假设",
+      "successFixture": "fixtures/d04-success.json",
+      "adversarialFixture": "fixtures/d04-adversarial.json",
+      "coverage": "not_evaluated"
+    },
+    {
+      "id": "05-design-confounding",
+      "title": "实验设计与混杂",
+      "successFixture": "fixtures/d05-success.json",
+      "adversarialFixture": "fixtures/d05-adversarial.json",
+      "coverage": "not_evaluated"
+    },
+    {
+      "id": "06-baseline-execution",
+      "title": "baseline 与执行",
+      "successFixture": "fixtures/d06-success.json",
+      "adversarialFixture": "fixtures/d06-adversarial.json",
+      "coverage": "partial"
+    },
+    {
+      "id": "07-sequential-decision",
+      "title": "序贯决策",
+      "successFixture": "fixtures/d07-success.json",
+      "adversarialFixture": "fixtures/d07-adversarial.json",
+      "coverage": "full"
+    },
+    {
+      "id": "08-statistics-units",
+      "title": "统计与实验单位",
+      "successFixture": "fixtures/d08-success.json",
+      "adversarialFixture": "fixtures/d08-adversarial.json",
+      "coverage": "not_evaluated"
+    },
+    {
+      "id": "09-failure-diagnosis",
+      "title": "失败诊断",
+      "successFixture": "fixtures/d09-success.json",
+      "adversarialFixture": "fixtures/d09-adversarial.json",
+      "coverage": "full"
+    },
+    {
+      "id": "10-memory-improvement",
+      "title": "记忆提升",
+      "successFixture": "fixtures/d10-success.json",
+      "adversarialFixture": "fixtures/d10-adversarial.json",
+      "coverage": "not_evaluated"
+    },
+    {
+      "id": "11-scientific-writing",
+      "title": "科学写作",
+      "successFixture": "fixtures/d11-success.json",
+      "adversarialFixture": "fixtures/d11-adversarial.json",
+      "coverage": "not_evaluated"
+    },
+    {
+      "id": "12-reproduction-release",
+      "title": "复现与发布",
+      "successFixture": "fixtures/d12-success.json",
+      "adversarialFixture": "fixtures/d12-adversarial.json",
+      "coverage": "partial"
+    }
+  ],
+  "realCaseEvidence": [
+    {
+      "id": "t2a-mllm",
+      "path": "docs/reports/validation/t2a-mllm-run.json",
+      "role": "external_real_case"
+    },
+    {
+      "id": "t2b-fasttext",
+      "path": "docs/reports/validation/t2b-fasttext-run.json",
+      "role": "external_real_case"
+    }
+  ],
+  "rules": {
+    "aggregateScore": false,
+    "notEvaluatedIsPass": false,
+    "adversarialPassRequires": [
+      "rejected",
+      "degraded"
+    ],
+    "realCasesSeparatedFromSynthetic": true
+  }
+}

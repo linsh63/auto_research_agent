@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d08-success",
+  "dimensionId": "08-statistics-units",
+  "dimensionTitle": "统计与实验单位",
+  "kind": "success",
+  "handler": "units_clustered",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "units_clustered",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 统计与实验单位 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

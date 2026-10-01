@@ -1,0 +1,629 @@
+{
+  "schemaVersion": "1.0.0",
+  "benchmark": {
+    "id": "research-capability-v1",
+    "version": "1.0.0",
+    "manifestHash": "3858e44b89848974543a7d07631ef9bbf020d9342d7b6bb8da7880d145a59cda"
+  },
+  "environment": {
+    "coreVersion": "1.0.0",
+    "publicSchemaVersion": "1.0.0",
+    "implementationHash": "65d95d929dde51adf6a862e44aa7b1816ae4f32d3266bebdaa494347ed01eb3e",
+    "repositoryHead": "ecd44999287e31241a3c9f0b4a2df9b9817ce084",
+    "node": "v22.23.1",
+    "platform": "linux",
+    "arch": "x64",
+    "model": null,
+    "knownCostUsd": 0,
+    "elapsedMs": 1132
+  },
+  "fixtureRootHash": "00319dd43fb002eaeb7d9c80202d5ecdfbe80f5303dc988c58d426c72e2f34f5",
+  "dimensions": [
+    {
+      "id": "01-question-scope",
+      "title": "问题与范围",
+      "cases": [
+        {
+          "id": "d01-success",
+          "kind": "success",
+          "expectedOutcome": "demonstrated",
+          "capabilityOutcome": "demonstrated",
+          "gateResult": "pass",
+          "reasonCode": "SCOPE_GATE_COMPLETE",
+          "inputHash": "ff8d0f58b3b5ec5985bc50a53db3bad1b879632b08b32980b5faf695d0b0e600",
+          "outputHash": "9b2f2b084d81ff4a6f2750508cc9fb78aed5ebf250bb99d540fec1374bd025d6",
+          "artifactHashes": [],
+          "publicOperations": [
+            "project.create",
+            "question.propose",
+            "question.select",
+            "scope.approve",
+            "project.status"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 问题与范围 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d01-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "rejected",
+          "capabilityOutcome": "rejected",
+          "gateResult": "pass",
+          "reasonCode": "PREMATURE_SCOPE_REJECTED",
+          "inputHash": "b042bd58eed488b5c47352dccfe4836b67b9ac2e8a23430a0d8d731e766e28c0",
+          "outputHash": "2f29169c5088b107dea3d646daa131772d5c930dc7853c46130f3ee3a28209ae",
+          "artifactHashes": [],
+          "publicOperations": [
+            "project.create",
+            "scope.approve"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 问题与范围 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "demonstrated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "02-literature-evidence",
+      "title": "文献检索与全文证据",
+      "cases": [
+        {
+          "id": "d02-success",
+          "kind": "success",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "435cb5739a68e77f8cc86965a9b15e1b1a0f12875565422996ca4ca946cdf65f",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 文献检索与全文证据 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d02-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "842391d2ddefca45c8c08f5f2fe4010c56485f7dd294f79f5e4dfa50ab194c0f",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 文献检索与全文证据 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "not_evaluated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "03-novelty-boundary",
+      "title": "创新性边界",
+      "cases": [
+        {
+          "id": "d03-success",
+          "kind": "success",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "28ef6e4df135648a6d3d92c3b103f09579ba6de060f51efb231f6c20a2f6d988",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 创新性边界 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d03-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "96d59d9a637cdb5269299f4847c7bfbd24e06973c010210e6d43bed56fb03a4c",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 创新性边界 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "not_evaluated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "04-rival-hypotheses",
+      "title": "竞争假设",
+      "cases": [
+        {
+          "id": "d04-success",
+          "kind": "success",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "226573dcbacf9dc338727d7785c435b950827bfbad1ea895f08d3bd6384ada52",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 竞争假设 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d04-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "5768b544496ad7155aee223981e6ec5ec758a4eafb096eac9a934fbbc2a6f289",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 竞争假设 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "not_evaluated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "05-design-confounding",
+      "title": "实验设计与混杂",
+      "cases": [
+        {
+          "id": "d05-success",
+          "kind": "success",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "da432730cb3f3697f6d1cfd9d6cd526089d63dc7478c3ddcae8ace83f0f3cefd",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 实验设计与混杂 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d05-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "2aac88d91eec2fbae71afbd17fd0e586016d77501307f5d3d851212591aab777",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 实验设计与混杂 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "not_evaluated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "06-baseline-execution",
+      "title": "baseline 与执行",
+      "cases": [
+        {
+          "id": "d06-success",
+          "kind": "success",
+          "expectedOutcome": "demonstrated",
+          "capabilityOutcome": "demonstrated",
+          "gateResult": "pass",
+          "reasonCode": "OFFLINE_JOB_SUCCEEDED",
+          "inputHash": "557380389a4fd71b3617f47f9414b71ea093952fd92dff04efee2d296f0b1b23",
+          "outputHash": "7439144a6e42ce244f8985bb8d33371b47557dcf1e63dd34bf7152726c4dfd38",
+          "artifactHashes": [],
+          "publicOperations": [
+            "job.submit",
+            "worker.claim",
+            "worker.complete",
+            "job.get"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether baseline 与执行 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d06-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "degraded",
+          "capabilityOutcome": "degraded",
+          "gateResult": "pass",
+          "reasonCode": "INSUFFICIENT_WORKER_CAPACITY",
+          "inputHash": "a4fa6c52f06f15c71a0c4055aa1c4d439618701a54f365ecbd14eda8aff475c4",
+          "outputHash": "0688454ad9bdbca5162ab97a6b98a3a66b0e64e732595483f1eb009227426ae5",
+          "artifactHashes": [],
+          "publicOperations": [
+            "job.submit",
+            "worker.claim",
+            "job.cancel"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether baseline 与执行 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "partial",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "07-sequential-decision",
+      "title": "序贯决策",
+      "cases": [
+        {
+          "id": "d07-success",
+          "kind": "success",
+          "expectedOutcome": "demonstrated",
+          "capabilityOutcome": "demonstrated",
+          "gateResult": "pass",
+          "reasonCode": "USER_GATE_ACCEPTED",
+          "inputHash": "444c2c326336a666da8ae74e89ee5ec60b83c8b5666ff9d97c4367bc3d9052b4",
+          "outputHash": "81a42be3ed6d714a244e76ae92530144773e08a8c20048ad060ceadfdcc3eb4d",
+          "artifactHashes": [],
+          "publicOperations": [
+            "question.propose",
+            "question.select",
+            "scope.approve"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 序贯决策 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d07-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "rejected",
+          "capabilityOutcome": "rejected",
+          "gateResult": "pass",
+          "reasonCode": "AGENT_APPROVAL_REJECTED",
+          "inputHash": "4e7f824a4d4969a91a1922c813f6e2a36872dec3f7b3e1a65bc3669af67ae50d",
+          "outputHash": "22233f9ea124f575e8a9b602ef746bce1e48127f7e2ba2668e4662d2b5205b12",
+          "artifactHashes": [],
+          "publicOperations": [
+            "question.propose",
+            "question.select",
+            "scope.approve"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 序贯决策 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "demonstrated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "08-statistics-units",
+      "title": "统计与实验单位",
+      "cases": [
+        {
+          "id": "d08-success",
+          "kind": "success",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "86e471e91e5407d33a81db253c0519ea74e97d61c12124c52bb948cc0a6e167f",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 统计与实验单位 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d08-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "7334e141fc2123302e51cf5182745fd049c16277eeff740b95955bf38f6a4361",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 统计与实验单位 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "not_evaluated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "09-failure-diagnosis",
+      "title": "失败诊断",
+      "cases": [
+        {
+          "id": "d09-success",
+          "kind": "success",
+          "expectedOutcome": "demonstrated",
+          "capabilityOutcome": "demonstrated",
+          "gateResult": "pass",
+          "reasonCode": "FAILURE_CLASS_PERSISTED",
+          "inputHash": "c8804d35a39c0e59122635de8333a8cd7669d0faf1789cbd2c020e3428b5fb67",
+          "outputHash": "5f4deab0c0438de5bd347ec642030aa2c225b4f05dbe477f9019a58bf3b7461f",
+          "artifactHashes": [],
+          "publicOperations": [
+            "job.submit",
+            "worker.claim",
+            "worker.fail",
+            "job.get"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 失败诊断 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d09-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "rejected",
+          "capabilityOutcome": "rejected",
+          "gateResult": "pass",
+          "reasonCode": "INVALID_FAILURE_CLASS_REJECTED",
+          "inputHash": "46c8e54845210705cd65e0a8aa2939d25a34cecff65b6a5f52d71631cfd784b5",
+          "outputHash": "e6713dc5d4fae15904e7f8bda296bc58febeafc5559927cff028d93f6391415b",
+          "artifactHashes": [],
+          "publicOperations": [
+            "worker.fail"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 失败诊断 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "demonstrated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "10-memory-improvement",
+      "title": "记忆提升",
+      "cases": [
+        {
+          "id": "d10-success",
+          "kind": "success",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "8e25e270bee1b687bf85ac9b3c0b53b68a9b9f7b865d1ac259d610e84dd36c05",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 记忆提升 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d10-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "1d2e50749f98463eb800362608a58594c50b7fc4cc70cf8529f0b25585960c75",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 记忆提升 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "not_evaluated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "11-scientific-writing",
+      "title": "科学写作",
+      "cases": [
+        {
+          "id": "d11-success",
+          "kind": "success",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "5033db4cda6b893a38d81262c2debccee36994898663e70e4eb5d4cbf6ff5f17",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 科学写作 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d11-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "not_evaluated",
+          "capabilityOutcome": "not_evaluated",
+          "gateResult": "not_evaluated",
+          "reasonCode": "PUBLIC_CAPABILITY_UNAVAILABLE",
+          "inputHash": "7ea0cdd5f1197ffa367b6a49ffc47fe491aab004eeb24958b7a4b62b33320b12",
+          "outputHash": "91e75f71c1966f8b205a7233267971356996c3a8f776668560c549dc3820d927",
+          "artifactHashes": [],
+          "publicOperations": [],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 科学写作 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "not_evaluated",
+      "humanSummary": "pending"
+    },
+    {
+      "id": "12-reproduction-release",
+      "title": "复现与发布",
+      "cases": [
+        {
+          "id": "d12-success",
+          "kind": "success",
+          "expectedOutcome": "demonstrated",
+          "capabilityOutcome": "demonstrated",
+          "gateResult": "pass",
+          "reasonCode": "BUNDLE_ROUNDTRIP_SUCCEEDED",
+          "inputHash": "c9a011bda2e4bccebe9d633f026346312ef3cd2f7bef8c9548625d0de6585447",
+          "outputHash": "accebddb282d7c01185dffa1c1a34cc923ba7cb51ebc1601d82eaa950ac46e29",
+          "artifactHashes": [
+            "6d3ca8963262c5b20ec370329e7d2929e32e4f2f40b26ab9b2af8c4e72bdde08"
+          ],
+          "publicOperations": [
+            "project.bundle",
+            "project.import",
+            "project.status"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 复现与发布 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        },
+        {
+          "id": "d12-adversarial",
+          "kind": "adversarial",
+          "expectedOutcome": "rejected",
+          "capabilityOutcome": "rejected",
+          "gateResult": "pass",
+          "reasonCode": "TAMPERED_BUNDLE_REJECTED",
+          "inputHash": "dd9a4877e8a9bd1c1480e10293b1e70c163f72a6f9e1a0eaa9b4ef5f68c1e48c",
+          "outputHash": "1145f8cc8d42f1fb40cdc8178ac24c3a9c7e9ced68b457eda71d1e2dd22e873f",
+          "artifactHashes": [],
+          "publicOperations": [
+            "project.bundle",
+            "project.import"
+          ],
+          "humanReview": {
+            "status": "pending",
+            "rubric": "Review whether 复现与发布 is demonstrated with traceable evidence and an appropriate claim boundary.",
+            "reviewer": null,
+            "notes": null
+          }
+        }
+      ],
+      "machineSummary": "partial",
+      "humanSummary": "pending"
+    }
+  ],
+  "realCases": [
+    {
+      "id": "t2a-mllm",
+      "role": "external_real_case",
+      "inputHash": "9ac7a67c00db96096199e0b648444ce4d45316b3286d35beffbba80ec1ec2f5c",
+      "status": "pass",
+      "artifactHashes": [
+        "809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b"
+      ]
+    },
+    {
+      "id": "t2b-fasttext",
+      "role": "external_real_case",
+      "inputHash": "f74a72c1412e360ca06b35134afcde7cb761f9445b6728c398edbcbbef67e2e3",
+      "status": "pass",
+      "artifactHashes": [
+        "9dfb1f310dc94a64249b1f0dce25027a6e4d794ea73300fdf1114325daac1715"
+      ]
+    }
+  ],
+  "summary": {
+    "dimensionsDemonstrated": 3,
+    "dimensionsPartial": 2,
+    "dimensionsNotEvaluated": 7,
+    "dimensionsFailed": 0,
+    "machineGate": "pass",
+    "humanReview": "pending"
+  },
+  "deterministicGateHash": "d954346b42b4f391308a627fb57d19a26067db985951619f01698e85ef350d2d",
+  "comparison": {
+    "baselineImplementationHash": "65d95d929dde51adf6a862e44aa7b1816ae4f32d3266bebdaa494347ed01eb3e",
+    "candidateImplementationHash": "65d95d929dde51adf6a862e44aa7b1816ae4f32d3266bebdaa494347ed01eb3e",
+    "schemaCompatible": true,
+    "changedCases": [],
+    "sameGateHash": true
+  }
+}

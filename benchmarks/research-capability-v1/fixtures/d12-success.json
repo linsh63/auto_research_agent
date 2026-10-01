@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d12-success",
+  "dimensionId": "12-reproduction-release",
+  "dimensionTitle": "复现与发布",
+  "kind": "success",
+  "handler": "bundle_roundtrip",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
+  "input": {
+    "fixtureClass": "bundle_roundtrip",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 复现与发布 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

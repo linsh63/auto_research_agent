@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d06-success",
+  "dimensionId": "06-baseline-execution",
+  "dimensionTitle": "baseline 与执行",
+  "kind": "success",
+  "handler": "job_executes",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
+  "input": {
+    "fixtureClass": "job_executes",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether baseline 与执行 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

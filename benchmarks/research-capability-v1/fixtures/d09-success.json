@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d09-success",
+  "dimensionId": "09-failure-diagnosis",
+  "dimensionTitle": "失败诊断",
+  "kind": "success",
+  "handler": "classified_failure",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
+  "input": {
+    "fixtureClass": "classified_failure",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 失败诊断 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

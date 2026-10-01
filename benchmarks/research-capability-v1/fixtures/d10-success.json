@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d10-success",
+  "dimensionId": "10-memory-improvement",
+  "dimensionTitle": "记忆提升",
+  "kind": "success",
+  "handler": "verified_memory",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "verified_memory",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 记忆提升 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

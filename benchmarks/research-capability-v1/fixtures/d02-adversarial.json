@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d02-adversarial",
+  "dimensionId": "02-literature-evidence",
+  "dimensionTitle": "文献检索与全文证据",
+  "kind": "adversarial",
+  "handler": "literature_unsupported_citation",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "literature_unsupported_citation",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 文献检索与全文证据 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

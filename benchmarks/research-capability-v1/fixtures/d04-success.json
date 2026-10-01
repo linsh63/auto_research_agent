@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d04-success",
+  "dimensionId": "04-rival-hypotheses",
+  "dimensionTitle": "竞争假设",
+  "kind": "success",
+  "handler": "rivals_discriminated",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "rivals_discriminated",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 竞争假设 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

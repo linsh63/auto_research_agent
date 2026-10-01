@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d11-adversarial",
+  "dimensionId": "11-scientific-writing",
+  "dimensionTitle": "科学写作",
+  "kind": "adversarial",
+  "handler": "unsupported_numeric_claim",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "unsupported_numeric_claim",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 科学写作 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

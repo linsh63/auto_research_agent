@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import test from "node:test";
+import { Check, Errors } from "typebox/value";
+
+const root=resolve("benchmarks/research-capability-v1"),manifest=JSON.parse(readFileSync(resolve(root,"manifest.json"),"utf8")),schema=JSON.parse(readFileSync(resolve(root,"result.schema.json"),"utf8")),report=JSON.parse(readFileSync(resolve("docs/reports/validation/t3-capability-baseline.json"),"utf8"));
+
+test("T3 manifest has paired success and adversarial fixtures for all twelve dimensions",()=>{assert.equal(manifest.dimensions.length,12);const ids=new Set<string>();for(const dimension of manifest.dimensions){assert.equal(ids.has(dimension.id),false);ids.add(dimension.id);const success=JSON.parse(readFileSync(resolve(root,dimension.successFixture),"utf8")),adversarial=JSON.parse(readFileSync(resolve(root,dimension.adversarialFixture),"utf8"));assert.equal(success.dimensionId,dimension.id);assert.equal(success.kind,"success");assert.equal(adversarial.dimensionId,dimension.id);assert.equal(adversarial.kind,"adversarial");assert.ok(["full","partial","not_evaluated"].includes(dimension.coverage));}});
+
+test("T3 recorded baseline conforms to the versioned result schema",()=>{assert.equal(Check(schema,report),true,JSON.stringify([...Errors(schema,report)].slice(0,5)));assert.equal(report.benchmark.version,"1.0.0");assert.equal(report.environment.model,null);assert.equal(report.environment.knownCostUsd,0);assert.equal(report.dimensions.length,12);assert.equal(report.dimensions.flatMap((item:any)=>item.cases).length,24);});
+
+test("T3 never treats adversarial or missing capability cases as demonstrated",()=>{const cases=report.dimensions.flatMap((item:any)=>item.cases);for(const item of cases.filter((value:any)=>value.kind==="adversarial"))assert.notEqual(item.capabilityOutcome,"demonstrated");for(const item of cases.filter((value:any)=>value.capabilityOutcome==="not_evaluated"))assert.equal(item.gateResult,"not_evaluated");assert.equal(report.summary.machineGate,"pass");assert.equal(report.summary.humanReview,"pending");});
+
+test("T3 repeated run has a stable machine gate while retaining per-run artifact hashes",()=>{assert.equal(report.comparison.sameGateHash,true);assert.deepEqual(report.comparison.changedCases,[]);assert.equal(report.comparison.baselineImplementationHash,report.comparison.candidateImplementationHash);const normalized=report.dimensions.flatMap((dimension:any)=>dimension.cases.map((item:any)=>({dimensionId:dimension.id,id:item.id,kind:item.kind,expectedOutcome:item.expectedOutcome,capabilityOutcome:item.capabilityOutcome,gateResult:item.gateResult,reasonCode:item.reasonCode,inputHash:item.inputHash})));const expected=createHash("sha256").update(JSON.stringify(sortValue({benchmarkVersion:report.benchmark.version,manifestHash:report.benchmark.manifestHash,fixtureRootHash:report.fixtureRootHash,cases:normalized}))).digest("hex");assert.equal(report.deterministicGateHash,expected);assert.equal(report.realCases.every((item:any)=>item.role==="external_real_case"),true);});
+
+function sortValue(value:any):any{if(Array.isArray(value))return value.map(sortValue);if(value&&typeof value==="object")return Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([key,item])=>[key,sortValue(item)]));return value;}

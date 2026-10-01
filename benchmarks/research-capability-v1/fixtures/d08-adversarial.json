@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d08-adversarial",
+  "dimensionId": "08-statistics-units",
+  "dimensionTitle": "统计与实验单位",
+  "kind": "adversarial",
+  "handler": "rows_as_independent_units",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "rows_as_independent_units",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 统计与实验单位 is demonstrated with traceable evidence and an appropriate claim boundary."
+}

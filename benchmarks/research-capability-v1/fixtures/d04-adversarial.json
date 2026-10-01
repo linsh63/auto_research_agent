@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "d04-adversarial",
+  "dimensionId": "04-rival-hypotheses",
+  "dimensionTitle": "竞争假设",
+  "kind": "adversarial",
+  "handler": "single_hypothesis_only",
+  "expectedOutcome": "not_evaluated",
+  "publicCapability": false,
+  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "input": {
+    "fixtureClass": "single_hypothesis_only",
+    "synthetic": true
+  },
+  "humanRubric": "Review whether 竞争假设 is demonstrated with traceable evidence and an appropriate claim boundary."
+}
