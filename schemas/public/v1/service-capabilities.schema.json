@@ -1,0 +1,89 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/service-capabilities.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "serviceVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "transports": {
+      "type": "object",
+      "properties": {
+        "rest": {
+          "type": "boolean",
+          "const": true
+        },
+        "sse": {
+          "type": "boolean",
+          "const": true
+        },
+        "websocket": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "rest",
+        "sse",
+        "websocket"
+      ],
+      "additionalProperties": false
+    },
+    "endpoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowedPermissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "filesystem.read",
+          "filesystem.write",
+          "network",
+          "process",
+          "gpu",
+          "model",
+          "secrets",
+          "confirmation",
+          "host.full"
+        ]
+      }
+    },
+    "offline": {
+      "type": "boolean"
+    },
+    "telemetry": {
+      "type": "boolean",
+      "const": false
+    },
+    "publicExports": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "startedAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "serviceVersion",
+    "schemaVersion",
+    "transports",
+    "endpoints",
+    "allowedPermissions",
+    "offline",
+    "telemetry",
+    "publicExports",
+    "startedAt"
+  ],
+  "additionalProperties": false
+}

@@ -2,13 +2,13 @@
   "schemaVersion": "1.0.0",
   "jsonSchemaDraft": "2020-12",
   "files": {
-    "command.schema.json": "6aef688bf4d0e55e86c6260849f224a59bf48f1cfce525c2120c62f458b3c75f",
+    "command.schema.json": "05126af5410c4ed55d6071b79e974fba55bdf8a6d2c69e2d38659a9860a85b33",
     "command-result.schema.json": "22892d9ec59899763a457d5cf395ab065f0f43fae8ba9362c1f4d87fd37416a4",
     "query.schema.json": "2399c8805b1b8512434978dff9d65e1bc434b97dcc1081d5a4aadf6327af43aa",
-    "query-result.schema.json": "9b4606d92f50194f837fded7b80eddfcba6189b7de27a89b0ea83095e1df6cce",
+    "query-result.schema.json": "de55b9ecf7f129312473d9414ef7773299e7b65348d68685f9ff6e4618c51480",
     "project-status.schema.json": "cc38842d28a682d3740a28a9479965b6efdcd88daf1c3104b72156cb7c94e331",
-    "project-events.schema.json": "153e7a7ae1e3cf0b45f5221f1561c5e7599760b4a3b1f475b42ecc74dd9e8ce5",
-    "project-bundle.schema.json": "4015c564c0220a51939b72e68ac3bc2251d4bfaca136825ad597f72be2ed9af6",
+    "project-events.schema.json": "5eb1e042dfcc5bd87a9e3753b9ee610adc3b8f80816abac5644e9a915e5bb417",
+    "project-bundle.schema.json": "bca58a61702f90db8f2806085914a6adb131929969d8ee09b2040bf0f8f7b0d6",
     "research-action.schema.json": "ee1b189e862060b7acbd58b035b948aedecdd6f8f7344556c4115ea208569f3f",
     "candidate-set.schema.json": "30905c306cf6b22a001462f0c8a01ff41837efda89baca225b8b984a4ca96350",
     "conversation.schema.json": "fea8b730ed540fd1b9cbd2657a990e06d8c274a0eabec417018f383881099025",
@@ -27,7 +27,8 @@
     "scenario-analysis.schema.json": "51099cb5ee95443966c191c2c5684981f71c8aa1c7d4273d5a117217c4f8c1ba",
     "scenario-handshake-request.schema.json": "d712dab0688616c1c6bf61b729f3742c3164fc4177ca540fc4a2af6c527f9373",
     "scenario-handshake-result.schema.json": "d18c1b38f6c24f78e8bd8ed0af0d911624e7ea9633767aaa1a2b5cac6143533d",
-    "event.schema.json": "4a5a1a6280edd27233931c9a1df25cced6910106e3f3fa32a6be1da98ea06d4d",
+    "service-capabilities.schema.json": "1e7844262c85908a59b5aa1f65726ebdb761b1e023183c928011755c54904a37",
+    "event.schema.json": "938b38b46f5c6c5d8e7783438aa14c803b078a830d3f00b87de98ce62bd88220",
     "error.schema.json": "619593a1b25395f46e842d7e8b20da5cdbf59f5bf5337e217acd3ce758795c1d"
   }
 }

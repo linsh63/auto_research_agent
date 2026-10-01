@@ -5,7 +5,7 @@ import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
   ExecutionPolicySchema, ProjectStatusReadModelSchema, PublicCommandSchema, ProjectEventListSchema,
   JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
-  PluginInspectionSchema, PluginInstallationsResultSchema, PluginInstallationSchema, PluginRuntimeSelectionSchema, PluginSearchResultSchema, PluginSourceRecordSchema, PluginSourcesResultSchema,
+  PluginInspectionSchema, PluginInstallationsResultSchema, PluginInstallationSchema, PluginPermissionSchema, PluginRuntimeSelectionSchema, PluginSearchResultSchema, PluginSourceRecordSchema, PluginSourcesResultSchema,
   WorkerDescriptorSchema, WorkerRequestSchema, WorkerResultSchema,
   type Actor, type CommandResult, type ExecutionPolicy, type ProjectStatusReadModel, type PublicCommand,
   type PublicProjectBundle, type PublicQuery, type QueryResult, type ResearchAction, type ResearchActionCandidate, type WorkerResult,
@@ -20,6 +20,7 @@ export interface ResearchApplicationOptions {
 }
 export interface LocalWorkerOptions{descriptor:import("./contracts.js").WorkerDescriptor;artifactRoot:string;pythonExecutable?:string;pythonRunnerPath?:string;heartbeatIntervalMs?:number}
 export interface LocalWorkerController{runOnce():Promise<import("./contracts.js").JobLease|null>}
+export interface ExecutionAuditContext{permissions?:import("./contracts.js").PluginPermission[];externalServices?:string[]}
 
 interface DispatchOutcome {
   data: unknown;
@@ -46,10 +47,11 @@ export class ResearchApplication {
     return{runOnce:()=>worker.runOnce()};
   }
 
-  async execute(input: unknown): Promise<CommandResult> {
+  async execute(input: unknown,auditContext:ExecutionAuditContext={}): Promise<CommandResult> {
     const parsed = PublicCommandSchema.safeParse(input);
     if (!parsed.success) return this.rejectedCommand(input, parsed.error);
     const command = parsed.data;
+    const security={permissions:[...new Set(PluginPermissionSchema.array().parse(auditContext.permissions??[]))],externalServices:[...new Set((auditContext.externalServices??[]).map(item=>String(item)))]};
     const commandHash = createHash("sha256").update(JSON.stringify(command)).digest("hex");
     let prepared;
     try{prepared=this.backend.projects.prepareCommand({workspaceId:command.workspaceId,projectId:command.projectId,commandId:command.commandId,idempotencyKey:command.idempotencyKey,commandHash,actor:command.actor});}
@@ -57,14 +59,14 @@ export class ResearchApplication {
     if(prepared.kind==="replay")return CommandResultSchema.parse(prepared.receipt.result);
     try{assertCommandContext(command);}catch(error){const result=this.reject(command,error);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result});return result;}
     let outcome:DispatchOutcome;
-    try{outcome=this.dispatch(command);}catch(error){const eventId=command.projectId?`event-${randomUUID()}`:null,result=this.reject(command,error,eventId?[eventId]:[]);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:eventId?{eventId,type:"command.rejected",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{commandType:command.type,error:result.error}}:undefined});return result;}
+    try{outcome=this.dispatch(command);}catch(error){const eventId=command.projectId?`event-${randomUUID()}`:null,result=this.reject(command,error,eventId?[eventId]:[]);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:eventId?{eventId,type:"command.rejected",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{commandType:command.type,error:result.error},...security}:undefined});return result;}
     const data=outcome.data;
     const eventIds=command.type==="project.fork"?[`event-${randomUUID()}`,`event-${randomUUID()}`]:command.type==="project.import"?[(data as any).importEventId]:outcome.eventType?[`event-${randomUUID()}`]:[],result=this.accept(command,data,eventIds);
     try{
-      if(command.type==="project.create")this.backend.projects.completeProjectCreation({receipt:prepared.receipt,projectId:result.projectId!,branchName:"main",researchStatus:"draft",result,event:{eventId:eventIds[0]!,type:"project.created",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{intent:command.payload.intent,project:(data as any).project,projectionPatch:{researchStatus:"draft"}},projectionPatch:{researchStatus:"draft"}}});
-      else if(command.type==="project.fork"){const child=(data as any).project;this.backend.projects.completeFork({receipt:prepared.receipt,childProjectId:child.id,branchName:command.payload.branchName,researchStatus:child.status,result,parentEvent:{eventId:eventIds[0]!,type:"branch.created",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{childProjectId:child.id,branchName:command.payload.branchName}},childEvent:{eventId:eventIds[1]!,type:"project.forked",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{parentProjectId:command.projectId,branchName:command.payload.branchName,reason:command.payload.reason,projectionPatch:{researchStatus:child.status}},projectionPatch:{researchStatus:child.status}}});}
+      if(command.type==="project.create")this.backend.projects.completeProjectCreation({receipt:prepared.receipt,projectId:result.projectId!,branchName:"main",researchStatus:"draft",result,event:{eventId:eventIds[0]!,type:"project.created",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{intent:command.payload.intent,project:(data as any).project,projectionPatch:{researchStatus:"draft"}},projectionPatch:{researchStatus:"draft"},...security}});
+      else if(command.type==="project.fork"){const child=(data as any).project;this.backend.projects.completeFork({receipt:prepared.receipt,childProjectId:child.id,branchName:command.payload.branchName,researchStatus:child.status,result,parentEvent:{eventId:eventIds[0]!,type:"branch.created",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{childProjectId:child.id,branchName:command.payload.branchName},...security},childEvent:{eventId:eventIds[1]!,type:"project.forked",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{parentProjectId:command.projectId,branchName:command.payload.branchName,reason:command.payload.reason,projectionPatch:{researchStatus:child.status}},projectionPatch:{researchStatus:child.status},...security}});}
       else if(command.type==="project.import")this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result});
-      else this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:outcome.eventType?{eventId:eventIds[0]!,type:outcome.eventType,schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:outcome.eventPayload??{commandType:command.type,data,projectionPatch:outcome.projectionPatch},projectionPatch:outcome.projectionPatch}:undefined});
+      else this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:outcome.eventType?{eventId:eventIds[0]!,type:outcome.eventType,schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:outcome.eventPayload??{commandType:command.type,data,projectionPatch:outcome.projectionPatch},projectionPatch:outcome.projectionPatch,...security}:undefined});
       return result;
     }catch(error){return this.reject(command,new PublicKernelError("CONFLICT",`Command ${command.commandId} is in doubt after domain mutation`,false,{cause:error instanceof Error?error.message:String(error)}));}
   }

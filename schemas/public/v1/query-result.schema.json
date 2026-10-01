@@ -332,6 +332,31 @@
                         "type": "string",
                         "minLength": 1
                       },
+                      "permissions": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "filesystem.read",
+                            "filesystem.write",
+                            "network",
+                            "process",
+                            "gpu",
+                            "model",
+                            "secrets",
+                            "confirmation",
+                            "host.full"
+                          ]
+                        }
+                      },
+                      "externalServices": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
                       "payloadHash": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
@@ -349,6 +374,8 @@
                       "causationId",
                       "correlationId",
                       "occurredAt",
+                      "permissions",
+                      "externalServices",
                       "payloadHash",
                       "payload"
                     ],
@@ -551,6 +578,31 @@
                         "type": "string",
                         "minLength": 1
                       },
+                      "permissions": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "filesystem.read",
+                            "filesystem.write",
+                            "network",
+                            "process",
+                            "gpu",
+                            "model",
+                            "secrets",
+                            "confirmation",
+                            "host.full"
+                          ]
+                        }
+                      },
+                      "externalServices": {
+                        "default": [],
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
                       "payloadHash": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
@@ -568,6 +620,8 @@
                       "causationId",
                       "correlationId",
                       "occurredAt",
+                      "permissions",
+                      "externalServices",
                       "payloadHash",
                       "payload"
                     ],

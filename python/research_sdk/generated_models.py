@@ -2,8 +2,8 @@
 from __future__ import annotations
 from typing import Any, Literal, NotRequired, TypedDict
 
-SCHEMA_HASHES = {'scenario-manifest.schema.json': '22d2f046875bb289f33315861b89c6899c693ac492a65b285ddce579913b0b96', 'scenario-data.schema.json': '901ee234d8988288625380929dea6684964a5a330012cb1a74b60c57e71420ca', 'scenario-evaluation.schema.json': '6165ad4bb8b7b040802374e3dd84c74c5ce04b15cef39602071a998827466488', 'scenario-analysis.schema.json': '51099cb5ee95443966c191c2c5684981f71c8aa1c7d4273d5a117217c4f8c1ba', 'scenario-handshake-request.schema.json': 'd712dab0688616c1c6bf61b729f3742c3164fc4177ca540fc4a2af6c527f9373', 'scenario-handshake-result.schema.json': 'd18c1b38f6c24f78e8bd8ed0af0d911624e7ea9633767aaa1a2b5cac6143533d', 'job-spec.schema.json': '055c8ff7dd3ed77ec7c4a7b34a3b8469b7832691005cd31fa3dcb71f024dc216', 'worker-request.schema.json': '8367f216dd13ea940f765196e5eafbcda712fb2549a23d8240a0b3c19fbd3239', 'worker-result.schema.json': '6b088134e0124abce976401ef380d08c7b125e2eb96896faa2e56b466e8310ec'}
-SCHEMA_IDS = {'scenario-manifest.schema.json': 'https://auto-research.local/schemas/v1/scenario-manifest.schema.json', 'scenario-data.schema.json': 'https://auto-research.local/schemas/v1/scenario-data.schema.json', 'scenario-evaluation.schema.json': 'https://auto-research.local/schemas/v1/scenario-evaluation.schema.json', 'scenario-analysis.schema.json': 'https://auto-research.local/schemas/v1/scenario-analysis.schema.json', 'scenario-handshake-request.schema.json': 'https://auto-research.local/schemas/v1/scenario-handshake-request.schema.json', 'scenario-handshake-result.schema.json': 'https://auto-research.local/schemas/v1/scenario-handshake-result.schema.json', 'job-spec.schema.json': 'https://auto-research.local/schemas/v1/job-spec.schema.json', 'worker-request.schema.json': 'https://auto-research.local/schemas/v1/worker-request.schema.json', 'worker-result.schema.json': 'https://auto-research.local/schemas/v1/worker-result.schema.json'}
+SCHEMA_HASHES = {'scenario-manifest.schema.json': '22d2f046875bb289f33315861b89c6899c693ac492a65b285ddce579913b0b96', 'scenario-data.schema.json': '901ee234d8988288625380929dea6684964a5a330012cb1a74b60c57e71420ca', 'scenario-evaluation.schema.json': '6165ad4bb8b7b040802374e3dd84c74c5ce04b15cef39602071a998827466488', 'scenario-analysis.schema.json': '51099cb5ee95443966c191c2c5684981f71c8aa1c7d4273d5a117217c4f8c1ba', 'scenario-handshake-request.schema.json': 'd712dab0688616c1c6bf61b729f3742c3164fc4177ca540fc4a2af6c527f9373', 'scenario-handshake-result.schema.json': 'd18c1b38f6c24f78e8bd8ed0af0d911624e7ea9633767aaa1a2b5cac6143533d', 'job-spec.schema.json': '055c8ff7dd3ed77ec7c4a7b34a3b8469b7832691005cd31fa3dcb71f024dc216', 'worker-request.schema.json': '8367f216dd13ea940f765196e5eafbcda712fb2549a23d8240a0b3c19fbd3239', 'worker-result.schema.json': '6b088134e0124abce976401ef380d08c7b125e2eb96896faa2e56b466e8310ec', 'command.schema.json': '05126af5410c4ed55d6071b79e974fba55bdf8a6d2c69e2d38659a9860a85b33', 'command-result.schema.json': '22892d9ec59899763a457d5cf395ab065f0f43fae8ba9362c1f4d87fd37416a4', 'query.schema.json': '2399c8805b1b8512434978dff9d65e1bc434b97dcc1081d5a4aadf6327af43aa', 'query-result.schema.json': 'de55b9ecf7f129312473d9414ef7773299e7b65348d68685f9ff6e4618c51480', 'service-capabilities.schema.json': '1e7844262c85908a59b5aa1f65726ebdb761b1e023183c928011755c54904a37'}
+SCHEMA_IDS = {'scenario-manifest.schema.json': 'https://auto-research.local/schemas/v1/scenario-manifest.schema.json', 'scenario-data.schema.json': 'https://auto-research.local/schemas/v1/scenario-data.schema.json', 'scenario-evaluation.schema.json': 'https://auto-research.local/schemas/v1/scenario-evaluation.schema.json', 'scenario-analysis.schema.json': 'https://auto-research.local/schemas/v1/scenario-analysis.schema.json', 'scenario-handshake-request.schema.json': 'https://auto-research.local/schemas/v1/scenario-handshake-request.schema.json', 'scenario-handshake-result.schema.json': 'https://auto-research.local/schemas/v1/scenario-handshake-result.schema.json', 'job-spec.schema.json': 'https://auto-research.local/schemas/v1/job-spec.schema.json', 'worker-request.schema.json': 'https://auto-research.local/schemas/v1/worker-request.schema.json', 'worker-result.schema.json': 'https://auto-research.local/schemas/v1/worker-result.schema.json', 'command.schema.json': 'https://auto-research.local/schemas/v1/command.schema.json', 'command-result.schema.json': 'https://auto-research.local/schemas/v1/command-result.schema.json', 'query.schema.json': 'https://auto-research.local/schemas/v1/query.schema.json', 'query-result.schema.json': 'https://auto-research.local/schemas/v1/query-result.schema.json', 'service-capabilities.schema.json': 'https://auto-research.local/schemas/v1/service-capabilities.schema.json'}
 SCENARIO_SDK_VERSION = "1.0.0"
 
 Permission = Literal["filesystem.read", "filesystem.write", "network", "process", "gpu", "model", "secrets", "confirmation", "host.full"]
@@ -92,3 +92,54 @@ class WorkerResult(TypedDict):
     data: Any | None
     error: dict[str, Any] | None
     handledAt: str
+
+class PublicCommand(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    commandId: str
+    idempotencyKey: str
+    workspaceId: str
+    projectId: str | None
+    actor: dict[str, Any]
+    issuedAt: str
+    type: str
+    payload: dict[str, Any]
+
+class PublicQuery(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    queryId: str
+    workspaceId: str
+    projectId: str | None
+    actor: dict[str, Any]
+    type: str
+
+class CommandResult(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    commandId: str
+    workspaceId: str | None
+    projectId: str | None
+    status: Literal["accepted", "rejected"]
+    data: Any | None
+    error: dict[str, Any] | None
+    eventIds: list[str]
+    handledAt: str
+
+class QueryResult(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    queryId: str
+    workspaceId: str | None
+    projectId: str | None
+    status: Literal["ok", "rejected"]
+    data: Any | None
+    error: dict[str, Any] | None
+    handledAt: str
+
+class ServiceCapabilities(TypedDict):
+    serviceVersion: Literal["1.0.0"]
+    schemaVersion: Literal["1.0.0"]
+    transports: dict[str, bool]
+    endpoints: list[str]
+    allowedPermissions: list[Permission]
+    offline: bool
+    telemetry: Literal[False]
+    publicExports: list[str]
+    startedAt: str

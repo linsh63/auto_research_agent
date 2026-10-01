@@ -51,6 +51,7 @@ docs/
 - [ADR 009：v1.5 ResearchAction 与执行策略](architecture/decisions/009-v15-research-actions-and-execution-policy.md)
 - [ADR 010：v1.5 Job/Worker 与 Pi 复用边界](architecture/decisions/010-v15-job-worker-and-pi-reuse.md)
 - [ADR 011：v1.5 Scenario SDK 与插件目录](architecture/decisions/011-v15-scenario-sdk-and-plugin-catalog.md)
+- [ADR 012：v1.5 Core Service、客户端 SDK 与安全边界](architecture/decisions/012-v15-core-service-and-client-sdks.md)
 - [模型 Provider 配置](guides/model-providers.md)
 - [H 审查与真实验收指南](guides/h-review-and-acceptance.md)
 - [v1.5 公共 Kernel API](guides/public-kernel-api.md)
@@ -59,6 +60,7 @@ docs/
 - [Job、Worker 与本地执行](guides/jobs-and-workers.md)
 - [Scenario SDK](guides/scenario-sdk.md)
 - [Pi 插件目录与权限管理](guides/plugin-catalog.md)
+- [Core Service、客户端 SDK 与参考 CLI](guides/core-service-and-sdks.md)
 
 ### 研究案例
 
@@ -79,6 +81,7 @@ docs/
 - [v1.5 P 阶段：聊天、候选与执行策略](reports/stages/v1.5-p-progress.md)
 - [v1.5 Q 阶段：Job/Worker 与 Pi 复用](reports/stages/v1.5-q-progress.md)
 - [v1.5 R 阶段：Scenario SDK 与 Pi 插件目录](reports/stages/v1.5-r-progress.md)
+- [v1.5 S 阶段：Core Service 与客户端 SDK](reports/stages/v1.5-s-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)

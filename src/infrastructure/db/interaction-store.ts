@@ -21,7 +21,7 @@ export class InteractionStore {
     db.pragma("journal_mode = WAL"); db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
     if (version < 11) { db.close(); throw new Error("Research interactions require schema version 11 before migration"); }
-    if (version > 14) { db.close(); throw new Error(`Interaction database ${version} is newer than supported version 14`); }
+    if (version > 15) { db.close(); throw new Error(`Interaction database ${version} is newer than supported version 15`); }
     let backup: string | null = null, manifest: string | null = null;
     if (version === 11) {
       const backupDir = resolve(dirname(path), "backups"); mkdirSync(backupDir, { recursive: true });

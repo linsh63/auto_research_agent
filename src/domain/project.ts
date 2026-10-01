@@ -23,7 +23,7 @@ export type ProjectRecord=z.infer<typeof ProjectRecordSchema>;
 export const PersistedResearchEventSchema=z.object({
   schemaVersion:z.string().min(1),eventId:z.string().min(1),type:z.string().min(1),workspaceId:z.string().min(1),projectId:z.string().min(1),
   sequence:z.number().int().positive(),actor:z.object({id:z.string().min(1),kind:z.enum(["user","agent","worker","system"]),displayName:z.string().min(1).optional()}).strict(),
-  causationId:z.string().min(1),correlationId:z.string().min(1),occurredAt:z.string(),payloadHash:z.string().regex(/^[a-f0-9]{64}$/),payload:z.unknown(),
+  causationId:z.string().min(1),correlationId:z.string().min(1),occurredAt:z.string(),permissions:z.array(z.string()).default([]),externalServices:z.array(z.string()).default([]),payloadHash:z.string().regex(/^[a-f0-9]{64}$/),payload:z.unknown(),
 }).strict();
 export type PersistedResearchEvent=z.infer<typeof PersistedResearchEventSchema>;
 

@@ -363,6 +363,8 @@ export const ResearchEventEnvelopeSchema = z.object({
   causationId: z.string().min(1),
   correlationId: z.string().min(1),
   occurredAt: z.string().min(1),
+  permissions:z.array(PluginPermissionSchema).default([]),
+  externalServices:z.array(z.string()).default([]),
   payloadHash: z.string().regex(/^[a-f0-9]{64}$/),
   payload: z.unknown(),
 }).strict();

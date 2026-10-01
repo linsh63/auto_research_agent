@@ -4,7 +4,7 @@
 
 `src/public/index.ts` 是 v1.5 起唯一面向客户端和场景开发者的 TypeScript 入口。客户端不得导入 `src/infrastructure`、`src/application`、`src/domain` 或数据库迁移文件。
 
-当前接口已完成 N–R 阶段：公共契约、Project 事件、ResearchAction、Conversation、ExecutionPolicy、Job/Worker、Scenario SDK 和插件目录可用。Core Service 和客户端 SDK 将在 S 阶段补充。
+当前接口已完成 N–S 阶段：公共 Kernel、Project 事件、ResearchAction、Job/Worker、Scenario、插件目录、Core Service 和双语言客户端 SDK 可用。T 阶段负责迁移、基准和发布验收。
 
 ## 公共导出
 
@@ -15,6 +15,8 @@
 | `auto-research-agent/kernel` | schema/context guard 与稳定错误映射 |
 | `auto-research-agent/application` | `ResearchApplication` 兼容 facade |
 | `auto-research-agent/scenario` | Scenario manifest、Capability、双语言协商和预算契约 |
+| `auto-research-agent/client` | TypeScript REST/SSE 客户端与本地服务发现 |
+| `auto-research-agent/server` | Core Service 生命周期、SecretProvider 和 capability schema |
 
 ## 最小流程
 

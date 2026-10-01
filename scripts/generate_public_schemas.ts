@@ -8,6 +8,7 @@ import {
   PluginDescriptorSchema, PluginInstallationSchema, PluginSourceRecordSchema, PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema, WorkerRequestSchema, WorkerResultSchema,
 } from "../src/public/contracts.js";
 import { AnalysisContractSchema, DataContractSchema, EvaluationContractSchema, ScenarioHandshakeRequestSchema, ScenarioHandshakeResultSchema, ScenarioManifestSchema } from "../src/public/scenario.js";
+import { ServiceCapabilitiesSchema } from "../src/public/service.js";
 
 const root = resolve("schemas/public/v1");
 const definitions = {
@@ -36,6 +37,7 @@ const definitions = {
   "scenario-analysis.schema.json": AnalysisContractSchema,
   "scenario-handshake-request.schema.json": ScenarioHandshakeRequestSchema,
   "scenario-handshake-result.schema.json": ScenarioHandshakeResultSchema,
+  "service-capabilities.schema.json": ServiceCapabilitiesSchema,
   "event.schema.json": ResearchEventEnvelopeSchema,
   "error.schema.json": PublicErrorSchema,
 };

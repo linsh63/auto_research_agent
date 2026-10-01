@@ -15,6 +15,7 @@ FILES = [
     "scenario-manifest.schema.json", "scenario-data.schema.json", "scenario-evaluation.schema.json",
     "scenario-analysis.schema.json", "scenario-handshake-request.schema.json", "scenario-handshake-result.schema.json",
     "job-spec.schema.json", "worker-request.schema.json", "worker-result.schema.json",
+    "command.schema.json", "command-result.schema.json", "query.schema.json", "query-result.schema.json", "service-capabilities.schema.json",
 ]
 
 
@@ -119,6 +120,57 @@ class WorkerResult(TypedDict):
     data: Any | None
     error: dict[str, Any] | None
     handledAt: str
+
+class PublicCommand(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    commandId: str
+    idempotencyKey: str
+    workspaceId: str
+    projectId: str | None
+    actor: dict[str, Any]
+    issuedAt: str
+    type: str
+    payload: dict[str, Any]
+
+class PublicQuery(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    queryId: str
+    workspaceId: str
+    projectId: str | None
+    actor: dict[str, Any]
+    type: str
+
+class CommandResult(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    commandId: str
+    workspaceId: str | None
+    projectId: str | None
+    status: Literal["accepted", "rejected"]
+    data: Any | None
+    error: dict[str, Any] | None
+    eventIds: list[str]
+    handledAt: str
+
+class QueryResult(TypedDict):
+    schemaVersion: Literal["1.0.0"]
+    queryId: str
+    workspaceId: str | None
+    projectId: str | None
+    status: Literal["ok", "rejected"]
+    data: Any | None
+    error: dict[str, Any] | None
+    handledAt: str
+
+class ServiceCapabilities(TypedDict):
+    serviceVersion: Literal["1.0.0"]
+    schemaVersion: Literal["1.0.0"]
+    transports: dict[str, bool]
+    endpoints: list[str]
+    allowedPermissions: list[Permission]
+    offline: bool
+    telemetry: Literal[False]
+    publicExports: list[str]
+    startedAt: str
 '''
 
 

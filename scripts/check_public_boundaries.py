@@ -11,6 +11,7 @@ FORBIDDEN_PREFIXES = ("../domain/", "../application/", "../infrastructure/", "..
 APPLICATION_ALLOWLIST = {
     "../application/public-application-backend.js",
 }
+SERVICE_ALLOWLIST = {"../service/core-service.js"}
 issues = []
 for path in sorted(PUBLIC.glob("*.ts")):
     text = path.read_text()
@@ -19,6 +20,8 @@ for path in sorted(PUBLIC.glob("*.ts")):
         if not value.startswith(FORBIDDEN_PREFIXES):
             continue
         if path.name == "application.ts" and value in APPLICATION_ALLOWLIST:
+            continue
+        if path.name == "service.ts" and value in SERVICE_ALLOWLIST:
             continue
         issues.append({"file": str(path.relative_to(ROOT)), "import": value, "reason": "undeclared internal dependency"})
     if path.name == "index.ts" and any("../" in value for value in imports):
@@ -32,7 +35,7 @@ for path in sorted(DIST_PUBLIC.glob("*.d.ts")):
 
 package = json.loads((ROOT / "package.json").read_text())
 exports = package.get("exports", {})
-expected = {".", "./contracts", "./kernel", "./application", "./scenario"}
+expected = {".", "./application", "./client", "./contracts", "./kernel", "./scenario", "./server"}
 if set(exports) != expected:
     issues.append({"file": "package.json", "reason": f"public exports must be exactly {sorted(expected)}"})
 
