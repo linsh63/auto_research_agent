@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "stage": "T2b",
+  "status": "pass",
+  "startedAt": "2026-10-01T14:45:40.590Z",
+  "finishedAt": "2026-10-01T14:46:02.479Z",
+  "source": {
+    "paper": "https://arxiv.org/abs/1607.01759",
+    "fastTextRelease": "v0.9.2",
+    "manifestHash": "6a028b5e1368628ae39c8dd40e5c0a1cd41eacaff7017608c7c42adda49e1332",
+    "verifiedInputs": 4,
+    "dataRows": {
+      "train": 120000,
+      "test": 7600
+    }
+  },
+  "scenario": {
+    "id": "text.fasttext-agnews-ngrams",
+    "version": "1.0.0",
+    "permissions": [
+      "filesystem.read",
+      "filesystem.write",
+      "process"
+    ],
+    "executors": [
+      "bubblewrap"
+    ]
+  },
+  "execution": {
+    "kind": "new_offline_training_experiment",
+    "sandbox": "bubblewrap_unshare_net",
+    "projectId": "program-9d6327a0-a3ef-4ea0-bc7e-b8d7cee9344f",
+    "jobId": "job-98a11e6c-b75b-401a-80ec-1b63ee8a15cf",
+    "jobStatus": "succeeded",
+    "artifactHash": "9dfb1f310dc94a64249b1f0dce25027a6e4d794ea73300fdf1114325daac1715",
+    "elapsedSeconds": 21.313,
+    "jobLogCount": 3,
+    "researchEventCount": 6,
+    "serviceAuditCount": 8
+  },
+  "experiment": {
+    "experimentalUnit": "independent model training; paired by random seed",
+    "seeds": [
+      11,
+      23,
+      47
+    ],
+    "parameters": {
+      "bucket": 1000000,
+      "dim": 10,
+      "epoch": 5,
+      "lr": 0.25,
+      "minCount": 1,
+      "thread": 1
+    },
+    "baseline": {
+      "meanAccuracy": 0.9093859649122807,
+      "runs": [
+        {
+          "accuracy": 0.9094736842105263,
+          "correct": 6912,
+          "elapsedSeconds": 3.287,
+          "modelSha256": "33069d1ef0e29ce05152c17ed35b1d876a526abaf4ca6e67f7b71c693d060924",
+          "predictionSha256": "267d042831c53519cd876faa0f0dc8ceefd1e6efaab5184b7e290f60e1d16af4",
+          "seed": 11,
+          "total": 7600
+        },
+        {
+          "accuracy": 0.9089473684210526,
+          "correct": 6908,
+          "elapsedSeconds": 2.982,
+          "modelSha256": "758392daf723126a5f961a032b074ba452ae1f0a38f9aab7a187ad3f7d63babf",
+          "predictionSha256": "a2b061a87cfab5a61df7c04f350236b028d227ce148ae9a07ffd7a23d2eb13b6",
+          "seed": 23,
+          "total": 7600
+        },
+        {
+          "accuracy": 0.9097368421052632,
+          "correct": 6914,
+          "elapsedSeconds": 3.131,
+          "modelSha256": "ee412a398c4f0e04922b15b6311257b1a2493fd321a4e54b07246f614d5941e7",
+          "predictionSha256": "3ae6333528fabe2e5168d2588a1baf261688024b7b8742ee234d581bbaa9871d",
+          "seed": 47,
+          "total": 7600
+        }
+      ],
+      "wordNgrams": 1
+    },
+    "candidate": {
+      "meanAccuracy": 0.9190789473684212,
+      "runs": [
+        {
+          "accuracy": 0.9185526315789474,
+          "correct": 6981,
+          "elapsedSeconds": 4.035,
+          "modelSha256": "acac04744a118ea78466b992e37d560eaa09261b4c3d7ac283c5e0ae0da930dc",
+          "predictionSha256": "2420485ab1c01e2b9dd739000aef0e0a6ff9ed1ab954f50f8f01648f45760ca1",
+          "seed": 11,
+          "total": 7600
+        },
+        {
+          "accuracy": 0.9194736842105263,
+          "correct": 6988,
+          "elapsedSeconds": 3.851,
+          "modelSha256": "6a7de638466c2805cc78a299a65b6de62280a276a835dfe6c4def6565691ee41",
+          "predictionSha256": "fd3e76fd51dac13eb7054da47a3f41af219779ae6ba017539af1f9de87569510",
+          "seed": 23,
+          "total": 7600
+        },
+        {
+          "accuracy": 0.9192105263157895,
+          "correct": 6986,
+          "elapsedSeconds": 4.026,
+          "modelSha256": "12b223f896e2dcdab20dcab1a83f4098eada6e2bd75150b1d100578e9549c95d",
+          "predictionSha256": "ff7ce7db4b5bac6fea61d03db38ba0f846d72e9fb1ab3226f940790ddc732681",
+          "seed": 47,
+          "total": 7600
+        }
+      ],
+      "wordNgrams": 2
+    },
+    "analysis": {
+      "allDifferencesPositive": true,
+      "inference": "descriptive_only",
+      "meanDifference": 0.009692982456140364,
+      "pairedDifferences": [
+        0.009078947368421075,
+        0.010526315789473717,
+        0.0094736842105263
+      ]
+    },
+    "contractEvaluationCount": 6,
+    "contractAnalysis": {
+      "estimand": "candidate minus baseline top-1 accuracy over paired training seeds",
+      "clusterUnit": "independent model training seed pair",
+      "method": "arithmetic mean of three paired-seed accuracy differences on one fixed test split",
+      "estimate": 0.009692982456140364,
+      "interval": null,
+      "sensitivity": [
+        {
+          "name": "all paired differences positive",
+          "stable": true,
+          "details": "Descriptive three-seed check; no population-level uncertainty claim."
+        }
+      ],
+      "artifactHashes": [
+        "fbfcd384c7a842cb763f12509358af4fd3df7bad542f7ec9e65fd0b6b9795994"
+      ]
+    }
+  },
+  "claimBoundary": "The result applies to this locked fastText configuration and one fixed AG News split; three seeds do not establish a general effect or reproduce the paper's absolute scores.",
+  "bundle": {
+    "contentHash": "4a44b7264e417627da24995d431ccf434463ec774130f3bf72dedfdf77591660",
+    "sections": 4,
+    "artifactDisposition": "embedded",
+    "importCompatibility": {
+      "status": "degraded",
+      "issues": [
+        {
+          "code": "job_environment_redacted",
+          "severity": "warning",
+          "subject": "jobs",
+          "message": "Imported terminal Jobs retain history but require environment rebinding before retry"
+        }
+      ],
+      "checkedAt": "2026-10-01T14:46:02.432Z"
+    },
+    "targetProjectStatus": "scoped",
+    "targetDependencies": {
+      "projectId": "program-9d6327a0-a3ef-4ea0-bc7e-b8d7cee9344f",
+      "lastImport": {
+        "status": "degraded",
+        "issues": [
+          {
+            "code": "job_environment_redacted",
+            "severity": "warning",
+            "subject": "jobs",
+            "message": "Imported terminal Jobs retain history but require environment rebinding before retry"
+          }
+        ],
+        "checkedAt": "2026-10-01T14:46:02.432Z"
+      },
+      "plugins": [],
+      "artifacts": [
+        {
+          "contentHash": "9dfb1f310dc94a64249b1f0dce25027a6e4d794ea73300fdf1114325daac1715",
+          "access": "project",
+          "disposition": "embedded",
+          "status": "available",
+          "uri": "cas:sha256:9dfb1f310dc94a64249b1f0dce25027a6e4d794ea73300fdf1114325daac1715"
+        }
+      ]
+    }
+  },
+  "assertions": {
+    "newTrainingRun": true,
+    "allLockedHashesVerified": true,
+    "pairedExperimentalUnits": true,
+    "publicServiceOnly": true,
+    "offlineSandbox": true,
+    "noGpu": true,
+    "noNetwork": true,
+    "noModelFilesRetained": true,
+    "bundleCrossInstance": true
+  }
+}

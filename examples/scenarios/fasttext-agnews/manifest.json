@@ -1,0 +1,99 @@
+{
+  "id": "text.fasttext-agnews-ngrams",
+  "name": "fastText AG News Word N-gram Comparison",
+  "version": "1.0.0",
+  "description": "Runs a locked paired-seed unigram versus bigram experiment on the published AG News split.",
+  "domain": "text classification",
+  "scenarioSdkVersion": "1.0.0",
+  "coreSchemaRange": "^1.0.0",
+  "languages": [
+    "python",
+    "typescript"
+  ],
+  "executors": [
+    "bubblewrap"
+  ],
+  "permissions": [
+    "filesystem.read",
+    "filesystem.write",
+    "process"
+  ],
+  "budget": {
+    "maxWallTimeMs": 600000,
+    "maxCpuCores": 1,
+    "maxMemoryMiB": 2048,
+    "maxDiskMiB": 1024,
+    "maxGpuCount": 0,
+    "maxKnownCostUsd": 0
+  },
+  "capabilities": [
+    {
+      "id": "agnews.locked-data",
+      "kind": "data",
+      "description": "Verifies the prepared AG News train and fixed test split against a source lock.",
+      "permissions": [
+        "filesystem.read"
+      ],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": [
+        "data"
+      ]
+    },
+    {
+      "id": "fasttext.paired-experiment",
+      "kind": "experiment",
+      "description": "Trains unigram and bigram fastText models with three paired seeds in an offline sandbox.",
+      "permissions": [
+        "filesystem.read",
+        "filesystem.write",
+        "process"
+      ],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": [
+        "environment",
+        "data",
+        "scientific",
+        "budget",
+        "timeout"
+      ]
+    },
+    {
+      "id": "agnews.accuracy-evaluator",
+      "kind": "evaluation",
+      "description": "Records top-1 accuracy for each independent model-training unit.",
+      "permissions": [
+        "filesystem.read"
+      ],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": [
+        "data",
+        "scientific"
+      ]
+    },
+    {
+      "id": "agnews.paired-analyzer",
+      "kind": "analysis",
+      "description": "Computes the paired-seed mean accuracy difference with a bounded interpretation.",
+      "permissions": [
+        "filesystem.read"
+      ],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": [
+        "scientific"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "fasttext-agnews-result.json",
+      "mediaType": "application/json",
+      "required": true,
+      "maxBytes": 1000000,
+      "access": "project"
+    }
+  ]
+}

@@ -26,3 +26,18 @@ python3 examples/fasttext-agnews/experiment.py candidate
 ```
 
 代理地址只是当前机器的下载设置，其他环境可使用正常网络或已有的、哈希一致的归档。完整 agent 流程见根目录 README；`examples/fasttext-agnews/brief.json` 提供任务输入。代码、数据、二进制与预测文件的哈希用于复现检查。
+
+## T2b 公共 Scenario 迁移
+
+T2b 将该案例迁移到 `examples/scenarios/fasttext-agnews/`。新 runner 没有调用内部 Store、Workflow 或数据库：它通过公共 Core Service 建立项目和范围，通过 Python Scenario SDK 生成 Job，再通过公共 Worker lease 在禁网 Bubblewrap 内完成六次真实训练。结果 Artifact 由 Worker 协议登记到 CAS，并随 Bundle v2 导入另一个独立服务实例。
+
+2026-10-01 的迁移运行得到：
+
+| 变体 | 三种子正确数 | 平均 accuracy |
+| --- | ---: | ---: |
+| unigram baseline | 20,734 / 22,800 | 0.9093859649 |
+| bigram candidate | 20,955 / 22,800 | 0.9190789474 |
+
+配对差为 0.0090789474、0.0105263158、0.0094736842，平均差 0.0096929825。它与旧案例记录完全一致，给出了迁移确定性的额外检查。统计单位仍是三对独立训练，固定测试集的 7,600 条新闻不是 7,600 个独立实验单位。因此只解释为：在锁定数据、版本和参数下，三个种子的 bigram 准确率均高于 unigram；不推断一般文本任务效果，也不声称复现论文绝对分数。
+
+该 Job 标记为 `exploration`，因为 T2b 是公共 Scenario/Worker 迁移验证，没有伪造 Study confirmation token。协议、固定测试集和分析规则仍在执行前锁定；这不等价于核心的完整确认研究状态机。机器运行证据见 [T2b 验证记录](../reports/validation/t2b-fasttext-run.json)。
