@@ -1,0 +1,67 @@
+{
+  "id": "mllm.rio-routing-transport",
+  "name": "RIO Multimodal Routing Transport",
+  "version": "1.0.0",
+  "description": "Revalidates the bounded RIO answer-schema routing result from frozen multimodal artifacts.",
+  "domain": "multimodal machine learning",
+  "scenarioSdkVersion": "1.0.0",
+  "coreSchemaRange": "^1.0.0",
+  "languages": ["python", "typescript"],
+  "executors": ["bubblewrap"],
+  "permissions": ["filesystem.read", "filesystem.write", "process"],
+  "budget": {
+    "maxWallTimeMs": 120000,
+    "maxCpuCores": 1,
+    "maxMemoryMiB": 1024,
+    "maxDiskMiB": 512,
+    "maxGpuCount": 0,
+    "maxKnownCostUsd": 0
+  },
+  "capabilities": [
+    {
+      "id": "mllm.frozen-data",
+      "kind": "data",
+      "description": "Verify locked RIO prediction, protocol, report and image artifacts.",
+      "permissions": ["filesystem.read"],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": ["data"]
+    },
+    {
+      "id": "mllm.reanalysis-job",
+      "kind": "experiment",
+      "description": "Create an offline Bubblewrap reanalysis Job without model inference.",
+      "permissions": ["filesystem.read", "filesystem.write", "process"],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": ["environment", "data", "scientific", "timeout"]
+    },
+    {
+      "id": "mllm.router-evaluator",
+      "kind": "evaluation",
+      "description": "Recompute routing accuracy and verify per-model frozen source hashes.",
+      "permissions": ["filesystem.read"],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": ["data", "scientific"]
+    },
+    {
+      "id": "mllm.bounded-analyzer",
+      "kind": "analysis",
+      "description": "Report the frozen image-clustered effect with the original claim boundary.",
+      "permissions": ["filesystem.read"],
+      "inputSchema": {},
+      "outputSchema": {},
+      "failureClasses": ["scientific"]
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "mllm-evaluation.json",
+      "mediaType": "application/json",
+      "required": true,
+      "maxBytes": 1000000,
+      "access": "project"
+    }
+  ]
+}

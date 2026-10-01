@@ -1,0 +1,157 @@
+{
+  "files": [
+    {
+      "bytes": 322079,
+      "path": "results/final-analysis.json",
+      "sha256": "fb6324b32bf4ab037811dd24a3332aba4243a7f097e69d56d3cf5d66af9f2a65"
+    },
+    {
+      "bytes": 2724,
+      "path": "reports/final-report.md",
+      "sha256": "3d6e3eb38a7792d406227986d46ce5b24fe46690137e497bbf8ac6c52133a9c9"
+    },
+    {
+      "bytes": 4569,
+      "path": "planning/protocol.md",
+      "sha256": "5f4dd8862caae31047947577fd66fbdddca1ae3001c784cdd416d60e86d49435"
+    },
+    {
+      "bytes": 20117,
+      "path": "planning/dataset-manifest.json",
+      "sha256": "fccde570fd9c7065e9fc9e7fdfd8c9fe4f630d0c4be5a27d7a84aa835f6aba5b"
+    },
+    {
+      "bytes": 464115,
+      "path": "results/raw/predictions-confirmation-qwen25vl3b-direct-512.json",
+      "sha256": "22eb9646c44eb46de3a488c6638eac063938fe9dca1272f9fc70764baa74f6dd"
+    },
+    {
+      "bytes": 130415,
+      "path": "results/raw/predictions-confirmation-qwen25vl3b-masked-512-tasks-obj_attack.json",
+      "sha256": "f4180123677e057b957716dee0f9aa5654c08569ca92133d958b3f8c59345456"
+    },
+    {
+      "bytes": 128614,
+      "path": "results/raw/predictions-confirmation-qwen3vl8b-direct-512-tasks-obj_attack.json",
+      "sha256": "aab2bddf8aced60cae00aeb259085d1b5b4755905b8b81e0fbbc4678050143c0"
+    },
+    {
+      "bytes": 130365,
+      "path": "results/raw/predictions-confirmation-qwen3vl8b-masked-512-tasks-obj_attack.json",
+      "sha256": "ad29919723a8d7ec25816976cd6579fa910ff0093feaf99afbba24d5031e627e"
+    },
+    {
+      "bytes": 128521,
+      "path": "results/raw/predictions-confirmation-qwen3vl32b-direct-512-tasks-obj_attack.json",
+      "sha256": "faa9afc4699b139258633c1f35edce556f288cbc16a28ee5dbdfc351760abaa3"
+    },
+    {
+      "bytes": 130185,
+      "path": "results/raw/predictions-confirmation-qwen3vl32b-masked-512-tasks-obj_attack.json",
+      "sha256": "5aae9ae8102eb8d7e07770a16d2afa2e26f4f3fa18ff16d0ce0ef9bb52b431a6"
+    }
+  ],
+  "images": [
+    {
+      "bytes": 171864,
+      "path": "data/confirmation-masked/00792db6bb86e0e2--clean.jpg",
+      "sha256": "5a0e23168fd3ac5b98416d07a4f54df2000a0585c6ac53f7871f05574eaf4a86"
+    },
+    {
+      "bytes": 170247,
+      "path": "data/confirmation-masked/00792db6bb86e0e2--obj_attack.jpg",
+      "sha256": "1a7162626e9f9727104a54fd147d91c2f26f367d37692fba626a4fbd6d27272a"
+    },
+    {
+      "bytes": 169251,
+      "path": "data/confirmation-masked/00792db6bb86e0e2--txt_attack.jpg",
+      "sha256": "8961e16807bdb79b1c07d3721087255fd776d44883edf793cb360e09e560982c"
+    },
+    {
+      "bytes": 267202,
+      "path": "data/confirmation-masked/00c701c3a7421bd9--clean.jpg",
+      "sha256": "47bf0a464b4836dc3268c1cd97e3635056fef07557535674713c99ef6a5e2217"
+    },
+    {
+      "bytes": 264630,
+      "path": "data/confirmation-masked/00c701c3a7421bd9--obj_attack.jpg",
+      "sha256": "96841b44ef7224efae94527e840a52207b905949b564d85f84dfa8825183120e"
+    },
+    {
+      "bytes": 264633,
+      "path": "data/confirmation-masked/00c701c3a7421bd9--txt_attack.jpg",
+      "sha256": "b244be829acf7ab34e084ce1c9d5c1db109ddb442e27c95e3e52a6bb6eed2ebb"
+    },
+    {
+      "bytes": 190530,
+      "path": "data/confirmation-masked/010a0c44af2d077e--clean.jpg",
+      "sha256": "416fe8463cd601a15002cf86ae979cb50655aa93f775236f154101ef00f3dabb"
+    },
+    {
+      "bytes": 192006,
+      "path": "data/confirmation-masked/010a0c44af2d077e--obj_attack.jpg",
+      "sha256": "8c4718ee2cf1e8ad4815c3bdeeae4eb9e22b2723edc134280486b0683e3a2453"
+    },
+    {
+      "bytes": 191552,
+      "path": "data/confirmation-masked/010a0c44af2d077e--txt_attack.jpg",
+      "sha256": "ccdd3783bb5aa1db80f1962df30c0d4892c72a125cd80cd1c6ccf6dbf91b3d46"
+    },
+    {
+      "bytes": 100506,
+      "path": "data/confirmation-masked/01bd42a657556876--clean.jpg",
+      "sha256": "d12004304ea6001589b398ae2cbbd5b2bc2cb5900d5e1ddc718c599588fa487e"
+    },
+    {
+      "bytes": 100778,
+      "path": "data/confirmation-masked/01bd42a657556876--obj_attack.jpg",
+      "sha256": "96158b787ed2d7a289a694e25596fc3ef657df5be79d47fee3f9036ccb350b90"
+    },
+    {
+      "bytes": 100919,
+      "path": "data/confirmation-masked/01bd42a657556876--txt_attack.jpg",
+      "sha256": "9a49c2d17a0a2ba444f3f5e4c258a299b7ed663ffc8fc1c18cf406eff1ab1b0b"
+    },
+    {
+      "bytes": 85661,
+      "path": "data/confirmation-masked/02132cfd627a3c45--clean.jpg",
+      "sha256": "55448643cb500c5afdefd16a84706b67db94c7d2d3fe5b426e859cacd337471a"
+    },
+    {
+      "bytes": 86231,
+      "path": "data/confirmation-masked/02132cfd627a3c45--obj_attack.jpg",
+      "sha256": "7e040ed699671a3f860fa0af93dc2a18d07e71d636e0e21d33a069594ff7b1bb"
+    },
+    {
+      "bytes": 85123,
+      "path": "data/confirmation-masked/02132cfd627a3c45--txt_attack.jpg",
+      "sha256": "6087f514ed958638a5d19a5270f0879cacee6bf6228eb130d1c968dac4524ba6"
+    }
+  ],
+  "manifestHash": "2e2e2c6a7ea0a28fbfc420bf053564a71c2bf23f69605f016367d8513f4e682f",
+  "modelSourceHashes": {
+    "qwen25vl3b": {
+      "direct": "22eb9646c44eb46de3a488c6638eac063938fe9dca1272f9fc70764baa74f6dd",
+      "masked": "f4180123677e057b957716dee0f9aa5654c08569ca92133d958b3f8c59345456"
+    },
+    "qwen3vl32b": {
+      "direct": "faa9afc4699b139258633c1f35edce556f288cbc16a28ee5dbdfc351760abaa3",
+      "masked": "5aae9ae8102eb8d7e07770a16d2afa2e26f4f3fa18ff16d0ce0ef9bb52b431a6"
+    },
+    "qwen3vl8b": {
+      "direct": "aab2bddf8aced60cae00aeb259085d1b5b4755905b8b81e0fbbc4678050143c0",
+      "masked": "ad29919723a8d7ec25816976cd6579fa910ff0093feaf99afbba24d5031e627e"
+    }
+  },
+  "sampleUnitIds": [
+    "00792db6bb86e0e2",
+    "00c701c3a7421bd9",
+    "010a0c44af2d077e",
+    "01bd42a657556876",
+    "02132cfd627a3c45"
+  ],
+  "scenarioId": "mllm.rio-routing-transport",
+  "schemaVersion": 1,
+  "sourceCommit": "a954fc66fa44854df37fc5535e97380793eb4648",
+  "sourceRepository": "mllm-routing-generalization"
+}

@@ -51,6 +51,8 @@
     "check:python-sdk": "python3 scripts/generate_python_scenario_models.py --check",
     "check:scenarios": "python3 scripts/check_scenario_boundaries.py",
     "check:reference-cli": "python3 scripts/check_reference_cli_boundary.py",
+    "check:t2-scenarios": "python3 scripts/check_t2_scenario_boundaries.py",
+    "run:t2a": "tsx scripts/run_t2a_mllm_scenario.ts",
     "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "prepare:fasttext": "python3 scripts/prepare_fasttext_agnews.py",
     "validate:skills": "python3 scripts/validate_skills.py",

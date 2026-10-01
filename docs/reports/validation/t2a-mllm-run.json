@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "stage": "T2a",
+  "status": "pass",
+  "startedAt": "2026-10-01T14:37:12.970Z",
+  "finishedAt": "2026-10-01T14:37:13.390Z",
+  "source": {
+    "repository": "mllm-routing-generalization",
+    "commit": "a954fc66fa44854df37fc5535e97380793eb4648",
+    "manifestHash": "2e2e2c6a7ea0a28fbfc420bf053564a71c2bf23f69605f016367d8513f4e682f",
+    "verifiedFiles": 10,
+    "verifiedImages": 15
+  },
+  "scenario": {
+    "id": "mllm.rio-routing-transport",
+    "version": "1.0.0",
+    "permissions": [
+      "filesystem.read",
+      "filesystem.write",
+      "process"
+    ],
+    "executors": [
+      "bubblewrap"
+    ]
+  },
+  "execution": {
+    "kind": "artifact_reanalysis_no_model_inference",
+    "sandbox": "bubblewrap_unshare_net",
+    "projectId": "program-9a65868b-b168-4182-b15b-e21914f0103d",
+    "jobId": "job-f03610bd-c4cb-443d-8db8-fb9c1ff1e7ee",
+    "jobStatus": "succeeded",
+    "artifactHash": "809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b",
+    "routerAccuracy": 1,
+    "sampleRows": 45,
+    "sampleImages": 15,
+    "jobLogCount": 3,
+    "researchEventCount": 6,
+    "serviceAuditCount": 8
+  },
+  "frozenResult": {
+    "estimate": 0.04074074074074074,
+    "interval95": [
+      0.024580618382976576,
+      0.056900863098504895
+    ],
+    "nUnits": 80
+  },
+  "claimBoundary": "RIO-format transport only; task need is confounded with answer schema and does not establish generic semantic routing",
+  "bundle": {
+    "contentHash": "a3ed9c890adb3a890375867c6c9ff8949cd27d114e1f7b430d3a4ea552733a8a",
+    "sections": 4,
+    "artifactDisposition": "embedded",
+    "importCompatibility": {
+      "status": "degraded",
+      "issues": [
+        {
+          "code": "job_environment_redacted",
+          "severity": "warning",
+          "subject": "jobs",
+          "message": "Imported terminal Jobs retain history but require environment rebinding before retry"
+        }
+      ],
+      "checkedAt": "2026-10-01T14:37:13.343Z"
+    },
+    "targetProjectStatus": "scoped",
+    "targetDependencies": {
+      "projectId": "program-9a65868b-b168-4182-b15b-e21914f0103d",
+      "lastImport": {
+        "status": "degraded",
+        "issues": [
+          {
+            "code": "job_environment_redacted",
+            "severity": "warning",
+            "subject": "jobs",
+            "message": "Imported terminal Jobs retain history but require environment rebinding before retry"
+          }
+        ],
+        "checkedAt": "2026-10-01T14:37:13.343Z"
+      },
+      "plugins": [],
+      "artifacts": [
+        {
+          "contentHash": "809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b",
+          "access": "project",
+          "disposition": "embedded",
+          "status": "available",
+          "uri": "cas:sha256:809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b"
+        }
+      ]
+    }
+  },
+  "assertions": {
+    "noNewModelInference": true,
+    "sourceCommitClean": true,
+    "allLockedHashesVerified": true,
+    "publicServiceOnly": true,
+    "offlineSandbox": true,
+    "bundleCrossInstance": true
+  }
+}

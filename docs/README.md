@@ -70,6 +70,7 @@ docs/
 - [fastText / AG News 文本分类](cases/fasttext-agnews.md)
 - [scikit-learn Digits 图像分类](cases/sklearn-digits.md)
 - [CIFAR-10-C / AugMix H 阶段真实案例](cases/cifar10c-augmix-h.md)
+- [T2a：RIO 多模态路由公共 SDK 迁移](cases/mllm-routing-t2a.md)
 
 ### 阶段与发布报告
 
@@ -86,6 +87,7 @@ docs/
 - [v1.5 R 阶段：Scenario SDK 与 Pi 插件目录](reports/stages/v1.5-r-progress.md)
 - [v1.5 S 阶段：Core Service 与客户端 SDK](reports/stages/v1.5-s-progress.md)
 - [v1.5 T1 阶段：Bundle v2 与跨实例迁移](reports/stages/v1.5-t1-progress.md)
+- [v1.5 T2a 阶段：多模态 MLLM Scenario 迁移](reports/stages/v1.5-t2a-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)
@@ -110,6 +112,7 @@ docs/
 
 - [pi SDK 探针结果](reports/validation/pi-sdk-probe.json)
 - [Pi SDK Q 阶段复用审计](reports/validation/pi-sdk-q-audit.md)
+- [T2a MLLM 机器运行记录](reports/validation/t2a-mllm-run.json)
 - [Skills 验证结果](reports/validation/skill-validation.json)
 - [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
 - [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)
