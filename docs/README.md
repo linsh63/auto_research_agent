@@ -36,6 +36,7 @@ docs/
 - [v1.3 B/C 联合迭代计划](planning/v1.3-bc-plan.md)
 - [v1.4 泛化与隔离确认计划](planning/v1.4-plan.md)
 - [v1.5 Headless Research Kernel 产品化](planning/v1.5-plan.md)
+- [v1.5 T 阶段拆分计划](planning/v1.5-t-plan.md)
 - [下一阶段备选方案](planning/next-stage-options.md)
 
 ### 架构与配置
