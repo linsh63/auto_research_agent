@@ -471,6 +471,372 @@
         "limit"
       ],
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "queryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.search"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "null"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "query": {
+          "default": "",
+          "type": "string"
+        },
+        "filters": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string"
+            },
+            "permission": {
+              "type": "string",
+              "enum": [
+                "filesystem.read",
+                "filesystem.write",
+                "network",
+                "process",
+                "gpu",
+                "model",
+                "secrets",
+                "confirmation",
+                "host.full"
+              ]
+            },
+            "sourceKind": {
+              "type": "string",
+              "enum": [
+                "local",
+                "git",
+                "npm",
+                "pi_config"
+              ]
+            },
+            "compatibleOnly": {
+              "type": "boolean"
+            },
+            "contribution": {
+              "type": "string",
+              "enum": [
+                "skills",
+                "tools",
+                "apps",
+                "mcp",
+                "scenarios"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "queryId",
+        "type",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "query",
+        "filters"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "queryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.inspect"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "null"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "descriptorId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "queryId",
+        "type",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "descriptorId"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "queryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.sources"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "null"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "queryId",
+        "type",
+        "workspaceId",
+        "projectId",
+        "actor"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "queryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.installations"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "queryId",
+        "type",
+        "workspaceId",
+        "projectId",
+        "actor"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "queryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.runtime"
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "queryId",
+        "type",
+        "workspaceId",
+        "projectId",
+        "actor"
+      ],
+      "additionalProperties": false
     }
   ]
 }

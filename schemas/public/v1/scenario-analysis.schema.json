@@ -1,0 +1,87 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/scenario-analysis.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "estimand": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clusterUnit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "method": {
+      "type": "string",
+      "minLength": 1
+    },
+    "estimate": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "interval": {
+      "anyOf": [
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sensitivity": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "stable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "stable",
+          "details"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "artifactHashes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    }
+  },
+  "required": [
+    "estimand",
+    "clusterUnit",
+    "method",
+    "estimate",
+    "interval",
+    "sensitivity",
+    "artifactHashes"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,51 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/scenario-handshake-result.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "compatible": {
+      "type": "boolean"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "grantedPermissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "filesystem.read",
+          "filesystem.write",
+          "network",
+          "process",
+          "gpu",
+          "model",
+          "secrets",
+          "confirmation",
+          "host.full"
+        ]
+      }
+    },
+    "requiredExecutors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "python",
+          "bubblewrap",
+          "pi"
+        ]
+      }
+    }
+  },
+  "required": [
+    "compatible",
+    "issues",
+    "grantedPermissions",
+    "requiredExecutors"
+  ],
+  "additionalProperties": false
+}

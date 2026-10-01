@@ -1,0 +1,110 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/plugin-installation.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspaceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "project",
+        "workspace"
+      ]
+    },
+    "pluginId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string"
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sourceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "descriptorId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "installed",
+        "enabled",
+        "disabled",
+        "incompatible",
+        "failed",
+        "quarantined",
+        "removed"
+      ]
+    },
+    "approvedPermissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "filesystem.read",
+          "filesystem.write",
+          "network",
+          "process",
+          "gpu",
+          "model",
+          "secrets",
+          "confirmation",
+          "host.full"
+        ]
+      }
+    },
+    "cachePath": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "installedAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "workspaceId",
+    "projectId",
+    "scope",
+    "pluginId",
+    "version",
+    "contentHash",
+    "sourceId",
+    "descriptorId",
+    "status",
+    "approvedPermissions",
+    "cachePath",
+    "installedAt",
+    "updatedAt"
+  ],
+  "additionalProperties": false
+}

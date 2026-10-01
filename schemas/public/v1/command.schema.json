@@ -2331,6 +2331,699 @@
         "payload"
       ],
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "null"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.source.add"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "local",
+                "git",
+                "npm",
+                "pi_config"
+              ]
+            },
+            "location": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "location",
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "null"
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.source.refresh"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "sourceId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "sourceId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.install"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "descriptorId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scope": {
+              "default": "project",
+              "type": "string",
+              "enum": [
+                "project",
+                "workspace"
+              ]
+            },
+            "approvedPermissions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "filesystem.read",
+                  "filesystem.write",
+                  "network",
+                  "process",
+                  "gpu",
+                  "model",
+                  "secrets",
+                  "confirmation",
+                  "host.full"
+                ]
+              }
+            }
+          },
+          "required": [
+            "descriptorId",
+            "scope",
+            "approvedPermissions"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.enable"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "installationId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "installationId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.disable"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "installationId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "installationId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.update"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "installationId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "targetDescriptorId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "approvedPermissions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "filesystem.read",
+                  "filesystem.write",
+                  "network",
+                  "process",
+                  "gpu",
+                  "model",
+                  "secrets",
+                  "confirmation",
+                  "host.full"
+                ]
+              }
+            }
+          },
+          "required": [
+            "installationId",
+            "targetDescriptorId",
+            "approvedPermissions"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "plugin.remove"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "installationId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "installationId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
     }
   ]
 }

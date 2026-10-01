@@ -32,7 +32,7 @@ for path in sorted(DIST_PUBLIC.glob("*.d.ts")):
 
 package = json.loads((ROOT / "package.json").read_text())
 exports = package.get("exports", {})
-expected = {".", "./contracts", "./kernel", "./application"}
+expected = {".", "./contracts", "./kernel", "./application", "./scenario"}
 if set(exports) != expected:
     issues.append({"file": "package.json", "reason": f"public exports must be exactly {sorted(expected)}"})
 

@@ -1,0 +1,88 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/scenario-data.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "datasetId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifestHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "roles": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "train",
+              "validation",
+              "confirmation",
+              "audit"
+            ]
+          },
+          "uri": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sealed": {
+            "type": "boolean"
+          },
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "role",
+          "uri",
+          "sealed",
+          "contentHash"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "experimentalUnit": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idField": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clusterField": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "idField",
+        "clusterField"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "datasetId",
+    "manifestHash",
+    "roles",
+    "experimentalUnit"
+  ],
+  "additionalProperties": false
+}

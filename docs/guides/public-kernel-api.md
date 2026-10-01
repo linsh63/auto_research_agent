@@ -4,7 +4,7 @@
 
 `src/public/index.ts` 是 v1.5 起唯一面向客户端和场景开发者的 TypeScript 入口。客户端不得导入 `src/infrastructure`、`src/application`、`src/domain` 或数据库迁移文件。
 
-当前接口已完成 N、O、P、Q 阶段：公共契约、持久 Project、事件、分支、范围阶段 Bundle、ResearchAction、Conversation、ExecutionPolicy 和持久 Job/Worker 可用。Scenario 和服务端推送将在后续阶段补充。
+当前接口已完成 N–R 阶段：公共契约、Project 事件、ResearchAction、Conversation、ExecutionPolicy、Job/Worker、Scenario SDK 和插件目录可用。Core Service 和客户端 SDK 将在 S 阶段补充。
 
 ## 公共导出
 
@@ -14,6 +14,7 @@
 | `auto-research-agent/contracts` | Command、Query、Result、Event、Error 和 read model schema |
 | `auto-research-agent/kernel` | schema/context guard 与稳定错误映射 |
 | `auto-research-agent/application` | `ResearchApplication` 兼容 facade |
+| `auto-research-agent/scenario` | Scenario manifest、Capability、双语言协商和预算契约 |
 
 ## 最小流程
 
@@ -71,8 +72,15 @@ app.close();
 - `job.submit`
 - `job.cancel`
 - `job.retry`
+- `plugin.source.add`
+- `plugin.source.refresh`
+- `plugin.install`
+- `plugin.enable`
+- `plugin.disable`
+- `plugin.update`
+- `plugin.remove`
 
-查询包括 `project.status`、`project.events`、`project.bundle`、`conversation.get`、`policy.get`、`job.get` 和 `job.logs`。返回值是稳定 read model 或版本化 Bundle，不是数据库记录。聊天与策略见 [ResearchAction 指南](research-actions-and-policies.md)，长任务见 [Job 与 Worker 指南](jobs-and-workers.md)。
+查询还包括 `plugin.search`、`plugin.inspect`、`plugin.sources`、`plugin.installations` 和 `plugin.runtime`。返回值是稳定 read model，不是数据库记录。聊天与策略见 [ResearchAction 指南](research-actions-and-policies.md)，长任务见 [Job 与 Worker 指南](jobs-and-workers.md)，扩展开发见 [Scenario SDK](scenario-sdk.md)和[插件目录](plugin-catalog.md)。
 
 ## 错误语义
 

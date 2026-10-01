@@ -5,6 +5,7 @@ import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
   ExecutionPolicySchema, ProjectStatusReadModelSchema, PublicCommandSchema, ProjectEventListSchema,
   JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
+  PluginInspectionSchema, PluginInstallationsResultSchema, PluginInstallationSchema, PluginRuntimeSelectionSchema, PluginSearchResultSchema, PluginSourceRecordSchema, PluginSourcesResultSchema,
   WorkerDescriptorSchema, WorkerRequestSchema, WorkerResultSchema,
   type Actor, type CommandResult, type ExecutionPolicy, type ProjectStatusReadModel, type PublicCommand,
   type PublicProjectBundle, type PublicQuery, type QueryResult, type ResearchAction, type ResearchActionCandidate, type WorkerResult,
@@ -26,6 +27,8 @@ interface DispatchOutcome {
   eventPayload?: unknown;
   projectionPatch?: { researchStatus?: string };
 }
+type PluginCommand=Extract<PublicCommand,{type:"plugin.source.add"|"plugin.source.refresh"|"plugin.install"|"plugin.enable"|"plugin.disable"|"plugin.update"|"plugin.remove"}>;
+function isPluginCommand(command:PublicCommand):command is PluginCommand{return command.type.startsWith("plugin.");}
 
 export class ResearchApplication {
   private constructor(private readonly backend: PublicApplicationBackend) {}
@@ -72,7 +75,7 @@ export class ResearchApplication {
     const query = parsed.data;
     try {
       assertQueryContext(query);
-      const project=this.backend.projects.project(query.projectId);if(!project)throw new PublicKernelError("NOT_FOUND",`Unknown project ${query.projectId}`,false);if(project.workspaceId!==query.workspaceId)throw new PublicKernelError("FORBIDDEN","Project does not belong to this workspace",false);
+      if(query.projectId!==null){const project=this.backend.projects.project(query.projectId);if(!project)throw new PublicKernelError("NOT_FOUND",`Unknown project ${query.projectId}`,false);if(project.workspaceId!==query.workspaceId)throw new PublicKernelError("FORBIDDEN","Project does not belong to this workspace",false);}else if(!this.backend.projects.workspace(query.workspaceId))throw new PublicKernelError("NOT_FOUND",`Unknown workspace ${query.workspaceId}`,false);
       return QueryResultSchema.parse({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: query.queryId, workspaceId: query.workspaceId,
         projectId: query.projectId, status: "ok", data: this.queryData(query), error: null, handledAt: new Date().toISOString() });
     } catch (error) {
@@ -111,6 +114,17 @@ export class ResearchApplication {
       if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN",`Only a user actor can ${command.type==="job.cancel"?"cancel":"retry"} a job`,false);
       const job=command.type==="job.cancel"?this.backend.jobs.cancel(command.workspaceId,command.projectId,command.payload.jobId):this.backend.jobs.retry(command.workspaceId,command.projectId,command.payload.jobId);
       return{data:{job:JobRecordSchema.parse(job)},eventType:command.type==="job.cancel"?"job.cancellation_requested":"job.retried",eventPayload:{job}};
+    }
+    if(isPluginCommand(command)){
+      if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Plugin lifecycle changes require a user actor",false);
+      if(command.type==="plugin.source.add"){const source=this.backend.plugins.addSource({workspaceId:command.workspaceId,...command.payload});return{data:{source:PluginSourceRecordSchema.parse(source)},eventType:null};}
+      if(command.type==="plugin.source.refresh"){const refreshed=this.backend.plugins.refresh(command.workspaceId,command.payload.sourceId);return{data:{source:PluginSourceRecordSchema.parse(refreshed.source),plugins:refreshed.descriptors,issues:refreshed.issues},eventType:null};}
+      if(command.type==="plugin.install"){const installation=this.backend.plugins.install({workspaceId:command.workspaceId,projectId:command.projectId,scope:command.payload.scope,descriptorId:command.payload.descriptorId,approvedPermissions:command.payload.approvedPermissions,actorId:command.actor.id});return{data:{installation:PluginInstallationSchema.parse(installation)},eventType:command.projectId?"plugin.installed":null,eventPayload:{installation}};}
+      const current=this.backend.plugins.installation(command.workspaceId,command.payload.installationId);if(current.projectId!==command.projectId)throw new PublicKernelError("FORBIDDEN","Plugin installation scope does not match command project",false);
+      if(command.type==="plugin.enable"){const installation=this.backend.plugins.enable({workspaceId:command.workspaceId,installationId:current.id,actorId:command.actor.id});return{data:{installation:PluginInstallationSchema.parse(installation)},eventType:command.projectId?"plugin.enabled":null,eventPayload:{installation}};}
+      if(command.type==="plugin.disable"){const installation=this.backend.plugins.disable(command.workspaceId,current.id,command.actor.id);return{data:{installation:PluginInstallationSchema.parse(installation)},eventType:command.projectId?"plugin.disabled":null,eventPayload:{installation}};}
+      if(command.type==="plugin.remove"){const installation=this.backend.plugins.remove(command.workspaceId,current.id,command.actor.id);return{data:{installation:PluginInstallationSchema.parse(installation)},eventType:command.projectId?"plugin.removed":null,eventPayload:{installation}};}
+      const updated=this.backend.plugins.update({workspaceId:command.workspaceId,installationId:current.id,targetDescriptorId:command.payload.targetDescriptorId,approvedPermissions:command.payload.approvedPermissions,actorId:command.actor.id});return{data:{installation:PluginInstallationSchema.parse(updated.installation),permissionDiff:updated.permissionDiff},eventType:command.projectId?"plugin.updated":null,eventPayload:updated};
     }
     if(command.type==="conversation.send")return this.handleConversation(command,command.payload.sessionId,command.payload.message,"chat");
     if(command.type==="candidate.choose")return this.handleCandidateChoice(command);
@@ -202,7 +216,7 @@ export class ResearchApplication {
   private actionEventType(action:ResearchAction):string{return action.type==="question.propose"?"question.proposed":action.type==="question.select"?"question.selected":"scope.approved";}
 
   private projectStatus(query: PublicQuery): ProjectStatusReadModel {
-    const status = this.backend.workflow.status(query.projectId),projection=this.backend.projects.projection(query.projectId);
+    const status = this.backend.workflow.status(query.projectId!),projection=this.backend.projects.projection(query.projectId!);
     return ProjectStatusReadModelSchema.parse({ schemaVersion: PUBLIC_SCHEMA_VERSION, workspaceId: query.workspaceId,
       project: this.projectSummary(status.program),
       questions: status.questions.map(item => ({ id: item.id, version: item.version, status: item.status, question: item.question })),
@@ -220,6 +234,11 @@ export class ResearchApplication {
     if(query.type==="policy.get")return ExecutionPolicySchema.parse(this.backend.interactions.policy(query.workspaceId,query.projectId));
     if(query.type==="job.get")return JobReadModelSchema.parse({job:this.backend.jobs.job(query.workspaceId,query.projectId,query.jobId),artifacts:this.backend.jobs.artifacts(query.workspaceId,query.projectId,query.jobId)});
     if(query.type==="job.logs"){const page=this.backend.jobs.logs(query.workspaceId,query.projectId,query.jobId,query.fromSequence,query.limit+1),more=page.length>query.limit,logs=page.slice(0,query.limit);return JobLogListSchema.parse({jobId:query.jobId,logs,nextSequence:more?(logs.at(-1)?.sequence??query.fromSequence-1)+1:null});}
+    if(query.type==="plugin.search")return PluginSearchResultSchema.parse({plugins:this.backend.plugins.search(query.workspaceId,query.query,query.filters)});
+    if(query.type==="plugin.inspect")return PluginInspectionSchema.parse({plugin:this.backend.plugins.descriptor(query.workspaceId,query.descriptorId),inspectionStatus:"inspected"});
+    if(query.type==="plugin.sources")return PluginSourcesResultSchema.parse({sources:this.backend.plugins.sources(query.workspaceId)});
+    if(query.type==="plugin.installations")return PluginInstallationsResultSchema.parse({installations:this.backend.plugins.installations(query.workspaceId,query.projectId)});
+    if(query.type==="plugin.runtime")return PluginRuntimeSelectionSchema.parse({plugins:this.backend.plugins.runtimeSelection(query.workspaceId,query.projectId)});
     const all=this.backend.projects.events(query.projectId),events=all.filter(item=>item.sequence>=query.fromSequence).slice(0,query.limit),last=events.at(-1)?.sequence??query.fromSequence-1,nextSequence=all.some(item=>item.sequence>last)?last+1:null;
     return ProjectEventListSchema.parse({schemaVersion:PUBLIC_SCHEMA_VERSION,workspaceId:query.workspaceId,projectId:query.projectId,events,nextSequence});
   }

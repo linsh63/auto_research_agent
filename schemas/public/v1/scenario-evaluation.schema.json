@@ -1,0 +1,67 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/scenario-evaluation.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "metric": {
+      "type": "string",
+      "minLength": 1
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "maximize",
+        "minimize"
+      ]
+    },
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "missingReason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "unitId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "group": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "artifactHashes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    }
+  },
+  "required": [
+    "metric",
+    "direction",
+    "value",
+    "missingReason",
+    "unitId",
+    "group",
+    "artifactHashes"
+  ],
+  "additionalProperties": false
+}

@@ -11,12 +11,12 @@ export function assertSupportedSchema(version: unknown): asserts version is type
 
 export function assertCommandContext(command: PublicCommand): void {
   assertSupportedSchema(command.schemaVersion);
-  if (command.type!=="project.create"&&command.type!=="project.import"&&!command.projectId) throw new PublicKernelError("INVALID_COMMAND", `${command.type} requires projectId`, false);
+  if (command.type!=="project.create"&&command.type!=="project.import"&&!command.type.startsWith("plugin.")&&!command.projectId) throw new PublicKernelError("INVALID_COMMAND", `${command.type} requires projectId`, false);
 }
 
 export function assertQueryContext(query: PublicQuery): void {
   assertSupportedSchema(query.schemaVersion);
-  if (!query.projectId) throw new PublicKernelError("INVALID_COMMAND", `${query.type} requires projectId`, false);
+  if (!query.type.startsWith("plugin.")&&!query.projectId) throw new PublicKernelError("INVALID_COMMAND", `${query.type} requires projectId`, false);
 }
 
 export class PublicKernelError extends Error {
@@ -34,9 +34,10 @@ export function toPublicError(error: unknown): PublicError {
   const lower = message.toLowerCase();
   let code: PublicErrorCode = "INTERNAL";
   if (/does not belong|forbidden|permission denied/.test(lower)) code = "FORBIDDEN";
+  else if (/incompatible|does not satisfy/.test(lower)) code = "INCOMPATIBLE_VERSION";
   else if (/unknown|not found/.test(lower)) code = "NOT_FOUND";
-  else if (/mismatch|conflict|already|latest|in doubt|stale|expired/.test(lower)) code = "CONFLICT";
-  else if (/required|requires|cannot|closed|not allowed|only .* can|sealed|exceed/.test(lower)) code = "GATE_REJECTED";
+  else if (/mismatch|conflict|already|latest|in doubt|stale|expired|changed|quarantined|unavailable/.test(lower)) code = "CONFLICT";
+  else if (/require|cannot|closed|not allowed|only .* can|sealed|exceed/.test(lower)) code = "GATE_REJECTED";
   else if (/invalid|must|expected/.test(lower)) code = "INVALID_COMMAND";
   return PublicErrorSchema.parse({ code, message: code === "INTERNAL" ? "Internal research kernel error" : message, retryable: false, details: {} });
 }

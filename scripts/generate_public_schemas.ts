@@ -5,8 +5,9 @@ import { z } from "zod";
 import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
   ExecutionPolicySchema, JobLogListSchema, JobReadModelSchema, JobSpecSchema, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicCommandSchema,
-  PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema, WorkerRequestSchema, WorkerResultSchema,
+  PluginDescriptorSchema, PluginInstallationSchema, PluginSourceRecordSchema, PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema, WorkerRequestSchema, WorkerResultSchema,
 } from "../src/public/contracts.js";
+import { AnalysisContractSchema, DataContractSchema, EvaluationContractSchema, ScenarioHandshakeRequestSchema, ScenarioHandshakeResultSchema, ScenarioManifestSchema } from "../src/public/scenario.js";
 
 const root = resolve("schemas/public/v1");
 const definitions = {
@@ -26,6 +27,15 @@ const definitions = {
   "job-logs.schema.json": JobLogListSchema,
   "worker-request.schema.json": WorkerRequestSchema,
   "worker-result.schema.json": WorkerResultSchema,
+  "plugin-descriptor.schema.json": PluginDescriptorSchema,
+  "plugin-installation.schema.json": PluginInstallationSchema,
+  "plugin-source.schema.json": PluginSourceRecordSchema,
+  "scenario-manifest.schema.json": ScenarioManifestSchema,
+  "scenario-data.schema.json": DataContractSchema,
+  "scenario-evaluation.schema.json": EvaluationContractSchema,
+  "scenario-analysis.schema.json": AnalysisContractSchema,
+  "scenario-handshake-request.schema.json": ScenarioHandshakeRequestSchema,
+  "scenario-handshake-result.schema.json": ScenarioHandshakeResultSchema,
   "event.schema.json": ResearchEventEnvelopeSchema,
   "error.schema.json": PublicErrorSchema,
 };

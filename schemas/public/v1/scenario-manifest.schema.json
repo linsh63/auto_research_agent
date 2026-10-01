@@ -1,0 +1,257 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/scenario-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarioSdkVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "coreSchemaRange": {
+      "type": "string",
+      "minLength": 1
+    },
+    "languages": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "typescript",
+          "python"
+        ]
+      }
+    },
+    "executors": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "python",
+          "bubblewrap",
+          "pi"
+        ]
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "filesystem.read",
+          "filesystem.write",
+          "network",
+          "process",
+          "gpu",
+          "model",
+          "secrets",
+          "confirmation",
+          "host.full"
+        ]
+      }
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "maxWallTimeMs": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxCpuCores": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxMemoryMiB": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxDiskMiB": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxGpuCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxKnownCostUsd": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "maxWallTimeMs",
+        "maxCpuCores",
+        "maxMemoryMiB",
+        "maxDiskMiB",
+        "maxGpuCount",
+        "maxKnownCostUsd"
+      ],
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "minItems": 4,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "data",
+              "experiment",
+              "evaluation",
+              "analysis",
+              "domain"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "filesystem.read",
+                "filesystem.write",
+                "network",
+                "process",
+                "gpu",
+                "model",
+                "secrets",
+                "confirmation",
+                "host.full"
+              ]
+            }
+          },
+          "inputSchema": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "outputSchema": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "failureClasses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "environment",
+                "data",
+                "scientific",
+                "budget",
+                "timeout",
+                "cancelled",
+                "worker_lost"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "description",
+          "permissions",
+          "inputSchema",
+          "outputSchema",
+          "failureClasses"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mediaType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "maxBytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "public",
+              "project",
+              "private"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "mediaType",
+          "required",
+          "maxBytes",
+          "access"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "version",
+    "description",
+    "domain",
+    "scenarioSdkVersion",
+    "coreSchemaRange",
+    "languages",
+    "executors",
+    "permissions",
+    "budget",
+    "capabilities",
+    "artifacts"
+  ],
+  "additionalProperties": false
+}

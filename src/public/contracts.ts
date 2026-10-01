@@ -124,6 +124,20 @@ export const JobLogSchema=z.object({id:z.string().min(1),jobId:z.string().min(1)
 export const JobReadModelSchema=z.object({job:JobRecordSchema,artifacts:z.array(JobArtifactSchema)}).strict();
 export const JobLogListSchema=z.object({jobId:z.string().min(1),logs:z.array(JobLogSchema),nextSequence:z.number().int().positive().nullable()}).strict();
 
+export const PluginPermissionSchema=z.enum(["filesystem.read","filesystem.write","network","process","gpu","model","secrets","confirmation","host.full"]);
+export type PluginPermission=z.infer<typeof PluginPermissionSchema>;
+export const PluginSourceRecordSchema=z.object({id:z.string().min(1),workspaceId:z.string().min(1),kind:z.enum(["local","git","npm","pi_config"]),location:z.string().min(1),label:z.string().min(1),status:z.enum(["active","unavailable","disabled"]),createdAt:z.string(),updatedAt:z.string()}).strict();
+export const PluginDescriptorSchema=z.object({descriptorId:z.string().min(1),pluginId:z.string().min(1),name:z.string().min(1),version:z.string().regex(/^\d+\.\d+\.\d+$/),description:z.string().min(1),domain:z.array(z.string()),license:z.string().min(1),maintainers:z.array(z.string()),sourceId:z.string().min(1),sourceKind:z.enum(["local","git","npm","pi_config"]),sourceLocation:z.string().min(1),contentHash:z.string().regex(/^[a-f0-9]{64}$/),contributions:z.object({extensions:z.array(z.string()),skills:z.array(z.string()),prompts:z.array(z.string()),themes:z.array(z.string()),tools:z.array(z.string()),apps:z.array(z.string()),mcp:z.array(z.string()),scenarios:z.array(z.string())}).strict(),permissions:z.array(PluginPermissionSchema),sideEffects:z.array(z.string()),dependencies:z.array(z.string()),coreSchemaRange:z.string().min(1),piVersionRange:z.string().min(1),compatibilityStatus:z.enum(["compatible","incompatible"]),compatibilityIssues:z.array(z.string()),discoveredAt:z.string()}).strict();
+export type PluginDescriptor=z.infer<typeof PluginDescriptorSchema>;
+export const PluginInstallationSchema=z.object({id:z.string().min(1),workspaceId:z.string().min(1),projectId:z.string().min(1).nullable(),scope:z.enum(["project","workspace"]),pluginId:z.string().min(1),version:z.string(),contentHash:z.string().regex(/^[a-f0-9]{64}$/),sourceId:z.string().min(1),descriptorId:z.string().min(1),status:z.enum(["installed","enabled","disabled","incompatible","failed","quarantined","removed"]),approvedPermissions:z.array(PluginPermissionSchema),cachePath:z.string().nullable(),installedAt:z.string(),updatedAt:z.string()}).strict().refine(value=>(value.scope==="project")===(value.projectId!==null),"Project scope requires projectId and workspace scope forbids it");
+export const PluginPermissionDiffSchema=z.object({added:z.array(PluginPermissionSchema),removed:z.array(PluginPermissionSchema),unchanged:z.array(PluginPermissionSchema)}).strict();
+export const PluginSearchResultSchema=z.object({plugins:z.array(PluginDescriptorSchema)}).strict();
+export const PluginInspectionSchema=z.object({plugin:PluginDescriptorSchema,inspectionStatus:z.literal("inspected")}).strict();
+export const PluginSourcesResultSchema=z.object({sources:z.array(PluginSourceRecordSchema)}).strict();
+export const PluginInstallationsResultSchema=z.object({installations:z.array(PluginInstallationSchema)}).strict();
+export const PluginRuntimeSelectionSchema=z.object({plugins:z.array(z.object({installationId:z.string().min(1),pluginId:z.string().min(1),version:z.string(),contentHash:z.string().regex(/^[a-f0-9]{64}$/),cachePath:z.string().min(1),permissions:z.array(PluginPermissionSchema),contributions:PluginDescriptorSchema.shape.contributions}).strict())}).strict();
+
+
 export const CreateProjectCommandSchema = CommandContextSchema.extend({
   type: z.literal("project.create"),
   projectId: z.null(),
@@ -183,6 +197,13 @@ export const SetExecutionPolicyCommandSchema = CommandContextSchema.extend({
 export const SubmitJobCommandSchema=CommandContextSchema.extend({type:z.literal("job.submit"),projectId:z.string().min(1),payload:z.object({spec:JobSpecSchema,confirmationToken:z.string().min(32).nullable().default(null)}).strict()}).strict();
 export const CancelJobCommandSchema=CommandContextSchema.extend({type:z.literal("job.cancel"),projectId:z.string().min(1),payload:z.object({jobId:z.string().min(1)}).strict()}).strict();
 export const RetryJobCommandSchema=CommandContextSchema.extend({type:z.literal("job.retry"),projectId:z.string().min(1),payload:z.object({jobId:z.string().min(1)}).strict()}).strict();
+export const AddPluginSourceCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.source.add"),projectId:z.null(),payload:z.object({kind:z.enum(["local","git","npm","pi_config"]),location:z.string().min(1),label:z.string().min(1)}).strict()}).strict();
+export const RefreshPluginSourceCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.source.refresh"),projectId:z.null(),payload:z.object({sourceId:z.string().min(1)}).strict()}).strict();
+export const InstallPluginCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.install"),projectId:z.string().min(1).nullable(),payload:z.object({descriptorId:z.string().min(1),scope:z.enum(["project","workspace"]).default("project"),approvedPermissions:z.array(PluginPermissionSchema)}).strict()}).strict().superRefine((value,context)=>{if((value.payload.scope==="project")!==(value.projectId!==null))context.addIssue({code:"custom",message:"Project plugin install requires projectId; workspace install forbids it"});});
+export const EnablePluginCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.enable"),projectId:z.string().min(1).nullable(),payload:z.object({installationId:z.string().min(1)}).strict()}).strict();
+export const DisablePluginCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.disable"),projectId:z.string().min(1).nullable(),payload:z.object({installationId:z.string().min(1)}).strict()}).strict();
+export const UpdatePluginCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.update"),projectId:z.string().min(1).nullable(),payload:z.object({installationId:z.string().min(1),targetDescriptorId:z.string().min(1),approvedPermissions:z.array(PluginPermissionSchema)}).strict()}).strict();
+export const RemovePluginCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.remove"),projectId:z.string().min(1).nullable(),payload:z.object({installationId:z.string().min(1)}).strict()}).strict();
 
 export const PublicCommandSchema = z.discriminatedUnion("type", [
   CreateProjectCommandSchema,
@@ -198,6 +219,13 @@ export const PublicCommandSchema = z.discriminatedUnion("type", [
   SubmitJobCommandSchema,
   CancelJobCommandSchema,
   RetryJobCommandSchema,
+  AddPluginSourceCommandSchema,
+  RefreshPluginSourceCommandSchema,
+  InstallPluginCommandSchema,
+  EnablePluginCommandSchema,
+  DisablePluginCommandSchema,
+  UpdatePluginCommandSchema,
+  RemovePluginCommandSchema,
 ]);
 export type PublicCommand = z.infer<typeof PublicCommandSchema>;
 
@@ -228,7 +256,12 @@ export const GetExecutionPolicyQuerySchema = z.object({
 }).strict();
 export const GetJobQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("job.get"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema,jobId:z.string().min(1)}).strict();
 export const GetJobLogsQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("job.logs"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema,jobId:z.string().min(1),fromSequence:z.number().int().positive().default(1),limit:z.number().int().positive().max(1000).default(200)}).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema]);
+export const SearchPluginsQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.search"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema,query:z.string().default(""),filters:z.object({domain:z.string().optional(),permission:PluginPermissionSchema.optional(),sourceKind:z.enum(["local","git","npm","pi_config"]).optional(),compatibleOnly:z.boolean().optional(),contribution:z.enum(["skills","tools","apps","mcp","scenarios"]).optional()}).strict().default({})}).strict();
+export const InspectPluginQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.inspect"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema,descriptorId:z.string().min(1)}).strict();
+export const PluginSourcesQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.sources"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema}).strict();
+export const PluginInstallationsQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.installations"),workspaceId:z.string().min(1),projectId:z.string().min(1).nullable(),actor:ActorSchema}).strict();
+export const PluginRuntimeQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.runtime"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -311,7 +344,7 @@ export const QueryResultSchema = z.object({
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema]).nullable(),
+  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {

@@ -1911,6 +1911,752 @@
                 "nextSequence"
               ],
               "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "plugins": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "descriptorId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "pluginId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "version": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "domain": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "license": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "maintainers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "sourceKind": {
+                        "type": "string",
+                        "enum": [
+                          "local",
+                          "git",
+                          "npm",
+                          "pi_config"
+                        ]
+                      },
+                      "sourceLocation": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "contentHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "contributions": {
+                        "type": "object",
+                        "properties": {
+                          "extensions": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "skills": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "prompts": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "themes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "tools": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "apps": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "mcp": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "scenarios": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "extensions",
+                          "skills",
+                          "prompts",
+                          "themes",
+                          "tools",
+                          "apps",
+                          "mcp",
+                          "scenarios"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "permissions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "filesystem.read",
+                            "filesystem.write",
+                            "network",
+                            "process",
+                            "gpu",
+                            "model",
+                            "secrets",
+                            "confirmation",
+                            "host.full"
+                          ]
+                        }
+                      },
+                      "sideEffects": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "dependencies": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "coreSchemaRange": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "piVersionRange": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "compatibilityStatus": {
+                        "type": "string",
+                        "enum": [
+                          "compatible",
+                          "incompatible"
+                        ]
+                      },
+                      "compatibilityIssues": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "discoveredAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "descriptorId",
+                      "pluginId",
+                      "name",
+                      "version",
+                      "description",
+                      "domain",
+                      "license",
+                      "maintainers",
+                      "sourceId",
+                      "sourceKind",
+                      "sourceLocation",
+                      "contentHash",
+                      "contributions",
+                      "permissions",
+                      "sideEffects",
+                      "dependencies",
+                      "coreSchemaRange",
+                      "piVersionRange",
+                      "compatibilityStatus",
+                      "compatibilityIssues",
+                      "discoveredAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "plugins"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "plugin": {
+                  "type": "object",
+                  "properties": {
+                    "descriptorId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "pluginId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "version": {
+                      "type": "string",
+                      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "domain": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "license": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "maintainers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sourceKind": {
+                      "type": "string",
+                      "enum": [
+                        "local",
+                        "git",
+                        "npm",
+                        "pi_config"
+                      ]
+                    },
+                    "sourceLocation": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "contentHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "contributions": {
+                      "type": "object",
+                      "properties": {
+                        "extensions": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "skills": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "prompts": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "themes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "tools": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "apps": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "mcp": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "scenarios": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "extensions",
+                        "skills",
+                        "prompts",
+                        "themes",
+                        "tools",
+                        "apps",
+                        "mcp",
+                        "scenarios"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "permissions": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "filesystem.read",
+                          "filesystem.write",
+                          "network",
+                          "process",
+                          "gpu",
+                          "model",
+                          "secrets",
+                          "confirmation",
+                          "host.full"
+                        ]
+                      }
+                    },
+                    "sideEffects": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "dependencies": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "coreSchemaRange": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "piVersionRange": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "compatibilityStatus": {
+                      "type": "string",
+                      "enum": [
+                        "compatible",
+                        "incompatible"
+                      ]
+                    },
+                    "compatibilityIssues": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "discoveredAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "descriptorId",
+                    "pluginId",
+                    "name",
+                    "version",
+                    "description",
+                    "domain",
+                    "license",
+                    "maintainers",
+                    "sourceId",
+                    "sourceKind",
+                    "sourceLocation",
+                    "contentHash",
+                    "contributions",
+                    "permissions",
+                    "sideEffects",
+                    "dependencies",
+                    "coreSchemaRange",
+                    "piVersionRange",
+                    "compatibilityStatus",
+                    "compatibilityIssues",
+                    "discoveredAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "inspectionStatus": {
+                  "type": "string",
+                  "const": "inspected"
+                }
+              },
+              "required": [
+                "plugin",
+                "inspectionStatus"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "sources": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "local",
+                          "git",
+                          "npm",
+                          "pi_config"
+                        ]
+                      },
+                      "location": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "active",
+                          "unavailable",
+                          "disabled"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "workspaceId",
+                      "kind",
+                      "location",
+                      "label",
+                      "status",
+                      "createdAt",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "sources"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "installations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "projectId": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "scope": {
+                        "type": "string",
+                        "enum": [
+                          "project",
+                          "workspace"
+                        ]
+                      },
+                      "pluginId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "contentHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "descriptorId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "installed",
+                          "enabled",
+                          "disabled",
+                          "incompatible",
+                          "failed",
+                          "quarantined",
+                          "removed"
+                        ]
+                      },
+                      "approvedPermissions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "filesystem.read",
+                            "filesystem.write",
+                            "network",
+                            "process",
+                            "gpu",
+                            "model",
+                            "secrets",
+                            "confirmation",
+                            "host.full"
+                          ]
+                        }
+                      },
+                      "cachePath": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "installedAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "workspaceId",
+                      "projectId",
+                      "scope",
+                      "pluginId",
+                      "version",
+                      "contentHash",
+                      "sourceId",
+                      "descriptorId",
+                      "status",
+                      "approvedPermissions",
+                      "cachePath",
+                      "installedAt",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "installations"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "plugins": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "installationId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "pluginId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "contentHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "cachePath": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "permissions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "filesystem.read",
+                            "filesystem.write",
+                            "network",
+                            "process",
+                            "gpu",
+                            "model",
+                            "secrets",
+                            "confirmation",
+                            "host.full"
+                          ]
+                        }
+                      },
+                      "contributions": {
+                        "type": "object",
+                        "properties": {
+                          "extensions": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "skills": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "prompts": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "themes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "tools": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "apps": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "mcp": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "scenarios": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "extensions",
+                          "skills",
+                          "prompts",
+                          "themes",
+                          "tools",
+                          "apps",
+                          "mcp",
+                          "scenarios"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "installationId",
+                      "pluginId",
+                      "version",
+                      "contentHash",
+                      "cachePath",
+                      "permissions",
+                      "contributions"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "plugins"
+              ],
+              "additionalProperties": false
             }
           ]
         },

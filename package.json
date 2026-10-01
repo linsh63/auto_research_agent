@@ -21,6 +21,10 @@
     "./application": {
       "types": "./dist/public/application.d.ts",
       "import": "./dist/public/application.js"
+    },
+    "./scenario": {
+      "types": "./dist/public/scenario.d.ts",
+      "import": "./dist/public/scenario.js"
     }
   },
   "engines": {
@@ -32,7 +36,10 @@
     "check": "tsc --noEmit -p tsconfig.json",
     "check:boundaries": "python3 scripts/check_public_boundaries.py",
     "generate:contracts": "tsx scripts/generate_public_schemas.ts",
+    "generate:python-sdk": "python3 scripts/generate_python_scenario_models.py",
     "check:contracts": "tsx scripts/generate_public_schemas.ts --check",
+    "check:python-sdk": "python3 scripts/generate_python_scenario_models.py --check",
+    "check:scenarios": "python3 scripts/check_scenario_boundaries.py",
     "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "prepare:fasttext": "python3 scripts/prepare_fasttext_agnews.py",
     "validate:skills": "python3 scripts/validate_skills.py",

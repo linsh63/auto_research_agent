@@ -85,9 +85,9 @@ export class ResearchStore {
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
-    if(version>13){
+    if(version>14){
       db.close();
-      throw new Error(`Research database ${version} is newer than supported version 13`);
+      throw new Error(`Research database ${version} is newer than supported version 14`);
     }
     let backupPath: string | null = null;
     let artifactManifestPath: string | null = null;

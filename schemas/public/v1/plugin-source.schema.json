@@ -1,0 +1,57 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/plugin-source.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspaceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "local",
+        "git",
+        "npm",
+        "pi_config"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "unavailable",
+        "disabled"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "workspaceId",
+    "kind",
+    "location",
+    "label",
+    "status",
+    "createdAt",
+    "updatedAt"
+  ],
+  "additionalProperties": false
+}
