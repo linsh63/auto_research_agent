@@ -35,8 +35,8 @@ export function toPublicError(error: unknown): PublicError {
   let code: PublicErrorCode = "INTERNAL";
   if (/does not belong|forbidden|permission denied/.test(lower)) code = "FORBIDDEN";
   else if (/unknown|not found/.test(lower)) code = "NOT_FOUND";
-  else if (/mismatch|conflict|already|latest|in doubt/.test(lower)) code = "CONFLICT";
-  else if (/required|requires|cannot|closed|not allowed|only .* can|sealed/.test(lower)) code = "GATE_REJECTED";
+  else if (/mismatch|conflict|already|latest|in doubt|stale|expired/.test(lower)) code = "CONFLICT";
+  else if (/required|requires|cannot|closed|not allowed|only .* can|sealed|exceed/.test(lower)) code = "GATE_REJECTED";
   else if (/invalid|must|expected/.test(lower)) code = "INVALID_COMMAND";
   return PublicErrorSchema.parse({ code, message: code === "INTERNAL" ? "Internal research kernel error" : message, retryable: false, details: {} });
 }

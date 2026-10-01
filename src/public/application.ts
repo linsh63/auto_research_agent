@@ -4,9 +4,10 @@ import { PublicApplicationBackend } from "../application/public-application-back
 import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
   ExecutionPolicySchema, ProjectStatusReadModelSchema, PublicCommandSchema, ProjectEventListSchema,
-  PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
+  JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
+  WorkerDescriptorSchema, WorkerRequestSchema, WorkerResultSchema,
   type Actor, type CommandResult, type ExecutionPolicy, type ProjectStatusReadModel, type PublicCommand,
-  type PublicProjectBundle, type PublicQuery, type QueryResult, type ResearchAction, type ResearchActionCandidate,
+  type PublicProjectBundle, type PublicQuery, type QueryResult, type ResearchAction, type ResearchActionCandidate, type WorkerResult,
 } from "./contracts.js";
 import { assertCommandContext, assertQueryContext, PublicKernelError, toPublicError } from "./kernel.js";
 
@@ -16,6 +17,8 @@ export interface ResearchApplicationOptions {
   /** Explicit compatibility bindings for projects created before Workspace persistence exists. */
   workspaceBindings?: Record<string, string>;
 }
+export interface LocalWorkerOptions{descriptor:import("./contracts.js").WorkerDescriptor;artifactRoot:string;pythonExecutable?:string;pythonRunnerPath?:string;heartbeatIntervalMs?:number}
+export interface LocalWorkerController{runOnce():Promise<import("./contracts.js").JobLease|null>}
 
 interface DispatchOutcome {
   data: unknown;
@@ -33,6 +36,12 @@ export class ResearchApplication {
   }
 
   close(): void { this.backend.close(); }
+
+  createLocalWorker(options:LocalWorkerOptions):LocalWorkerController{
+    const descriptor=WorkerDescriptorSchema.parse(options.descriptor);
+    const worker=this.backend.createLocalWorker(descriptor,{artifactRoot:options.artifactRoot,pythonExecutable:options.pythonExecutable,pythonRunnerPath:options.pythonRunnerPath,heartbeatIntervalMs:options.heartbeatIntervalMs});
+    return{runOnce:()=>worker.runOnce()};
+  }
 
   async execute(input: unknown): Promise<CommandResult> {
     const parsed = PublicCommandSchema.safeParse(input);
@@ -72,6 +81,15 @@ export class ResearchApplication {
     }
   }
 
+  /** Language-neutral worker protocol entry point. Lease tokens, not process locality, authorize mutations. */
+  async worker(input:unknown):Promise<WorkerResult>{
+    const parsed=WorkerRequestSchema.safeParse(input),raw=input&&typeof input==="object"?input as Record<string,unknown>:{};
+    if(!parsed.success)return WorkerResultSchema.parse({requestId:typeof raw.requestId==="string"&&raw.requestId?raw.requestId:"invalid",status:"rejected",data:null,error:toPublicError(parsed.error),handledAt:new Date().toISOString()});
+    const request=parsed.data;
+    try{let data:unknown;if(request.type==="worker.claim")data={lease:this.backend.jobs.claim(request.worker)};else if(request.type==="worker.heartbeat")data=this.backend.jobs.heartbeat(request);else if(request.type==="worker.log")data={log:this.backend.jobs.appendLog(request)};else if(request.type==="worker.complete")data={job:this.backend.jobs.complete(request)};else if(request.type==="worker.fail")data={job:this.backend.jobs.fail(request)};else data={jobs:this.backend.jobs.recoverExpired()};return WorkerResultSchema.parse({requestId:request.requestId,status:"ok",data,error:null,handledAt:new Date().toISOString()});}
+    catch(error){return WorkerResultSchema.parse({requestId:request.requestId,status:"rejected",data:null,error:toPublicError(error),handledAt:new Date().toISOString()});}
+  }
+
   private dispatch(command: PublicCommand): DispatchOutcome {
     if (command.type === "project.create") {
       const program = this.backend.workflow.createIntent(command.payload.intent);
@@ -83,6 +101,16 @@ export class ResearchApplication {
       if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Only a user actor can change execution policy",false);
       const policy=this.backend.interactions.setPolicy(command.workspaceId,command.projectId,command.payload);
       return{data:{policy:ExecutionPolicySchema.parse(policy)},eventType:"policy.updated",eventPayload:{policy}};
+    }
+    if(command.type==="job.submit"){
+      if(command.payload.spec.dataRole==="confirmation"&&command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Only a user actor can submit a confirmation job",false);
+      const job=this.backend.jobs.submit({workspaceId:command.workspaceId,projectId:command.projectId,spec:command.payload.spec,confirmationToken:command.payload.confirmationToken});
+      return{data:{job:JobRecordSchema.parse(job)},eventType:"job.submitted",eventPayload:{job}};
+    }
+    if(command.type==="job.cancel"||command.type==="job.retry"){
+      if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN",`Only a user actor can ${command.type==="job.cancel"?"cancel":"retry"} a job`,false);
+      const job=command.type==="job.cancel"?this.backend.jobs.cancel(command.workspaceId,command.projectId,command.payload.jobId):this.backend.jobs.retry(command.workspaceId,command.projectId,command.payload.jobId);
+      return{data:{job:JobRecordSchema.parse(job)},eventType:command.type==="job.cancel"?"job.cancellation_requested":"job.retried",eventPayload:{job}};
     }
     if(command.type==="conversation.send")return this.handleConversation(command,command.payload.sessionId,command.payload.message,"chat");
     if(command.type==="candidate.choose")return this.handleCandidateChoice(command);
@@ -190,6 +218,8 @@ export class ResearchApplication {
     if(query.type==="project.bundle")return PublicProjectBundleSchema.parse(this.backend.projects.exportBundle(query.projectId,PUBLIC_SCHEMA_VERSION));
     if(query.type==="conversation.get")return ConversationReadModelSchema.parse(this.backend.interactions.conversation(query.workspaceId,query.projectId,query.sessionId));
     if(query.type==="policy.get")return ExecutionPolicySchema.parse(this.backend.interactions.policy(query.workspaceId,query.projectId));
+    if(query.type==="job.get")return JobReadModelSchema.parse({job:this.backend.jobs.job(query.workspaceId,query.projectId,query.jobId),artifacts:this.backend.jobs.artifacts(query.workspaceId,query.projectId,query.jobId)});
+    if(query.type==="job.logs"){const page=this.backend.jobs.logs(query.workspaceId,query.projectId,query.jobId,query.fromSequence,query.limit+1),more=page.length>query.limit,logs=page.slice(0,query.limit);return JobLogListSchema.parse({jobId:query.jobId,logs,nextSequence:more?(logs.at(-1)?.sequence??query.fromSequence-1)+1:null});}
     const all=this.backend.projects.events(query.projectId),events=all.filter(item=>item.sequence>=query.fromSequence).slice(0,query.limit),last=events.at(-1)?.sequence??query.fromSequence-1,nextSequence=all.some(item=>item.sequence>last)?last+1:null;
     return ProjectEventListSchema.parse({schemaVersion:PUBLIC_SCHEMA_VERSION,workspaceId:query.workspaceId,projectId:query.projectId,events,nextSequence});
   }

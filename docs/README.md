@@ -49,11 +49,13 @@ docs/
 - [ADR 007：v1.5 公共契约与兼容 Facade](architecture/decisions/007-v15-public-contract-boundary.md)
 - [ADR 008：v1.5 Project 事件、命令收据与 Bundle](architecture/decisions/008-v15-project-events-and-bundles.md)
 - [ADR 009：v1.5 ResearchAction 与执行策略](architecture/decisions/009-v15-research-actions-and-execution-policy.md)
+- [ADR 010：v1.5 Job/Worker 与 Pi 复用边界](architecture/decisions/010-v15-job-worker-and-pi-reuse.md)
 - [模型 Provider 配置](guides/model-providers.md)
 - [H 审查与真实验收指南](guides/h-review-and-acceptance.md)
 - [v1.5 公共 Kernel API](guides/public-kernel-api.md)
 - [Project、事件、分支与 Bundle](guides/project-events-and-bundles.md)
 - [ResearchAction、聊天候选与执行策略](guides/research-actions-and-policies.md)
+- [Job、Worker 与本地执行](guides/jobs-and-workers.md)
 
 ### 研究案例
 
@@ -72,6 +74,7 @@ docs/
 - [v1.5 N 阶段：公共契约与包边界](reports/stages/v1.5-n-progress.md)
 - [v1.5 O 阶段：Project 存档、事件与分支](reports/stages/v1.5-o-progress.md)
 - [v1.5 P 阶段：聊天、候选与执行策略](reports/stages/v1.5-p-progress.md)
+- [v1.5 Q 阶段：Job/Worker 与 Pi 复用](reports/stages/v1.5-q-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)
@@ -95,6 +98,7 @@ docs/
 ### 自动验证产物
 
 - [pi SDK 探针结果](reports/validation/pi-sdk-probe.json)
+- [Pi SDK Q 阶段复用审计](reports/validation/pi-sdk-q-audit.md)
 - [Skills 验证结果](reports/validation/skill-validation.json)
 - [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
 - [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)

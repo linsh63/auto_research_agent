@@ -5,13 +5,14 @@ export interface ProcessOutput {
   stderr: string;
   exitCode: number | null;
   timedOut: boolean;
+  cancelled: boolean;
   durationMs: number;
 }
 
 export async function runProcess(
   program: string,
   args: string[],
-  options: { cwd?: string; env?: NodeJS.ProcessEnv; stdin?: string; timeoutMs: number; maxOutputBytes?: number },
+  options: { cwd?: string; env?: NodeJS.ProcessEnv; stdin?: string; timeoutMs: number; maxOutputBytes?: number; signal?:AbortSignal; onStdout?:(chunk:string)=>void; onStderr?:(chunk:string)=>void },
 ): Promise<ProcessOutput> {
   const start = Date.now();
   const maxBytes = options.maxOutputBytes ?? 2_000_000;
@@ -22,6 +23,7 @@ export async function runProcess(
     let stdout = "";
     let stderr = "";
     let timedOut = false;
+    let cancelled = false;
     let settled = false;
     const stop = () => {
       if (child.pid && process.platform !== "win32") {
@@ -29,25 +31,29 @@ export async function runProcess(
       } else child.kill("SIGKILL");
     };
     const timer = setTimeout(() => { timedOut = true; stop(); }, options.timeoutMs);
+    const onAbort=()=>{cancelled=true;stop();};
+    if(options.signal?.aborted)onAbort();else options.signal?.addEventListener("abort",onAbort,{once:true});
     child.stdout.on("data", (chunk: Buffer) => {
-      stdout += chunk.toString();
+      const text=chunk.toString();stdout += text;options.onStdout?.(text);
       if (Buffer.byteLength(stdout) > maxBytes) { stderr += "\nOutput limit exceeded"; stop(); }
     });
     child.stderr.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString();
+      const text=chunk.toString();stderr += text;options.onStderr?.(text);
       if (Buffer.byteLength(stderr) > maxBytes) stop();
     });
     child.on("error", (error) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      options.signal?.removeEventListener("abort",onAbort);
       reject(error);
     });
     child.on("close", (exitCode) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      resolve({ stdout: stdout.slice(0, maxBytes), stderr: stderr.slice(0, maxBytes), exitCode, timedOut, durationMs: Date.now() - start });
+      options.signal?.removeEventListener("abort",onAbort);
+      resolve({ stdout: stdout.slice(0, maxBytes), stderr: stderr.slice(0, maxBytes), exitCode, timedOut, cancelled, durationMs: Date.now() - start });
     });
     child.stdin.on("error", () => {});
     child.stdin.end(options.stdin ?? "");

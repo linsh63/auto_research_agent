@@ -2,10 +2,10 @@
   "schemaVersion": "1.0.0",
   "jsonSchemaDraft": "2020-12",
   "files": {
-    "command.schema.json": "2ee6975f9f2132179433a295029e475022436755d8179cf311ea9f2bbdcee0ec",
+    "command.schema.json": "30c1bf5bf69ad77cc5d102b6a4a1945a25ebacc91b13d3b0bbec9f42c79a687a",
     "command-result.schema.json": "22892d9ec59899763a457d5cf395ab065f0f43fae8ba9362c1f4d87fd37416a4",
-    "query.schema.json": "2228d2949930ed6f0d04e0d19c369638cb75aae2c44905975065f6248f7410f6",
-    "query-result.schema.json": "482bad0f32d9cbd9cfcd7b601cd89748fccdb1b9e264a457363328887217b142",
+    "query.schema.json": "00d090f84f82a5c6220c675e5fb334e2cd1b9406f4ebda265a732832fb977c17",
+    "query-result.schema.json": "df8cf1a4b88173086bca57fbc71d02628ab68d1acd7dc39c4b11060e21c9e0a3",
     "project-status.schema.json": "cc38842d28a682d3740a28a9479965b6efdcd88daf1c3104b72156cb7c94e331",
     "project-events.schema.json": "153e7a7ae1e3cf0b45f5221f1561c5e7599760b4a3b1f475b42ecc74dd9e8ce5",
     "project-bundle.schema.json": "4015c564c0220a51939b72e68ac3bc2251d4bfaca136825ad597f72be2ed9af6",
@@ -13,6 +13,11 @@
     "candidate-set.schema.json": "30905c306cf6b22a001462f0c8a01ff41837efda89baca225b8b984a4ca96350",
     "conversation.schema.json": "fea8b730ed540fd1b9cbd2657a990e06d8c274a0eabec417018f383881099025",
     "execution-policy.schema.json": "3a222b7ae87f9f8a6009a5dc71f4977a4c68535981ba4524c78b928d22d3261c",
+    "job-spec.schema.json": "055c8ff7dd3ed77ec7c4a7b34a3b8469b7832691005cd31fa3dcb71f024dc216",
+    "job.schema.json": "db0b452fb780022ea179affa8f4b5deab1370fbc0e3497ea8116d1c7c99f3ac1",
+    "job-logs.schema.json": "176e3fb7cba3f889f0ba41ae44cc8db9060eec9419d2af720247ea508fc3ada1",
+    "worker-request.schema.json": "8367f216dd13ea940f765196e5eafbcda712fb2549a23d8240a0b3c19fbd3239",
+    "worker-result.schema.json": "6b088134e0124abce976401ef380d08c7b125e2eb96896faa2e56b466e8310ec",
     "event.schema.json": "4a5a1a6280edd27233931c9a1df25cced6910106e3f3fa32a6be1da98ea06d4d",
     "error.schema.json": "619593a1b25395f46e842d7e8b20da5cdbf59f5bf5337e217acd3ce758795c1d"
   }

@@ -1,0 +1,355 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/worker-request.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "worker.claim"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worker": {
+          "type": "object",
+          "properties": {
+            "workerId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "protocolVersion": {
+              "type": "string",
+              "const": "1"
+            },
+            "executors": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "python",
+                  "bubblewrap",
+                  "pi"
+                ]
+              }
+            },
+            "capacity": {
+              "type": "object",
+              "properties": {
+                "cpuCores": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "memoryMiB": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "diskMiB": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "gpuCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "cpuCores",
+                "memoryMiB",
+                "diskMiB",
+                "gpuCount"
+              ],
+              "additionalProperties": false
+            },
+            "gpuDevices": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              }
+            },
+            "leaseDurationMs": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 300000
+            }
+          },
+          "required": [
+            "workerId",
+            "protocolVersion",
+            "executors",
+            "capacity",
+            "gpuDevices",
+            "leaseDurationMs"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "requestId",
+        "worker"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "workerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leaseToken": {
+          "type": "string",
+          "minLength": 32
+        },
+        "type": {
+          "type": "string",
+          "const": "worker.heartbeat"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leaseDurationMs": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 300000
+        }
+      },
+      "required": [
+        "jobId",
+        "attempt",
+        "workerId",
+        "leaseToken",
+        "type",
+        "requestId",
+        "leaseDurationMs"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "workerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leaseToken": {
+          "type": "string",
+          "minLength": 32
+        },
+        "type": {
+          "type": "string",
+          "const": "worker.log"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stream": {
+          "type": "string",
+          "enum": [
+            "stdout",
+            "stderr",
+            "progress",
+            "system"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "data": {}
+      },
+      "required": [
+        "jobId",
+        "attempt",
+        "workerId",
+        "leaseToken",
+        "type",
+        "requestId",
+        "stream",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "workerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leaseToken": {
+          "type": "string",
+          "minLength": 32
+        },
+        "type": {
+          "type": "string",
+          "const": "worker.complete"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "mediaType": {
+                "type": "string",
+                "minLength": 1
+              },
+              "contentHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "uri": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "name",
+              "mediaType",
+              "contentHash",
+              "bytes",
+              "uri"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "jobId",
+        "attempt",
+        "workerId",
+        "leaseToken",
+        "type",
+        "requestId",
+        "artifacts"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "workerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leaseToken": {
+          "type": "string",
+          "minLength": 32
+        },
+        "type": {
+          "type": "string",
+          "const": "worker.fail"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "failureClass": {
+          "type": "string",
+          "enum": [
+            "environment",
+            "data",
+            "scientific",
+            "budget",
+            "timeout",
+            "cancelled",
+            "worker_lost"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "jobId",
+        "attempt",
+        "workerId",
+        "leaseToken",
+        "type",
+        "requestId",
+        "failureClass",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "worker.recover"
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "type",
+        "requestId"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

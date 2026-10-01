@@ -1,0 +1,84 @@
+{
+  "$id": "https://auto-research.local/schemas/v1/worker-result.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "rejected"
+      ]
+    },
+    "data": {
+      "anyOf": [
+        {},
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "INVALID_COMMAND",
+                "INCOMPATIBLE_VERSION",
+                "NOT_FOUND",
+                "CONFLICT",
+                "FORBIDDEN",
+                "GATE_REJECTED",
+                "INTERNAL"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "details": {
+              "default": {},
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "retryable",
+            "details"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "handledAt": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "requestId",
+    "status",
+    "data",
+    "error",
+    "handledAt"
+  ],
+  "additionalProperties": false
+}

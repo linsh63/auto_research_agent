@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { z } from "zod";
 import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
-  ExecutionPolicySchema, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicCommandSchema,
-  PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema,
+  ExecutionPolicySchema, JobLogListSchema, JobReadModelSchema, JobSpecSchema, ProjectEventListSchema, ProjectStatusReadModelSchema, PublicCommandSchema,
+  PublicErrorSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, ResearchEventEnvelopeSchema, WorkerRequestSchema, WorkerResultSchema,
 } from "../src/public/contracts.js";
 
 const root = resolve("schemas/public/v1");
@@ -21,6 +21,11 @@ const definitions = {
   "candidate-set.schema.json": CandidateSetReadModelSchema,
   "conversation.schema.json": ConversationReadModelSchema,
   "execution-policy.schema.json": ExecutionPolicySchema,
+  "job-spec.schema.json": JobSpecSchema,
+  "job.schema.json": JobReadModelSchema,
+  "job-logs.schema.json": JobLogListSchema,
+  "worker-request.schema.json": WorkerRequestSchema,
+  "worker-result.schema.json": WorkerResultSchema,
   "event.schema.json": ResearchEventEnvelopeSchema,
   "error.schema.json": PublicErrorSchema,
 };

@@ -104,6 +104,26 @@ export const ConversationReadModelSchema = z.object({
 }).strict();
 export type ConversationReadModel = z.infer<typeof ConversationReadModelSchema>;
 
+export const JobFailureClassSchema=z.enum(["environment","data","scientific","budget","timeout","cancelled","worker_lost"]);
+export const JobResourcesSchema=z.object({cpuCores:z.number().int().positive(),memoryMiB:z.number().int().positive(),diskMiB:z.number().int().positive(),gpuCount:z.number().int().nonnegative()}).strict();
+export const JobLimitsSchema=z.object({wallTimeMs:z.number().int().positive(),cpuTimeSeconds:z.number().int().positive(),maxOutputBytes:z.number().int().positive(),maxArtifactBytes:z.number().int().positive()}).strict();
+export const JobExecutionSchema=z.discriminatedUnion("kind",[
+  z.object({kind:z.literal("python"),workspace:z.string().min(1),script:z.string().min(1),args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(z.string()).default([])}).strict(),
+  z.object({kind:z.literal("bubblewrap"),workspace:z.string().min(1),command:z.string().startsWith("/"),args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(z.string()).default([])}).strict(),
+  z.object({kind:z.literal("pi"),prompt:z.string().min(1),sessionFile:z.string().min(1).nullable().default(null),allowedTools:z.array(z.string()).default([])}).strict(),
+]);
+export const JobSpecSchema=z.object({
+  name:z.string().min(1),dataRole:z.enum(["exploration","confirmation"]),studyId:z.string().min(1).nullable().default(null),execution:JobExecutionSchema,
+  resources:JobResourcesSchema,limits:JobLimitsSchema,priority:z.number().int().min(-100).max(100).default(0),resumable:z.boolean().default(true),maxAttempts:z.number().int().positive().max(10).default(3),
+}).strict().superRefine((value,context)=>{if((value.dataRole==="confirmation")!==(value.studyId!==null))context.addIssue({code:"custom",message:"Confirmation jobs require studyId; exploration jobs must not provide it"});if(value.dataRole==="confirmation"&&value.execution.kind!=="bubblewrap")context.addIssue({code:"custom",message:"Confirmation jobs require the bubblewrap executor"});});
+export type JobSpec=z.infer<typeof JobSpecSchema>;
+export const JobRecordSchema=z.object({id:z.string().min(1),workspaceId:z.string().min(1),projectId:z.string().min(1),status:z.enum(["queued","running","succeeded","failed","cancelled"]),spec:JobSpecSchema,currentAttempt:z.number().int().nonnegative(),cancelRequested:z.boolean(),failureClass:JobFailureClassSchema.nullable(),failureMessage:z.string().nullable(),createdAt:z.string().min(1),updatedAt:z.string().min(1),startedAt:z.string().nullable(),finishedAt:z.string().nullable()}).strict();
+export type JobRecord=z.infer<typeof JobRecordSchema>;
+export const JobArtifactSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),name:z.string().min(1),mediaType:z.string().min(1),contentHash:z.string().regex(/^[a-f0-9]{64}$/),bytes:z.number().int().nonnegative(),uri:z.string().min(1),createdAt:z.string().min(1)}).strict();
+export const JobLogSchema=z.object({id:z.string().min(1),jobId:z.string().min(1),attempt:z.number().int().positive(),sequence:z.number().int().positive(),stream:z.enum(["stdout","stderr","progress","system"]),message:z.string(),data:z.unknown().nullable(),createdAt:z.string().min(1)}).strict();
+export const JobReadModelSchema=z.object({job:JobRecordSchema,artifacts:z.array(JobArtifactSchema)}).strict();
+export const JobLogListSchema=z.object({jobId:z.string().min(1),logs:z.array(JobLogSchema),nextSequence:z.number().int().positive().nullable()}).strict();
+
 export const CreateProjectCommandSchema = CommandContextSchema.extend({
   type: z.literal("project.create"),
   projectId: z.null(),
@@ -160,6 +180,9 @@ export const SetExecutionPolicyCommandSchema = CommandContextSchema.extend({
   payload: z.object({ mode: ExecutionModeSchema, maxAutoActionsPerTurn: z.number().int().min(0).max(10),
     maxKnownCostUsdPerAction: z.number().finite().nonnegative(), autoAllowedActionTypes: z.array(z.enum(["question.propose", "question.select"])) }).strict(),
 }).strict();
+export const SubmitJobCommandSchema=CommandContextSchema.extend({type:z.literal("job.submit"),projectId:z.string().min(1),payload:z.object({spec:JobSpecSchema,confirmationToken:z.string().min(32).nullable().default(null)}).strict()}).strict();
+export const CancelJobCommandSchema=CommandContextSchema.extend({type:z.literal("job.cancel"),projectId:z.string().min(1),payload:z.object({jobId:z.string().min(1)}).strict()}).strict();
+export const RetryJobCommandSchema=CommandContextSchema.extend({type:z.literal("job.retry"),projectId:z.string().min(1),payload:z.object({jobId:z.string().min(1)}).strict()}).strict();
 
 export const PublicCommandSchema = z.discriminatedUnion("type", [
   CreateProjectCommandSchema,
@@ -172,6 +195,9 @@ export const PublicCommandSchema = z.discriminatedUnion("type", [
   SendConversationMessageCommandSchema,
   ChooseCandidateCommandSchema,
   SetExecutionPolicyCommandSchema,
+  SubmitJobCommandSchema,
+  CancelJobCommandSchema,
+  RetryJobCommandSchema,
 ]);
 export type PublicCommand = z.infer<typeof PublicCommandSchema>;
 
@@ -200,7 +226,9 @@ export const GetExecutionPolicyQuerySchema = z.object({
   schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("policy.get"),
   workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,
 }).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema]);
+export const GetJobQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("job.get"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema,jobId:z.string().min(1)}).strict();
+export const GetJobLogsQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("job.logs"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema,jobId:z.string().min(1),fromSequence:z.number().int().positive().default(1),limit:z.number().int().positive().max(1000).default(200)}).strict();
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -283,7 +311,7 @@ export const QueryResultSchema = z.object({
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),ConversationReadModelSchema,ExecutionPolicySchema]).nullable(),
+  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {
@@ -332,3 +360,21 @@ export const PublicProjectBundleSchema=z.object({
   contentHash:z.string().regex(/^[a-f0-9]{64}$/),
 }).strict();
 export type PublicProjectBundle=z.infer<typeof PublicProjectBundleSchema>;
+
+export const WorkerDescriptorSchema=z.object({workerId:z.string().min(1),protocolVersion:z.literal("1"),executors:z.array(z.enum(["python","bubblewrap","pi"])).min(1),capacity:JobResourcesSchema,gpuDevices:z.array(z.string().regex(/^\d+$/)).default([]),leaseDurationMs:z.number().int().min(100).max(300000)}).strict().refine(value=>value.gpuDevices.length>=value.capacity.gpuCount,"gpuDevices must cover advertised GPU capacity");
+export type WorkerDescriptor=z.infer<typeof WorkerDescriptorSchema>;
+export const AuthorizedMountSchema=z.object({source:z.string().min(1),target:z.string().startsWith("/data/")}).strict();
+export const JobLeaseSchema=z.object({protocolVersion:z.literal("1"),job:JobRecordSchema,attempt:z.number().int().positive(),leaseToken:z.string().min(32),expiresAt:z.string().min(1),allocatedGpuDevices:z.array(z.string()),authorizedMounts:z.array(AuthorizedMountSchema)}).strict();
+export type JobLease=z.infer<typeof JobLeaseSchema>;
+const WorkerLeaseContextSchema=z.object({jobId:z.string().min(1),attempt:z.number().int().positive(),workerId:z.string().min(1),leaseToken:z.string().min(32)}).strict();
+export const WorkerRequestSchema=z.discriminatedUnion("type",[
+  z.object({type:z.literal("worker.claim"),requestId:z.string().min(1),worker:WorkerDescriptorSchema}).strict(),
+  WorkerLeaseContextSchema.extend({type:z.literal("worker.heartbeat"),requestId:z.string().min(1),leaseDurationMs:z.number().int().min(100).max(300000)}).strict(),
+  WorkerLeaseContextSchema.extend({type:z.literal("worker.log"),requestId:z.string().min(1),stream:z.enum(["stdout","stderr","progress","system"]),message:z.string(),data:z.unknown().optional()}).strict(),
+  WorkerLeaseContextSchema.extend({type:z.literal("worker.complete"),requestId:z.string().min(1),artifacts:z.array(JobArtifactSchema.omit({id:true,jobId:true,attempt:true,createdAt:true}))}).strict(),
+  WorkerLeaseContextSchema.extend({type:z.literal("worker.fail"),requestId:z.string().min(1),failureClass:JobFailureClassSchema,message:z.string().min(1)}).strict(),
+  z.object({type:z.literal("worker.recover"),requestId:z.string().min(1)}).strict(),
+]);
+export type WorkerRequest=z.infer<typeof WorkerRequestSchema>;
+export const WorkerResultSchema=z.object({requestId:z.string().min(1),status:z.enum(["ok","rejected"]),data:z.unknown().nullable(),error:PublicErrorSchema.nullable(),handledAt:z.string().min(1)}).strict().refine(value=>(value.status==="ok")===(value.error===null),"Worker result status and error are inconsistent");
+export type WorkerResult=z.infer<typeof WorkerResultSchema>;

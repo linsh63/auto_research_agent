@@ -6,6 +6,7 @@ export interface BubblewrapSpec {
   workspace:string; command:string; args:string[]; timeoutMs:number; env?:Record<string,string>;
   readOnlyMounts?:Array<{source:string;target:string}>;gpuDevice?:string;gpuDevices?:string[];gpuEnumerationBridge?:boolean;
   maxProcesses?:number; maxAddressSpaceBytes?:number; maxCpuSeconds?:number; maxFileBytes?:number;
+  signal?:AbortSignal;onStdout?:(chunk:string)=>void;onStderr?:(chunk:string)=>void;
 }
 
 export interface RuntimePreflightCheck{name:string;status:"pass"|"fail";details:string}
@@ -35,5 +36,5 @@ export function bubblewrapArgs(spec:BubblewrapSpec):string[]{
 export async function runBubblewrap(spec:BubblewrapSpec):Promise<ProcessOutput>{
   assertBubblewrapPreflight(preflightBubblewrap(spec));
   const limitArgs=[`--as=${spec.maxAddressSpaceBytes??8*1024**3}`,`--cpu=${spec.maxCpuSeconds??Math.max(1,Math.ceil(spec.timeoutMs/1000))}`,`--fsize=${spec.maxFileBytes??2*1024**3}`,"--","bwrap",...bubblewrapArgs(spec)];
-  return runProcess("prlimit",limitArgs,{timeoutMs:spec.timeoutMs,maxOutputBytes:2_000_000});
+  return runProcess("prlimit",limitArgs,{timeoutMs:spec.timeoutMs,maxOutputBytes:2_000_000,signal:spec.signal,onStdout:spec.onStdout,onStderr:spec.onStderr});
 }
