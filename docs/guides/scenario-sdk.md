@@ -29,7 +29,7 @@ import type { ResearchScenario, ScenarioManifest } from "auto-research-agent/sce
 from research_sdk import validate_manifest, negotiate, assert_job_budget
 ```
 
-`generated_models.py` 根据 9 份公共 JSON Schema 生成，并记录每份 schema 的 SHA-256。`npm run check:python-sdk` 会阻止 TypeScript/JSON Schema/Python 类型漂移。
+`generated_models.py` 根据 17 份 Python SDK 所需的公共 JSON Schema 生成，并记录每份 schema 的 SHA-256。`npm run check:python-sdk` 会阻止 TypeScript/JSON Schema/Python 类型漂移。
 
 Python SDK 只包含契约、协商、预算检查和 transport independent WorkerClient，不复制科研状态机。示例位于 `examples/scenarios/public-python/scenario.py`。
 

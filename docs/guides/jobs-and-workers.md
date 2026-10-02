@@ -70,7 +70,7 @@ await worker.runOnce();
 - `worker.fail`
 - `worker.recover`
 
-除 claim/recover 外，请求必须携带 job、attempt、worker 和 lease token。旧 attempt 或错误 token 不能追加日志、提交 Artifact 或覆盖新运行结果。该入口当前用于进程内集成；S 阶段为相同 schema 增加认证网络 transport。
+除 claim/recover 外，请求必须携带 job、attempt、worker 和 lease token。旧 attempt 或错误 token 不能追加日志、提交 Artifact 或覆盖新运行结果。相同 schema 可通过进程内 `ResearchApplication.worker()` 或认证的 Core Service `/v1/workers` 使用。
 
 ## 执行器
 

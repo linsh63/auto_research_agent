@@ -65,7 +65,7 @@ client = ResearchClient.connect_local(
 status = client.query(query)
 ```
 
-Python SDK 使用标准库 urllib，没有额外运行时依赖。生成类型与 14 份公共 JSON Schema 的 SHA-256 绑定。
+Python SDK 使用标准库 urllib，没有额外运行时依赖。生成类型与 17 份所需公共 JSON Schema 的 SHA-256 绑定。
 
 ## Secret Provider
 

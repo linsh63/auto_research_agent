@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { copyFileSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+
+const root=resolve("."),runRoot=join(root,".research-data/t4-release"),packRoot=join(runRoot,"pack"),consumer=join(runRoot,"consumer"),reportPath=join(root,"docs/reports/validation/t4-package-audit.json");
+rmSync(runRoot,{recursive:true,force:true});mkdirSync(packRoot,{recursive:true});mkdirSync(consumer,{recursive:true});
+const stdout=execFileSync("npm",["pack","--json","--pack-destination",packRoot],{cwd:root,encoding:"utf8",maxBuffer:20_000_000}),pack=parsePack(stdout),tarball=join(packRoot,pack.filename),paths=pack.files.map((item:any)=>item.path as string),required=["package.json","README.md","LICENSE","NOTICE","THIRD_PARTY_NOTICES.md","dist/public/index.js","dist/public/index.d.ts","migrations/003_research_protocol.sql","schemas/public/v1/manifest.json","python/research_sdk/__init__.py","python/worker/runner.py"],forbidden=paths.filter(forbiddenPath),missing=required.filter(name=>!paths.includes(name));
+if(forbidden.length||missing.length)throw new Error(`Package boundary failed: ${JSON.stringify({forbidden,missing})}`);
+const secretMatches=[] as string[];for(const name of paths){const source=join(root,name);try{const data=readFileSync(source);if(/sk-[A-Za-z0-9_-]{16,}|(?:api.?key|authorization|password|secret)\s*[=:]\s*["']?[A-Za-z0-9_-]{16,}/i.test(data.toString("utf8")))secretMatches.push(name);}catch{}}
+if(secretMatches.length)throw new Error(`Secret-like package content: ${secretMatches.join(", ")}`);
+writeFileSync(join(consumer,"package.json"),JSON.stringify({name:"t4-clean-consumer",private:true,type:"module"},null,2));
+execFileSync("npm",["install","--offline","--no-audit","--no-fund",tarball],{cwd:consumer,stdio:"pipe",timeout:300000,maxBuffer:20_000_000});
+for(const name of ["quickstart.mjs","extensions.mjs"])copyFileSync(join(root,"tests/fixtures/release-consumer",name),join(consumer,name));
+const quickstart=JSON.parse(execFileSync("node",["quickstart.mjs"],{cwd:consumer,encoding:"utf8",timeout:30000}).trim()),extensions=JSON.parse(execFileSync("node",["extensions.mjs"],{cwd:consumer,encoding:"utf8",timeout:30000}).trim());
+const installed=JSON.parse(readFileSync(join(consumer,"node_modules/auto-research-agent/package.json"),"utf8")),publicExports=Object.keys(installed.exports).sort(),expectedExports=[".","./application","./client","./contracts","./kernel","./scenario","./server"].sort();if(JSON.stringify(publicExports)!==JSON.stringify(expectedExports))throw new Error("Installed public exports changed");
+const notices=readFileSync(join(root,"THIRD_PARTY_NOTICES.md"),"utf8"),thirdParty=Object.keys(installed.dependencies).sort().map(name=>{const dependency=JSON.parse(readFileSync(join(consumer,"node_modules",name,"package.json"),"utf8")),record={name,version:dependency.version,license:dependency.license};if(!record.license||!notices.includes(`\`${name}\``)||!notices.includes(`| ${record.version} | ${record.license} |`))throw new Error(`Third-party notice mismatch: ${JSON.stringify(record)}`);return record;});
+const report={schemaVersion:1,stage:"T4",status:"pass",package:{name:pack.name,version:pack.version,filename:pack.filename,sha256:sha256(readFileSync(tarball)),bytes:statSync(tarball).size,unpackedBytes:pack.unpackedSize,entryCount:paths.length,publicExports},audits:{requiredFiles:true,forbiddenFiles:forbidden,missingFiles:missing,secretMatches,license:installed.license,private:installed.private??false,thirdParty},freshInstall:{offline:true,node:process.version,quickstart,extensions},assertions:{packageOnlyPublicImports:true,migrationsResolveOutsideRepository:true,scenarioFixture:true,workerClientFixture:true,pluginDescriptorFixture:true,noPublishPerformed:true,noTagCreated:true}};writeAtomic(reportPath,JSON.stringify(report,null,2)+"\n");console.log(JSON.stringify({status:"pass",tarball:pack.filename,entries:paths.length,bytes:report.package.bytes,quickstart,extensions}));
+
+function parsePack(value:string):any{const start=value.indexOf("["),parsed=JSON.parse(value.slice(start));return parsed[0];}
+function forbiddenPath(name:string):boolean{const first=name.split("/")[0];return["src","tests","scripts","examples","benchmarks","node_modules",".research-data"].includes(first)||/\.(?:db|sqlite3?|pem|key|env|pt|pth|safetensors|bin)$/.test(name);}
+function sha256(value:Buffer):string{return createHash("sha256").update(value).digest("hex");}
+function writeAtomic(path:string,value:string){mkdirSync(dirname(path),{recursive:true});const temporary=`${path}.${process.pid}.tmp`;writeFileSync(temporary,value);renameSync(temporary,path);}

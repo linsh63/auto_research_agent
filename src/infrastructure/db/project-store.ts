@@ -10,6 +10,7 @@ import {
   type ProjectRecord, type WorkspaceRecord,
 } from "../../domain/project.js";
 import { applyMigrationTransaction, snapshotArtifactManifest } from "./research-store.js";
+import { readMigration } from "./migration-path.js";
 
 interface JsonRow{payload_json:string}
 export interface CommandActor{id:string;kind:"user"|"agent"|"worker"|"system";displayName?:string}
@@ -22,7 +23,7 @@ export class ProjectStore{
   static async open(path:string):Promise<ProjectStore>{
     mkdirSync(dirname(path),{recursive:true});const db=new Database(path);db.pragma("journal_mode = WAL");db.pragma("foreign_keys = ON");
     const version=db.pragma("user_version",{simple:true}) as number;if(version<10){db.close();throw new Error("Project events require schema version 10 before migration");}if(version>16){db.close();throw new Error(`Project database ${version} is newer than supported version 16`);}
-    let backup:string|null=null,manifest:string|null=null;if(version===10){const backupDir=resolve(dirname(path),"backups");mkdirSync(backupDir,{recursive:true});backup=resolve(backupDir,`research-before-010-${new Date().toISOString().replaceAll(":","-")}.db`);await db.backup(backup);manifest=snapshotArtifactManifest(path,backupDir,"010");try{applyMigrationTransaction(db,readFileSync(resolve("migrations/010_project_events.sql"),"utf8"));}catch(error){db.close();throw error;}}
+    let backup:string|null=null,manifest:string|null=null;if(version===10){const backupDir=resolve(dirname(path),"backups");mkdirSync(backupDir,{recursive:true});backup=resolve(backupDir,`research-before-010-${new Date().toISOString().replaceAll(":","-")}.db`);await db.backup(backup);manifest=snapshotArtifactManifest(path,backupDir,"010");try{applyMigrationTransaction(db,readMigration("010_project_events.sql"));}catch(error){db.close();throw error;}}
     return new ProjectStore(db,backup,manifest);
   }
   close():void{this.db.close();}

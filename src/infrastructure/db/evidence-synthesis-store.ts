@@ -11,6 +11,7 @@ import {
 } from "../../domain/evidence-synthesis.js";
 import { hashPayload } from "../../domain/research.js";
 import { applyMigrationTransaction, snapshotArtifactManifest } from "./research-store.js";
+import { readMigration } from "./migration-path.js";
 
 type SearchProtocolDraft = Omit<SearchProtocol, "id" | "programId" | "questionId" | "version" | "status" | "contentHash" | "parentId" | "createdAt"> & { parentId?: string | null };
 type EvidenceMapDraft = Omit<EvidenceMap, "id" | "programId" | "questionId" | "version" | "status" | "contentHash" | "parentId" | "createdAt"> & { parentId?: string | null };
@@ -35,7 +36,7 @@ export class EvidenceSynthesisStore {
       backup = resolve(backupDir, `research-before-004-${new Date().toISOString().replaceAll(":", "-")}.db`);
       await db.backup(backup);
       artifactManifest = snapshotArtifactManifest(path, backupDir, "004");
-      try { applyMigrationTransaction(db, readFileSync(resolve("migrations/004_evidence_synthesis.sql"), "utf8")); }
+      try { applyMigrationTransaction(db, readMigration("004_evidence_synthesis.sql")); }
       catch (error) { db.close(); throw error; }
     }
     const current = db.pragma("user_version", { simple: true }) as number;

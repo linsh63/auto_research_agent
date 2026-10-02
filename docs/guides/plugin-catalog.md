@@ -52,7 +52,7 @@ extension 无论自报什么权限都会附加 `host.full`，skill 会附加 `mo
 
 如果 refresh 已确认来源不可用，`plugin.runtime` 会明确返回 capability unavailable，而历史 descriptor、安装锁和事件仍可读取。
 
-当前范围阶段 Bundle 尚未包含插件锁；存在 Project 或 Workspace 插件时导出会 fail closed，等待 T 阶段扩展 Bundle 格式。
+Bundle v2 保存 Project/Workspace 插件锁、来源范围、权限和 descriptor。导入不会自动安装插件；目标缺少或版本不兼容时会明确报告 `degraded` 或 `blocked`，历史仍可读取。
 
 ## 安全边界
 

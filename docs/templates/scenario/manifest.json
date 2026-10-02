@@ -1,0 +1,20 @@
+{
+  "id": "example.domain-task",
+  "name": "Example Scenario",
+  "version": "0.1.0",
+  "description": "Describe the bounded research task.",
+  "domain": "example",
+  "scenarioSdkVersion": "1.0.0",
+  "coreSchemaRange": "^1.0.0",
+  "languages": ["typescript"],
+  "executors": ["bubblewrap"],
+  "permissions": ["filesystem.read", "filesystem.write", "process"],
+  "budget": {"maxWallTimeMs": 60000, "maxCpuCores": 1, "maxMemoryMiB": 512, "maxDiskMiB": 512, "maxGpuCount": 0, "maxKnownCostUsd": 0},
+  "capabilities": [
+    {"id": "example.data", "kind": "data", "description": "Describe locked data.", "permissions": ["filesystem.read"], "inputSchema": {}, "outputSchema": {}, "failureClasses": ["data"]},
+    {"id": "example.experiment", "kind": "experiment", "description": "Create a bounded Job.", "permissions": ["filesystem.read", "filesystem.write", "process"], "inputSchema": {}, "outputSchema": {}, "failureClasses": ["environment", "scientific", "timeout"]},
+    {"id": "example.evaluation", "kind": "evaluation", "description": "Evaluate per-unit outcomes.", "permissions": ["filesystem.read"], "inputSchema": {}, "outputSchema": {}, "failureClasses": ["data", "scientific"]},
+    {"id": "example.analysis", "kind": "analysis", "description": "Analyze the declared estimand.", "permissions": ["filesystem.read"], "inputSchema": {}, "outputSchema": {}, "failureClasses": ["scientific"]}
+  ],
+  "artifacts": [{"name": "result.json", "mediaType": "application/json", "required": true, "maxBytes": 1000000, "access": "project"}]
+}

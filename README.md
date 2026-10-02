@@ -8,7 +8,7 @@ V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实�
 
 v1.2 已正式发布：confirmatory workflow 包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。v1.3 A 阶段现已通过强制门禁整改：新研究默认使用通用实验单位、事实账本、LLM 事实审计、fact-bound 报告、持久化数据替换门和执行前环境预检。当前开发版本为 `1.3.0-alpha.2`，详情见 [v1.3 规划](docs/planning/v1.3-plan.md)和[alpha.2 整改报告](docs/reports/releases/v1.3.0-alpha.2-report.md)。
 
-v1.4 已完成跨模板、跨任务、跨模型的真实研究、强制 Bubblewrap confirmation、FactLedger 和四维评审。当前结果支持受限的 RIO 格式内 transport，并暴露出回答格式混杂等能力边界，详情见 [v1.4 阶段报告](docs/reports/stages/v1.4-progress.md)。当前正在执行 [v1.5 Headless Research Kernel 产品化](docs/planning/v1.5-plan.md)：N–S、T1–T3 已完成，Bundle v2 已通过两个真实 Scenario 的跨实例验证，并建立了十二维公共能力基线；当前基线为 3 个完整展示、2 个部分覆盖和 7 个未公开评估维度。后续完成开源工程和正式发布验收。正式 CLI、Web 和带插件商城界面的科研游戏归入 v2.0 项目集。
+v1.4 已完成跨模板、跨任务、跨模型的真实研究、强制 Bubblewrap confirmation、FactLedger 和四维评审。当前结果支持受限的 RIO 格式内 transport，并暴露出回答格式混杂等能力边界，详情见 [v1.4 阶段报告](docs/reports/stages/v1.4-progress.md)。当前正在执行 [v1.5 Headless Research Kernel 产品化](docs/planning/v1.5-plan.md)：N–S、T1–T4 已完成，Bundle v2 已通过两个真实 Scenario 的跨实例验证，十二维公共能力基线为 3 个完整展示、2 个部分覆盖和 7 个未公开评估维度，`1.5.0-rc.1` 开源候选包也已通过干净安装。后续只剩 T5 正式发布验收。正式 CLI、Web 和带插件商城界面的科研游戏归入 v2.0 项目集。
 
 [文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 
@@ -19,6 +19,40 @@ v1.4 已完成跨模板、跨任务、跨模型的真实研究、强制 Bubblewr
 [总体规划（第一版）](docs/planning/v1-plan.md)记录了已确认的目标、基于 pi SDK 的架构、skills 接入方式、实施顺序和暂缓的决策。
 
 ## 运行原型
+
+### v1.5 Core package 快速开始
+
+T4 候选包尚未发布到 npm registry。先在仓库运行 `npm pack`，再在一个干净目录安装生成的 `auto-research-agent-1.5.0-rc.1.tgz`：
+
+```bash
+npm install /absolute/path/auto-research-agent-1.5.0-rc.1.tgz
+```
+
+保存以下内容为 `quickstart.mjs`，它只使用已发布的包导出，并在临时目录建立一个 Project：
+
+```js
+import { mkdtempSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { ResearchClient } from "auto-research-agent/client";
+import { PUBLIC_SCHEMA_VERSION } from "auto-research-agent/contracts";
+import { startCoreService } from "auto-research-agent/server";
+
+const root=mkdtempSync(join(tmpdir(),"auto-research-quickstart-"));
+const service=await startCoreService({databasePath:join(root,"research.db"),dataDir:join(root,"service")});
+try {
+  const token=readFileSync(service.address.tokenFile,"utf8").trim();
+  const client=await ResearchClient.connect({baseUrl:service.address.baseUrl,token});
+  const result=await client.execute({schemaVersion:PUBLIC_SCHEMA_VERSION,commandId:"quickstart-create",idempotencyKey:"quickstart-create",workspaceId:"workspace:quickstart",projectId:null,actor:{id:"user:quickstart",kind:"user"},issuedAt:new Date().toISOString(),type:"project.create",payload:{intent:{title:"Quickstart research project",direction:"Verify that the installed headless research kernel can create an auditable project.",domain:"research tooling",constraints:["public SDK only"],allowedData:["synthetic fixture"],prohibitions:["no external calls"],profile:"smoke",budget:{gpuHours:0.001,wallHours:1,diskGiB:1,modelCalls:1,knownCostUsd:0}}}});
+  console.log(JSON.stringify({status:result.status,projectId:result.projectId}));
+} finally {
+  await service.close();
+}
+```
+
+运行 `node quickstart.mjs`，应返回 `status: "accepted"`。正式发布前的包兼容、弃用和数据库回滚规则见[兼容政策](docs/guides/compatibility-and-deprecation.md)。
+
+### 源码仓库原型
 
 需要 Node.js 22.19+。模型通过 pi 原生 provider catalog 或 `models.json` 配置；[模型 Provider 配置](docs/guides/model-providers.md)说明内置 provider、自定义 API 和凭据入口。`AUTO_RESEARCH_API_KEY` 可作为不落盘的临时 runtime key；也可以使用 pi `models.json` 的环境变量凭据语法。未提供 provider 配置时，旧快捷配置仍默认使用 `https://newapi.x-era.com/v1` 的 `gpt-5.6-luna`。
 

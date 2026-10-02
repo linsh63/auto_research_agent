@@ -13,6 +13,7 @@ import {
 import { hashPayload } from "../../domain/research.js";
 import { VisibilityEventSchema, type VisibilityEvent } from "../../domain/research.js";
 import { applyMigrationTransaction, snapshotArtifactManifest } from "./research-store.js";
+import { readMigration } from "./migration-path.js";
 
 interface PayloadRow { payload_json: string }
 type StudyDraft = Omit<StudyDesign,"id"|"status"|"contentHash"|"createdAt"|"updatedAt"|"units"|"seeds"|"reliabilityPolicy"|"confirmationExecutionPolicy">&{units?:ExperimentalUnit[];seeds?:number[];reliabilityPolicy?:StudyDesign["reliabilityPolicy"];confirmationExecutionPolicy?:StudyDesign["confirmationExecutionPolicy"]};
@@ -31,12 +32,12 @@ export class StudyStore {
     if(version<9){const backupDir=resolve(dirname(path),"backups");mkdirSync(backupDir,{recursive:true});backup=resolve(backupDir,`research-before-008-${new Date().toISOString().replaceAll(":","-")}.db`);await db.backup(backup);manifest=snapshotArtifactManifest(path,backupDir,"008");}
     if (version < 6) {
       const backupDir = resolve(dirname(path), "backups"); mkdirSync(backupDir, { recursive: true });
-      try { applyMigrationTransaction(db, readFileSync(resolve("migrations/005_study_analysis.sql"), "utf8")); } catch (error) { db.close(); throw error; }
+      try { applyMigrationTransaction(db, readMigration("005_study_analysis.sql")); } catch (error) { db.close(); throw error; }
     }
     let current=db.pragma("user_version", { simple: true }) as number;
-    if(current<7){try{applyMigrationTransaction(db,readFileSync(resolve("migrations/006_claim_review_decision.sql"),"utf8"));}catch(error){db.close();throw error;}current=7;}
-    if(current<8){try{applyMigrationTransaction(db,readFileSync(resolve("migrations/007_reliability_foundations.sql"),"utf8"));}catch(error){db.close();throw error;}current=8;}
-    if(current<9){try{applyMigrationTransaction(db,readFileSync(resolve("migrations/008_enforced_reliability_gates.sql"),"utf8"));}catch(error){db.close();throw error;}current=9;}
+    if(current<7){try{applyMigrationTransaction(db,readMigration("006_claim_review_decision.sql"));}catch(error){db.close();throw error;}current=7;}
+    if(current<8){try{applyMigrationTransaction(db,readMigration("007_reliability_foundations.sql"));}catch(error){db.close();throw error;}current=8;}
+    if(current<9){try{applyMigrationTransaction(db,readMigration("008_enforced_reliability_gates.sql"));}catch(error){db.close();throw error;}current=9;}
     if(current<9||current>16){db.close();throw new Error(`Study schema compatibility failed at version ${current}`);}
     return new StudyStore(db, backup, manifest);
   }

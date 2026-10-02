@@ -9,6 +9,7 @@ import {
   type ExecutionPolicy, type ResearchAction,
 } from "../../domain/interaction.js";
 import { applyMigrationTransaction, snapshotArtifactManifest } from "./research-store.js";
+import { readMigration } from "./migration-path.js";
 
 interface JsonRow { payload_json: string }
 
@@ -27,7 +28,7 @@ export class InteractionStore {
       const backupDir = resolve(dirname(path), "backups"); mkdirSync(backupDir, { recursive: true });
       backup = resolve(backupDir, `research-before-011-${new Date().toISOString().replaceAll(":", "-")}.db`);
       await db.backup(backup); manifest = snapshotArtifactManifest(path, backupDir, "011");
-      try { applyMigrationTransaction(db, readFileSync(resolve("migrations/011_research_interactions.sql"), "utf8")); }
+      try { applyMigrationTransaction(db, readMigration("011_research_interactions.sql")); }
       catch (error) { db.close(); throw error; }
     }
     return new InteractionStore(db, backup, manifest);

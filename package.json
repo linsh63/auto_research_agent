@@ -1,7 +1,7 @@
 {
   "name": "auto-research-agent",
-  "version": "1.3.0-alpha.2",
-  "private": true,
+  "version": "1.5.0-rc.1",
+  "private": false,
   "type": "module",
   "main": "./dist/public/index.js",
   "types": "./dist/public/index.d.ts",
@@ -83,7 +83,10 @@
     "h:respond-reviews": "tsx scripts/h_respond_reviews.ts",
     "h:finalize-decision": "tsx scripts/h_finalize_decision.ts",
     "validate:cv": "tsx scripts/validate_cv_scenario.ts",
-    "probe:pi": "tsx scripts/pi_sdk_probe.ts"
+    "probe:pi": "tsx scripts/pi_sdk_probe.ts",
+    "prepack": "npm run build && npm run check:contracts && npm run check:python-sdk",
+    "check:package": "python3 scripts/audit_release_package.py",
+    "validate:t4": "tsx scripts/validate_t4_release.ts"
   },
   "dependencies": {
     "@earendil-works/pi-coding-agent": "0.85.1",
@@ -97,5 +100,49 @@
     "@types/node": "22.20.3",
     "tsx": "4.23.13",
     "typescript": "7.0.2"
+  },
+  "license": "Apache-2.0",
+  "description": "Headless, auditable research workflow kernel with public TypeScript and Python SDK contracts.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/linsh63/auto_research_agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/linsh63/auto_research_agent/issues"
+  },
+  "homepage": "https://github.com/linsh63/auto_research_agent#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist/public/",
+    "dist/service/",
+    "dist/application/public-application-backend.js",
+    "dist/application/workflow-coordinator.js",
+    "dist/domain/",
+    "dist/infrastructure/artifacts/",
+    "dist/infrastructure/db/",
+    "dist/runtime/local-job-worker.js",
+    "dist/runtime/pi-plugin-bridge.js",
+    "dist/adapters/bubblewrap-runner.js",
+    "dist/adapters/process.js",
+    "dist/reference-cli.js",
+    "migrations/*.sql",
+    "schemas/public/v1/",
+    "python/research_sdk/*.py",
+    "python/worker/runner.py",
+    "docs/guides/core-service-and-sdks.md",
+    "docs/guides/scenario-sdk.md",
+    "docs/guides/jobs-and-workers.md",
+    "docs/guides/plugin-catalog.md",
+    "docs/guides/compatibility-and-deprecation.md",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "bin": {
+    "auto-research-core": "dist/service/cli.js",
+    "auto-research-reference": "dist/reference-cli.js"
   }
 }

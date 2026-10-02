@@ -64,6 +64,12 @@ docs/
 - [Pi 插件目录与权限管理](guides/plugin-catalog.md)
 - [Core Service、客户端 SDK 与参考 CLI](guides/core-service-and-sdks.md)
 - [Research Project Bundle v2](guides/project-bundle-v2.md)
+- [兼容、弃用与迁移政策](guides/compatibility-and-deprecation.md)
+- [Scenario 扩展教程](guides/extensions/scenario-development.md)
+- [Plugin 扩展教程](guides/extensions/plugin-development.md)
+- [Worker 扩展教程](guides/extensions/worker-development.md)
+- [客户端 SDK 扩展教程](guides/extensions/client-sdk-development.md)
+- [扩展、RFC 与 ADR 模板](templates/README.md)
 
 ### 研究案例
 
@@ -93,6 +99,7 @@ docs/
 - [v1.5 T2 双案例总结](reports/stages/v1.5-t2-summary.md)
 - [v1.5 T3 阶段：Research Capability Benchmark v1](reports/stages/v1.5-t3-progress.md)
 - [Research Capability Benchmark v1 基线](reports/stages/v1.5-t3-baseline.md)
+- [v1.5 T4 阶段：开源发布工程](reports/stages/v1.5-t4-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)
@@ -120,6 +127,7 @@ docs/
 - [T2a MLLM 机器运行记录](reports/validation/t2a-mllm-run.json)
 - [T2b fastText / AG News 机器运行记录](reports/validation/t2b-fasttext-run.json)
 - [T3 Research Capability Benchmark v1 机器基线](reports/validation/t3-capability-baseline.json)
+- [T4 npm 候选包机器审计](reports/validation/t4-package-audit.json)
 - [Skills 验证结果](reports/validation/skill-validation.json)
 - [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
 - [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)

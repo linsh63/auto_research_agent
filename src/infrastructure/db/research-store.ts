@@ -12,6 +12,7 @@ import {
   assertAggregateCanFreeze, assertConfirmationAllowed, assertHypothesisSetComplete, assertProtocolCanFreeze, hashPayload,
 } from "../../domain/research.js";
 import { createDatasetSubstitutionRecord,DatasetSubstitutionRecordSchema,type DatasetSubstitutionRecord,type DatasetSubstitutionRequest } from "../../domain/data-substitution.js";
+import { readMigration } from "./migration-path.js";
 
 export type QuestionDraft = Omit<ResearchQuestion, "id" | "programId" | "version" | "status" | "contentHash" | "supersedesId" | "createdAt"> & { supersedesId?: string | null };
 export type ProtocolDraft = Omit<ResearchProtocol,"id"|"programId"|"questionId"|"version"|"profile"|"status"|"contentHash"|"parentId"|"createdAt"|"assumptionRegisterId"|"hypothesisSetId"|"datasetSubstitutionIds"> & {
@@ -99,7 +100,7 @@ export class ResearchStore {
       artifactManifestPath = snapshotArtifactManifest(path, backupDir, "003");
     }
     if (version < 3) {
-      try { applyMigrationTransaction(db, readFileSync(resolve("migrations/003_research_protocol.sql"), "utf8")); }
+      try { applyMigrationTransaction(db, readMigration("003_research_protocol.sql")); }
       catch (error) { db.close(); throw error; }
       const migrated = db.pragma("user_version", { simple: true }) as number;
       if (migrated !== 3) { db.close(); throw new Error(`Research migration 003 did not reach schema version 3 (got ${migrated})`); }
@@ -112,7 +113,7 @@ export class ResearchStore {
       await db.backup(correctiveBackup);
       backupPath ??= correctiveBackup;
       artifactManifestPath ??= snapshotArtifactManifest(path, backupDir, "003b");
-      try { applyMigrationTransaction(db, readFileSync(resolve("migrations/003b_research_cognitive_objects.sql"), "utf8")); }
+      try { applyMigrationTransaction(db, readMigration("003b_research_cognitive_objects.sql")); }
       catch (error) { db.close(); throw error; }
       current = db.pragma("user_version", { simple: true }) as number;
       if (current !== 4) { db.close(); throw new Error(`Research migration 003b did not reach schema version 4 (got ${current})`); }
