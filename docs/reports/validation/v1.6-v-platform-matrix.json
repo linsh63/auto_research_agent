@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "stage": "V",
+  "status": "pass",
+  "scope": ["linux-x64", "darwin-arm64", "darwin-x64"],
+  "unsupported": ["win32"],
+  "workflow": {
+    "name": "v1.6 platform matrix",
+    "runId": 36964853317,
+    "url": "https://github.com/linsh63/auto_research_agent/actions/runs/36964853317",
+    "commit": "970a4df",
+    "conclusion": "success",
+    "duration": "1m16s"
+  },
+  "platforms": [
+    {"name": "Linux x64", "os": "linux", "arch": "x64", "status": "pass", "artifactDigest": "0bb4c767707695a982cf8abf7a6fc3231e6d39b474d749bd23b5846d89950e5a", "bubblewrap": "available"},
+    {"name": "macOS arm64", "os": "darwin", "arch": "arm64", "status": "pass", "artifactDigest": "4e0d7f8141177fd3b84a4343889ffe9e1db83ab5f9c56a7d74dafbcea11481dc", "bubblewrap": "unavailable"},
+    {"name": "macOS x64", "os": "darwin", "arch": "x64", "status": "pass", "artifactDigest": "84c338b8d6311f87145c656ebbeeac31f3100d8c76fd83ded32ceac1bab0c4f5", "bubblewrap": "unavailable"}
+  ],
+  "checks": ["npm ci", "build", "public contract consistency", "Python SDK consistency", "platform smoke", "package boundary", "native capability snapshot"],
+  "assertions": {
+    "linuxSandboxExplicit": true,
+    "macBubblewrapUnavailable": true,
+    "noExecutorFallback": true,
+    "coreSqliteSdkBundleCrossPlatform": true,
+    "windowsSupportClaimed": false
+  },
+  "notes": ["GitHub emitted action-runtime deprecation warnings for upload-artifact; all jobs and required project checks passed."]
+}

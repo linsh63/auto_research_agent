@@ -143,6 +143,7 @@ docs/
 - [v1.6 package-only 能力审计](reports/validation/v1.6-package-audit.json)
 - [v1.6 V 本地平台能力](reports/validation/v1.6-v-platform-local.json)
 - [v1.6 V package-only 安装审计](reports/validation/v1.6-v-package-audit.json)
+- [v1.6 V Linux/macOS 原生矩阵](reports/validation/v1.6-v-platform-matrix.json)
 - [Skills 验证结果](reports/validation/skill-validation.json)
 - [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
 - [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)
