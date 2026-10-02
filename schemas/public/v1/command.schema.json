@@ -2273,7 +2273,8 @@
                           "default": [],
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                           }
                         }
                       },
@@ -2323,7 +2324,8 @@
                           "default": [],
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                           }
                         }
                       },
@@ -2457,6 +2459,54 @@
                   "type": "integer",
                   "exclusiveMinimum": 0,
                   "maximum": 10
+                },
+                "platformConstraints": {
+                  "type": "object",
+                  "properties": {
+                    "os": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "linux",
+                          "darwin",
+                          "win32"
+                        ]
+                      }
+                    },
+                    "arch": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "requiresSandbox": {
+                      "default": false,
+                      "type": "boolean"
+                    },
+                    "storageModes": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "local",
+                          "cas_sync",
+                          "remote_existing"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "os",
+                    "arch",
+                    "requiresSandbox",
+                    "storageModes"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [

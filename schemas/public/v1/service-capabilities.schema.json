@@ -70,6 +70,368 @@
         "type": "string"
       }
     },
+    "platform": {
+      "type": "object",
+      "properties": {
+        "os": {
+          "type": "string",
+          "enum": [
+            "linux",
+            "darwin",
+            "win32",
+            "other"
+          ]
+        },
+        "arch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nodeVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pythonVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executors": {
+          "type": "object",
+          "properties": {
+            "python": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "degraded",
+                    "not_checked"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "bubblewrap": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "degraded",
+                    "not_checked"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "pi": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "degraded",
+                    "not_checked"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "python",
+            "bubblewrap",
+            "pi"
+          ],
+          "additionalProperties": false
+        },
+        "sandbox": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "available",
+                "unavailable",
+                "degraded",
+                "not_checked"
+              ]
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "resourceLimits": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "available",
+                "unavailable",
+                "degraded",
+                "not_checked"
+              ]
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "processGroups": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "available",
+                "unavailable",
+                "degraded",
+                "not_checked"
+              ]
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "storageModes": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "local",
+              "cas_sync",
+              "remote_existing"
+            ]
+          }
+        },
+        "filesystem": {
+          "type": "object",
+          "properties": {
+            "pathSeparator": {
+              "type": "string",
+              "enum": [
+                "/",
+                "\\"
+              ]
+            },
+            "caseSensitive": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "pathSeparator",
+            "caseSensitive"
+          ],
+          "additionalProperties": false
+        },
+        "ssh": {
+          "type": "object",
+          "properties": {
+            "client": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "degraded",
+                    "not_checked"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sftp": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "degraded",
+                    "not_checked"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "proxyJump": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "degraded",
+                    "not_checked"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "multiplexing": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "unavailable",
+                    "degraded",
+                    "not_checked"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "client",
+            "version",
+            "sftp",
+            "proxyJump",
+            "multiplexing"
+          ],
+          "additionalProperties": false
+        },
+        "detectedAt": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "os",
+        "arch",
+        "nodeVersion",
+        "pythonVersion",
+        "executors",
+        "sandbox",
+        "resourceLimits",
+        "processGroups",
+        "storageModes",
+        "filesystem",
+        "ssh",
+        "detectedAt"
+      ],
+      "additionalProperties": false
+    },
     "startedAt": {
       "type": "string"
     }
@@ -83,6 +445,7 @@
     "offline",
     "telemetry",
     "publicExports",
+    "platform",
     "startedAt"
   ],
   "additionalProperties": false

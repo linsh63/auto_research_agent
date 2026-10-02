@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "stage": "V",
+  "status": "pass",
+  "expected": {
+    "os": "linux",
+    "arch": "x64"
+  },
+  "snapshot": {
+    "os": "linux",
+    "arch": "x64",
+    "nodeVersion": "v22.23.1",
+    "pythonVersion": "Python 3.13.5",
+    "executors": {
+      "python": {
+        "status": "available",
+        "reason": null
+      },
+      "bubblewrap": {
+        "status": "available",
+        "reason": null
+      },
+      "pi": {
+        "status": "available",
+        "reason": null
+      }
+    },
+    "sandbox": {
+      "status": "available",
+      "reason": null
+    },
+    "resourceLimits": {
+      "status": "available",
+      "reason": null
+    },
+    "processGroups": {
+      "status": "available",
+      "reason": null
+    },
+    "storageModes": [
+      "local"
+    ],
+    "filesystem": {
+      "pathSeparator": "/",
+      "caseSensitive": true
+    },
+    "ssh": {
+      "client": {
+        "status": "available",
+        "reason": null
+      },
+      "version": "OpenSSH_8.9p1 Ubuntu-3ubuntu0.13, OpenSSL 3.0.2 15 Mar 2022",
+      "sftp": {
+        "status": "available",
+        "reason": null
+      },
+      "proxyJump": {
+        "status": "available",
+        "reason": null
+      },
+      "multiplexing": {
+        "status": "available",
+        "reason": null
+      }
+    },
+    "detectedAt": "2026-10-02T04:10:16.028Z"
+  },
+  "issues": [],
+  "node": "v22.23.1"
+}

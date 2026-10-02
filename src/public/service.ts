@@ -2,10 +2,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
 import { startCoreServiceImpl } from "../service/core-service.js";
-import { PUBLIC_SCHEMA_VERSION, PluginPermissionSchema, type PluginPermission } from "./contracts.js";
+import { PUBLIC_SCHEMA_VERSION, PlatformCapabilitySnapshotSchema, PluginPermissionSchema, type PluginPermission } from "./contracts.js";
 
 export const CORE_SERVICE_VERSION="1.0.0" as const;
-export const ServiceCapabilitiesSchema=z.object({serviceVersion:z.literal(CORE_SERVICE_VERSION),schemaVersion:z.literal(PUBLIC_SCHEMA_VERSION),transports:z.object({rest:z.literal(true),sse:z.literal(true),websocket:z.literal(false)}).strict(),endpoints:z.array(z.string()),allowedPermissions:z.array(PluginPermissionSchema),offline:z.boolean(),telemetry:z.literal(false),publicExports:z.array(z.string()),startedAt:z.string()}).strict();
+export const ServiceCapabilitiesSchema=z.object({serviceVersion:z.literal(CORE_SERVICE_VERSION),schemaVersion:z.literal(PUBLIC_SCHEMA_VERSION),transports:z.object({rest:z.literal(true),sse:z.literal(true),websocket:z.literal(false)}).strict(),endpoints:z.array(z.string()),allowedPermissions:z.array(PluginPermissionSchema),offline:z.boolean(),telemetry:z.literal(false),publicExports:z.array(z.string()),platform:PlatformCapabilitySnapshotSchema,startedAt:z.string()}).strict();
 export type ServiceCapabilities=z.infer<typeof ServiceCapabilitiesSchema>;
 
 export interface ResolvedSecret{value:string;provider:string}

@@ -2,7 +2,7 @@
 
 ## 提交和查询
 
-长任务通过 `job.submit` 提交。Job spec 固定执行器、数据角色、资源和硬限制：
+长任务通过 `job.submit` 提交。Job spec 固定执行器、数据角色、资源和硬限制。可选 `platformConstraints` 声明 OS、arch、sandbox 和 storage 要求；Worker 的 `PlatformCapabilitySnapshot` 必须满足这些条件，调度器不会静默更换执行器。完整规则见[平台能力与跨系统调度](platform-capabilities.md)。
 
 ```ts
 const submitted = await app.execute({

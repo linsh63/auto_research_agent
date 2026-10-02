@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+import { mkdirSync,writeFileSync } from "node:fs";
+import { dirname,resolve } from "node:path";
+import { detectPlatformCapabilities } from "../src/runtime/platform-capabilities.js";
+
+const args=process.argv.slice(2),value=(flag:string)=>{const index=args.indexOf(flag);return index>=0?args[index+1]:undefined;},expectedOs=value("--expected-os"),expectedArch=value("--expected-arch"),output=resolve(value("--output")??".research-data/platform-ci.json"),snapshot=detectPlatformCapabilities(),issues:string[]=[];
+if(expectedOs&&snapshot.os!==expectedOs)issues.push(`Expected OS ${expectedOs}, got ${snapshot.os}`);if(expectedArch&&snapshot.arch!==expectedArch)issues.push(`Expected arch ${expectedArch}, got ${snapshot.arch}`);if(snapshot.executors.python.status!=="available")issues.push("Python executor unavailable");if(snapshot.ssh.client.status!=="available")issues.push("OpenSSH client unavailable");if(snapshot.os!=="linux"&&snapshot.executors.bubblewrap.status!=="unavailable")issues.push("Non-Linux platform must not advertise Bubblewrap");if(snapshot.os==="linux"&&snapshot.executors.bubblewrap.status!=="available")issues.push("Linux V runner must provide Bubblewrap");
+const report={schemaVersion:1,stage:"V",status:issues.length?"fail":"pass",expected:{os:expectedOs??null,arch:expectedArch??null},snapshot,issues,node:process.version};mkdirSync(dirname(output),{recursive:true});writeFileSync(output,JSON.stringify(report,null,2)+"\n");console.log(JSON.stringify({status:report.status,os:snapshot.os,arch:snapshot.arch,bubblewrap:snapshot.executors.bubblewrap.status,ssh:snapshot.ssh.client.status}));if(issues.length)process.exitCode=1;

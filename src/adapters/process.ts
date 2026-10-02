@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { terminateProcessTree } from "../runtime/process-control.js";
 
 export interface ProcessOutput {
   stdout: string;
@@ -25,11 +26,7 @@ export async function runProcess(
     let timedOut = false;
     let cancelled = false;
     let settled = false;
-    const stop = () => {
-      if (child.pid && process.platform !== "win32") {
-        try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); }
-      } else child.kill("SIGKILL");
-    };
+    const stop = () => { if(child.pid)terminateProcessTree(child.pid);else child.kill("SIGKILL"); };
     const timer = setTimeout(() => { timedOut = true; stop(); }, options.timeoutMs);
     const onAbort=()=>{cancelled=true;stop();};
     if(options.signal?.aborted)onAbort();else options.signal?.addEventListener("abort",onAbort,{once:true});

@@ -1,0 +1,55 @@
+name: v1.6 platform matrix
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  platform-smoke:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x64
+            os: ubuntu-24.04
+            expected_os: linux
+            expected_arch: x64
+          - name: macOS arm64
+            os: macos-15
+            expected_os: darwin
+            expected_arch: arm64
+          - name: macOS x64
+            os: macos-15-intel
+            expected_os: darwin
+            expected_arch: x64
+          - name: Windows x64
+            os: windows-2025
+            expected_os: win32
+            expected_arch: x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check:contracts
+      - run: npm run check:python-sdk
+      - run: npm run test:platform
+      - run: npm run check:package
+      - name: Record native capability snapshot
+        run: npm run verify:platform -- --expected-os ${{ matrix.expected_os }} --expected-arch ${{ matrix.expected_arch }} --output .research-data/platform-ci.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: platform-capability-${{ matrix.expected_os }}-${{ matrix.expected_arch }}
+          path: .research-data/platform-ci.json
+          if-no-files-found: error

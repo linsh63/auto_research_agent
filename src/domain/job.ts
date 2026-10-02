@@ -2,6 +2,18 @@ import { z } from "zod";
 
 export const JobFailureClassSchema=z.enum(["environment","data","scientific","budget","timeout","cancelled","worker_lost"]);
 export type JobFailureClass=z.infer<typeof JobFailureClassSchema>;
+export const CapabilityAvailabilitySchema=z.enum(["available","unavailable","degraded","not_checked"]);
+export const CapabilityStateSchema=z.object({status:CapabilityAvailabilitySchema,reason:z.string().nullable()}).strict();
+export const PlatformCapabilitySnapshotSchema=z.object({
+  os:z.enum(["linux","darwin","win32","other"]),arch:z.string().min(1),nodeVersion:z.string().min(1),pythonVersion:z.string().nullable(),
+  executors:z.object({python:CapabilityStateSchema,bubblewrap:CapabilityStateSchema,pi:CapabilityStateSchema}).strict(),
+  sandbox:CapabilityStateSchema,resourceLimits:CapabilityStateSchema,processGroups:CapabilityStateSchema,
+  storageModes:z.array(z.enum(["local","cas_sync","remote_existing"])).min(1),
+  filesystem:z.object({pathSeparator:z.enum(["/","\\"]),caseSensitive:z.boolean().nullable()}).strict(),
+  ssh:z.object({client:CapabilityStateSchema,version:z.string().nullable(),sftp:CapabilityStateSchema,proxyJump:CapabilityStateSchema,multiplexing:CapabilityStateSchema}).strict(),
+  detectedAt:z.string().min(1),
+}).strict();
+export type PlatformCapabilitySnapshot=z.infer<typeof PlatformCapabilitySnapshotSchema>;
 
 export const JobResourcesSchema=z.object({
   cpuCores:z.number().int().positive(),memoryMiB:z.number().int().positive(),diskMiB:z.number().int().positive(),gpuCount:z.number().int().nonnegative(),
@@ -13,9 +25,10 @@ export const JobLimitsSchema=z.object({
 }).strict();
 
 export const AuthorizedMountSchema=z.object({source:z.string().min(1),target:z.string().startsWith("/data/")}).strict();
+export const PortableRelativePathSchema=z.string().min(1).superRefine((value,context)=>{if(/[\0\r\n]/.test(value)||value.startsWith("/")||value.startsWith("\\")||/^[A-Za-z]:/.test(value)||value.split(/[\\/]/).some(part=>part===".."||part===""))context.addIssue({code:"custom",message:"Path must be a portable relative path without traversal, drive, UNC, empty segment, or control characters"});});
 export const JobExecutionSchema=z.discriminatedUnion("kind",[
-  z.object({kind:z.literal("python"),workspace:z.string().min(1),script:z.string().min(1),args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(z.string()).default([])}).strict(),
-  z.object({kind:z.literal("bubblewrap"),workspace:z.string().min(1),command:z.string().startsWith("/"),args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(z.string()).default([])}).strict(),
+  z.object({kind:z.literal("python"),workspace:z.string().min(1),script:PortableRelativePathSchema,args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(PortableRelativePathSchema).default([])}).strict(),
+  z.object({kind:z.literal("bubblewrap"),workspace:z.string().min(1),command:z.string().startsWith("/"),args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(PortableRelativePathSchema).default([])}).strict(),
   z.object({kind:z.literal("pi"),prompt:z.string().min(1),sessionFile:z.string().min(1).nullable().default(null),allowedTools:z.array(z.string()).default([])}).strict(),
 ]);
 export type JobExecution=z.infer<typeof JobExecutionSchema>;
@@ -24,6 +37,7 @@ export const JobSpecSchema=z.object({
   name:z.string().min(1),dataRole:z.enum(["exploration","confirmation"]),studyId:z.string().min(1).nullable().default(null),
   execution:JobExecutionSchema,resources:JobResourcesSchema,limits:JobLimitsSchema,priority:z.number().int().min(-100).max(100).default(0),
   resumable:z.boolean().default(true),maxAttempts:z.number().int().positive().max(10).default(3),
+  platformConstraints:z.object({os:z.array(z.enum(["linux","darwin","win32"])).default([]),arch:z.array(z.string().min(1)).default([]),requiresSandbox:z.boolean().default(false),storageModes:z.array(z.enum(["local","cas_sync","remote_existing"])).default([])}).strict().optional(),
 }).strict().superRefine((value,context)=>{
   if((value.dataRole==="confirmation")!==(value.studyId!==null))context.addIssue({code:"custom",message:"Confirmation jobs require studyId; exploration jobs must not provide it"});
   if(value.dataRole==="confirmation"&&value.execution.kind!=="bubblewrap")context.addIssue({code:"custom",message:"Confirmation jobs require the bubblewrap executor"});
@@ -45,7 +59,7 @@ export type JobArtifact=z.infer<typeof JobArtifactSchema>;
 
 export const WorkerDescriptorSchema=z.object({
   workerId:z.string().min(1),protocolVersion:z.literal("1"),executors:z.array(z.enum(["python","bubblewrap","pi"])).min(1),
-  capacity:JobResourcesSchema,gpuDevices:z.array(z.string().regex(/^\d+$/)).default([]),leaseDurationMs:z.number().int().min(100).max(300000),
+  capacity:JobResourcesSchema,gpuDevices:z.array(z.string().regex(/^\d+$/)).default([]),leaseDurationMs:z.number().int().min(100).max(300000),platform:PlatformCapabilitySnapshotSchema.nullable().optional(),
 }).strict().refine(value=>value.gpuDevices.length>=value.capacity.gpuCount,"gpuDevices must cover advertised GPU capacity");
 export type WorkerDescriptor=z.infer<typeof WorkerDescriptorSchema>;
 

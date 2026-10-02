@@ -86,7 +86,9 @@
     "probe:pi": "tsx scripts/pi_sdk_probe.ts",
     "prepack": "npm run build && npm run check:contracts && npm run check:python-sdk",
     "check:package": "python3 scripts/audit_release_package.py",
-    "validate:release-package": "tsx scripts/validate_release_package.ts"
+    "validate:release-package": "tsx scripts/validate_release_package.ts",
+    "test:platform": "node --import tsx --test --test-concurrency=1 tests/platform-capabilities.test.ts tests/platform-smoke.test.ts",
+    "verify:platform": "tsx scripts/verify_platform_ci.ts"
   },
   "dependencies": {
     "@earendil-works/pi-coding-agent": "0.85.1",
@@ -126,6 +128,8 @@
     "dist/infrastructure/db/",
     "dist/runtime/local-job-worker.js",
     "dist/runtime/pi-plugin-bridge.js",
+    "dist/runtime/platform-capabilities.js",
+    "dist/runtime/process-control.js",
     "dist/adapters/bubblewrap-runner.js",
     "dist/adapters/process.js",
     "dist/reference-cli.js",
@@ -139,6 +143,7 @@
     "docs/guides/plugin-catalog.md",
     "docs/guides/compatibility-and-deprecation.md",
     "docs/guides/public-scientific-capabilities.md",
+    "docs/guides/platform-capabilities.md",
     "README.md",
     "LICENSE",
     "NOTICE",
