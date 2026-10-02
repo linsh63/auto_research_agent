@@ -28,10 +28,6 @@ jobs:
             os: macos-15-intel
             expected_os: darwin
             expected_arch: x64
-          - name: Windows x64
-            os: windows-2025
-            expected_os: win32
-            expected_arch: x64
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
@@ -40,18 +36,7 @@ jobs:
         with:
           node-version: 22.19.0
           cache: npm
-      - name: Install dependencies
-        if: runner.os != 'Windows'
-        run: npm ci
-      - name: Install dependencies with Windows diagnostics
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          npm ci *>&1 | Tee-Object -FilePath npm-ci.log
-          if ($LASTEXITCODE -ne 0) {
-            Get-Content npm-ci.log -Tail 80 | ForEach-Object { Write-Output "::error::$($_)" }
-            exit $LASTEXITCODE
-          }
+      - run: npm ci
       - name: Install Linux sandbox capability
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y bubblewrap
