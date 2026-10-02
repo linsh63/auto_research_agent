@@ -56,6 +56,7 @@ docs/
 - [ADR 011：v1.5 Scenario SDK 与插件目录](architecture/decisions/011-v15-scenario-sdk-and-plugin-catalog.md)
 - [ADR 012：v1.5 Core Service、客户端 SDK 与安全边界](architecture/decisions/012-v15-core-service-and-client-sdks.md)
 - [ADR 013：v1.5 Research Project Bundle v2](architecture/decisions/013-v15-bundle-v2.md)
+- [ADR 014：v1.6 系统 OpenSSH 与远程 Linux Worker](architecture/decisions/014-v16-ssh-remote-worker.md)
 - [模型 Provider 配置](guides/model-providers.md)
 - [H 审查与真实验收指南](guides/h-review-and-acceptance.md)
 - [v1.5 公共 Kernel API](guides/public-kernel-api.md)
