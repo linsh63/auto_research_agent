@@ -8,7 +8,7 @@ V1 最小科研闭环已经实现；v1.1的A证据、B长期记忆、C有界实�
 
 v1.2 已正式发布：confirmatory workflow 包含版本化问题/protocol、冻结 EvidenceMap、竞争假设、baseline复现、探索/确认隔离、确定性统计、bubblewrap实验边界、ClaimAssessment、四维独立审查和结构化研究决策。v1.3 A 阶段现已通过强制门禁整改：新研究默认使用通用实验单位、事实账本、LLM 事实审计、fact-bound 报告、持久化数据替换门和执行前环境预检。当前开发版本为 `1.3.0-alpha.2`，详情见 [v1.3 规划](docs/planning/v1.3-plan.md)和[alpha.2 整改报告](docs/reports/releases/v1.3.0-alpha.2-report.md)。
 
-v1.4 已完成跨模板、跨任务、跨模型的真实研究、强制 Bubblewrap confirmation、FactLedger 和四维评审。当前结果支持受限的 RIO 格式内 transport，并暴露出回答格式混杂等能力边界，详情见 [v1.4 阶段报告](docs/reports/stages/v1.4-progress.md)。当前正在执行 [v1.5 Headless Research Kernel 产品化](docs/planning/v1.5-plan.md)：N–S、T1–T4 已完成，Bundle v2 已通过两个真实 Scenario 的跨实例验证，十二维公共能力基线为 3 个完整展示、2 个部分覆盖和 7 个未公开评估维度，`1.5.0-rc.1` 开源候选包也已通过干净安装。后续只剩 T5 正式发布验收。正式 CLI、Web 和带插件商城界面的科研游戏归入 v2.0 项目集。
+v1.4 已完成跨模板、跨任务、跨模型的真实研究、强制 Bubblewrap confirmation、FactLedger 和四维评审。当前结果支持受限的 RIO 格式内 transport，并暴露出回答格式混杂等能力边界，详情见 [v1.4 阶段报告](docs/reports/stages/v1.4-progress.md)。当前正在执行 [v1.5 Headless Research Kernel 产品化](docs/planning/v1.5-plan.md)：N–S、T1–T5 已完成，v1.5.0 已通过正式发布验收。Bundle v2 已通过两个真实 Scenario 的跨实例验证，十二维公共能力基线为 3 个完整展示、2 个部分覆盖和 7 个未公开评估维度。当前提交可形成发布候选，但尚未创建 Git tag、GitHub Release 或 npm 发布。正式 CLI、Web 和带插件商城界面的科研游戏归入 v2.0 项目集。
 
 [文档导航](docs/README.md)按规划、架构、指南、案例和报告组织全部资料。[下一阶段备选方案](docs/planning/next-stage-options.md)保留此前的路线比较。
 
@@ -22,10 +22,10 @@ v1.4 已完成跨模板、跨任务、跨模型的真实研究、强制 Bubblewr
 
 ### v1.5 Core package 快速开始
 
-T4 候选包尚未发布到 npm registry。先在仓库运行 `npm pack`，再在一个干净目录安装生成的 `auto-research-agent-1.5.0-rc.1.tgz`：
+v1.5.0 包尚未发布到 npm registry。先在仓库运行 `npm pack`，再在一个干净目录安装生成的 `auto-research-agent-1.5.0.tgz`：
 
 ```bash
-npm install /absolute/path/auto-research-agent-1.5.0-rc.1.tgz
+npm install /absolute/path/auto-research-agent-1.5.0.tgz
 ```
 
 保存以下内容为 `quickstart.mjs`，它只使用已发布的包导出，并在临时目录建立一个 Project：

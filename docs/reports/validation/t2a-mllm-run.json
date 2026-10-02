@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "stage": "T2a",
   "status": "pass",
-  "startedAt": "2026-10-01T14:37:12.970Z",
-  "finishedAt": "2026-10-01T14:37:13.390Z",
+  "startedAt": "2026-10-02T02:25:28.268Z",
+  "finishedAt": "2026-10-02T02:25:28.665Z",
   "source": {
     "repository": "mllm-routing-generalization",
     "commit": "a954fc66fa44854df37fc5535e97380793eb4648",
@@ -26,8 +26,8 @@
   "execution": {
     "kind": "artifact_reanalysis_no_model_inference",
     "sandbox": "bubblewrap_unshare_net",
-    "projectId": "program-9a65868b-b168-4182-b15b-e21914f0103d",
-    "jobId": "job-f03610bd-c4cb-443d-8db8-fb9c1ff1e7ee",
+    "projectId": "program-6968f324-520f-418b-bcce-822a36e1d142",
+    "jobId": "job-265502c9-1617-4dd1-b9d3-f3b629858866",
     "jobStatus": "succeeded",
     "artifactHash": "809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b",
     "routerAccuracy": 1,
@@ -47,7 +47,7 @@
   },
   "claimBoundary": "RIO-format transport only; task need is confounded with answer schema and does not establish generic semantic routing",
   "bundle": {
-    "contentHash": "a3ed9c890adb3a890375867c6c9ff8949cd27d114e1f7b430d3a4ea552733a8a",
+    "contentHash": "2aa5c8240c142a72bbf0a876a4cc209c89107cb2ff6a4b8fd730fde082887f83",
     "sections": 4,
     "artifactDisposition": "embedded",
     "importCompatibility": {
@@ -60,11 +60,11 @@
           "message": "Imported terminal Jobs retain history but require environment rebinding before retry"
         }
       ],
-      "checkedAt": "2026-10-01T14:37:13.343Z"
+      "checkedAt": "2026-10-02T02:25:28.619Z"
     },
     "targetProjectStatus": "scoped",
     "targetDependencies": {
-      "projectId": "program-9a65868b-b168-4182-b15b-e21914f0103d",
+      "projectId": "program-6968f324-520f-418b-bcce-822a36e1d142",
       "lastImport": {
         "status": "degraded",
         "issues": [
@@ -75,7 +75,7 @@
             "message": "Imported terminal Jobs retain history but require environment rebinding before retry"
           }
         ],
-        "checkedAt": "2026-10-01T14:37:13.343Z"
+        "checkedAt": "2026-10-02T02:25:28.619Z"
       },
       "plugins": [],
       "artifacts": [

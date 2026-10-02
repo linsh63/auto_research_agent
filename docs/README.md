@@ -119,6 +119,7 @@ docs/
 - [v1.3.0-alpha.1：A 可靠性基础设施](reports/releases/v1.3.0-alpha.1-report.md)
 - [v1.3.0-alpha.1：A 阶段严格重新验收](reports/releases/v1.3.0-alpha.1-a-reacceptance.md)
 - [v1.3.0-alpha.2：A 阶段强制门禁整改](reports/releases/v1.3.0-alpha.2-report.md)
+- [v1.5.0：正式发布验收](reports/releases/v1.5.0-report.md)
 
 ### 自动验证产物
 
@@ -128,6 +129,8 @@ docs/
 - [T2b fastText / AG News 机器运行记录](reports/validation/t2b-fasttext-run.json)
 - [T3 Research Capability Benchmark v1 机器基线](reports/validation/t3-capability-baseline.json)
 - [T4 npm 候选包机器审计](reports/validation/t4-package-audit.json)
+- [T5 最终 npm 包机器审计](reports/validation/t5-package-audit.json)
+- [v1.5.0 正式发布机器审计](reports/validation/v1.5-release-audit.json)
 - [Skills 验证结果](reports/validation/skill-validation.json)
 - [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
 - [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)

@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "release": "v1.5.0",
+  "status": "pass",
+  "decision": "release_candidate_ready",
+  "startedAt": "2026-10-02T02:25:25.074Z",
+  "finishedAt": "2026-10-02T02:26:47.616Z",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "linux",
+    "arch": "x64",
+    "publicSchemaVersion": "1.0.0",
+    "databaseSchemaVersion": 16,
+    "modelCalls": 0,
+    "knownCostUsd": 0
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "pass",
+      "durationMs": 1630,
+      "command": "npm run build",
+      "summary": "> tsc -p tsconfig.json"
+    },
+    {
+      "name": "t2a-real-scenario",
+      "status": "pass",
+      "durationMs": 2081,
+      "command": "npm run run:t2a",
+      "summary": "{\"status\":\"pass\",\"projectId\":\"program-6968f324-520f-418b-bcce-822a36e1d142\",\"jobId\":\"job-265502c9-1617-4dd1-b9d3-f3b629858866\",\"artifactHash\":\"809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b\",\"bundleHash\":\"2aa5c8240c142a72bbf0a876a4cc209c89107cb2ff6a4b8fd730fde082887f83\",\"importStatus\":\"degraded\"}"
+    },
+    {
+      "name": "t2b-real-scenario",
+      "status": "pass",
+      "durationMs": 24855,
+      "command": "npm run run:t2b",
+      "summary": "{\"status\":\"pass\",\"projectId\":\"program-72ef8994-2d76-4c13-89dd-584b4ce62231\",\"jobId\":\"job-9f9821be-4e83-44cd-9648-d033b7550e6d\",\"artifactHash\":\"8d6f2d3e21f14a26b85c7c58517f51bc27df0579512d395c996cec807635c8f9\",\"meanDifference\":0.009692982456140364,\"bundleHash\":\"89e06cdf278b3785a8ccd0e469f4ba424dfaca6be45712c29c0805df92bbfaa5\",\"importStatus\":\"degraded\"}"
+    },
+    {
+      "name": "t3-repeat-one",
+      "status": "pass",
+      "durationMs": 1720,
+      "command": "npm run benchmark:t3 -- --output /tmp/t5-t3-first.json",
+      "summary": "{\"status\":\"pass\",\"output\":\"/tmp/t5-t3-first.json\",\"deterministicGateHash\":\"d954346b42b4f391308a627fb57d19a26067db985951619f01698e85ef350d2d\",\"dimensions\":{\"dimensionsDemonstrated\":3,\"dimensionsPartial\":2,\"dimensionsNotEvaluated\":7,\"dimensionsFailed\":0},\"comparison\":null}"
+    },
+    {
+      "name": "t3-repeat-compare",
+      "status": "pass",
+      "durationMs": 1617,
+      "command": "npm run benchmark:t3 -- --output docs/reports/validation/t3-capability-baseline.json --compare /tmp/t5-t3-first.json",
+      "summary": "{\"status\":\"pass\",\"output\":\"/data0/linsihan/auto-research-agent/docs/reports/validation/t3-capability-baseline.json\",\"deterministicGateHash\":\"d954346b42b4f391308a627fb57d19a26067db985951619f01698e85ef350d2d\",\"dimensions\":{\"dimensionsDemonstrated\":3,\"dimensionsPartial\":2,\"dimensionsNotEvaluated\":7,\"dimensionsFailed\":0},\"comparison\":{\"sameGateHash\":true,\"changedCases\":0}}"
+    },
+    {
+      "name": "full-test-suite",
+      "status": "pass",
+      "durationMs": 38203,
+      "command": "npm test",
+      "summary": "# duration_ms 37999.770241"
+    },
+    {
+      "name": "typecheck",
+      "status": "pass",
+      "durationMs": 1518,
+      "command": "npm run check",
+      "summary": "> tsc --noEmit -p tsconfig.json"
+    },
+    {
+      "name": "public-boundary",
+      "status": "pass",
+      "durationMs": 188,
+      "command": "npm run check:boundaries",
+      "summary": "{\"status\": \"pass\", \"publicFiles\": 7, \"exports\": [\".\", \"./application\", \"./client\", \"./contracts\", \"./kernel\", \"./scenario\", \"./server\"]}"
+    },
+    {
+      "name": "scenario-boundary",
+      "status": "pass",
+      "durationMs": 184,
+      "command": "npm run check:scenarios",
+      "summary": "{\"status\": \"pass\", \"scenarioFiles\": 4}"
+    },
+    {
+      "name": "reference-cli-boundary",
+      "status": "pass",
+      "durationMs": 182,
+      "command": "npm run check:reference-cli",
+      "summary": "{\"status\": \"pass\", \"imports\": [\"node:crypto\", \"node:fs\", \"node:path\", \"./public/client.js\", \"./public/contracts.js\"]}"
+    },
+    {
+      "name": "t2-boundary",
+      "status": "pass",
+      "durationMs": 187,
+      "command": "npm run check:t2-scenarios",
+      "summary": "{\"status\": \"pass\", \"runnerImports\": {\"scripts/run_t2a_mllm_scenario.ts\": [\"node:crypto\", \"node:child_process\", \"node:fs\", \"node:path\", \"node:child_process\", \"auto-research-agent/client\", \"auto-research-agent/contracts\", \"auto-research-agent/scenario\", \"auto-research-agent/server\"], \"scripts/run_t2b_fasttext_scenario.ts\": [\"node:crypto\", \"node:child_process\", \"node:fs\", \"node:path\", \"auto-research-agent/client\", \"auto-research-agent/contracts\", \"auto-research-agent/scenario\", \"auto-research-agent/server\"]}, \"scenarioFiles\": 10}"
+    },
+    {
+      "name": "t3-boundary",
+      "status": "pass",
+      "durationMs": 187,
+      "command": "npm run check:t3-benchmark",
+      "summary": "{\"status\": \"pass\", \"runnerImports\": [\"node:crypto\", \"node:child_process\", \"node:fs\", \"node:path\", \"node:os\", \"auto-research-agent/client\", \"auto-research-agent/server\", \"auto-research-agent/contracts\"], \"fixtures\": 24}"
+    },
+    {
+      "name": "contract-generation",
+      "status": "pass",
+      "durationMs": 558,
+      "command": "npm run check:contracts",
+      "summary": "{\"status\":\"pass\",\"schemaVersion\":\"1.0.0\",\"files\":31}"
+    },
+    {
+      "name": "python-sdk-generation",
+      "status": "pass",
+      "durationMs": 193,
+      "command": "npm run check:python-sdk",
+      "summary": "{\"status\": \"pass\", \"schemas\": 17, \"output\": \"python/research_sdk/generated_models.py\"}"
+    },
+    {
+      "name": "documentation",
+      "status": "pass",
+      "durationMs": 195,
+      "command": "npm run check:docs",
+      "summary": "Docs OK: 86 Markdown files, 0 broken local links"
+    },
+    {
+      "name": "package-dry-run",
+      "status": "pass",
+      "durationMs": 954,
+      "command": "npm run check:package",
+      "summary": "{\"status\": \"pass\", \"entryCount\": 194, \"unpackedSize\": 1385078, \"missing\": [], \"forbidden\": []}"
+    },
+    {
+      "name": "final-package-install",
+      "status": "pass",
+      "durationMs": 8058,
+      "command": "npm run validate:release-package -- --stage T5 --report docs/reports/validation/t5-package-audit.json",
+      "summary": "{\"status\":\"pass\",\"tarball\":\"auto-research-agent-1.5.0.tgz\",\"entries\":194,\"bytes\":207228,\"quickstart\":{\"status\":\"accepted\",\"projectCreated\":true,\"schemaVersion\":\"1.0.0\"},\"extensions\":{\"scenario\":true,\"workerClient\":true,\"pluginDescriptor\":true}}"
+    }
+  ],
+  "migrations": {
+    "sourceVersions": [
+      3,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "targetVersion": 16,
+    "failureRollbackCovered": true,
+    "missingEvidence": []
+  },
+  "bundles": {
+    "v1UpcastCovered": true,
+    "v2CrossInstance": true,
+    "tamperAndCollisionCovered": true
+  },
+  "service": {
+    "authentication": true,
+    "offlineDefault": true,
+    "secretProviders": true,
+    "permissionAudit": true,
+    "sse": true
+  },
+  "realScenarios": {
+    "t2a": {
+      "status": "pass",
+      "artifactHash": "809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b",
+      "bundleHash": "2aa5c8240c142a72bbf0a876a4cc209c89107cb2ff6a4b8fd730fde082887f83"
+    },
+    "t2b": {
+      "status": "pass",
+      "artifactHash": "8d6f2d3e21f14a26b85c7c58517f51bc27df0579512d395c996cec807635c8f9",
+      "bundleHash": "89e06cdf278b3785a8ccd0e469f4ba424dfaca6be45712c29c0805df92bbfaa5"
+    }
+  },
+  "benchmark": {
+    "status": "pass",
+    "deterministicGateHash": "d954346b42b4f391308a627fb57d19a26067db985951619f01698e85ef350d2d",
+    "repeatStable": true,
+    "changedCases": 0,
+    "dimensions": {
+      "demonstrated": 3,
+      "partial": 2,
+      "notEvaluated": 7,
+      "failed": 0
+    },
+    "humanReview": "pending"
+  },
+  "package": {
+    "status": "pass",
+    "version": "1.5.0",
+    "sha256": "e8c7d4bcf205bc7255d9daf7e2a542174240c6872357c06151abf2975826c3ff",
+    "bytes": 207228,
+    "entries": 194,
+    "freshInstall": {
+      "offline": true,
+      "node": "v22.23.1",
+      "quickstart": {
+        "status": "accepted",
+        "projectCreated": true,
+        "schemaVersion": "1.0.0"
+      },
+      "extensions": {
+        "scenario": true,
+        "workerClient": true,
+        "pluginDescriptor": true
+      }
+    }
+  },
+  "security": {
+    "secretMatches": [],
+    "tagsBefore": [],
+    "tagsAfter": [],
+    "npmPublishPerformed": false,
+    "githubReleaseCreated": false
+  },
+  "artifacts": [
+    {
+      "path": "docs/reports/validation/t2a-mllm-run.json",
+      "sha256": "1874e5964d2dc5f35148379479fc7afe6a3fe402e1e5d8fb37a04bcc49f170e0",
+      "bytes": 3082
+    },
+    {
+      "path": "docs/reports/validation/t2b-fasttext-run.json",
+      "sha256": "3ff6bec8aef72dcb0f64cc2749ae6211afb6a84f5d527fdd18cf3915d9710fa0",
+      "bytes": 6699
+    },
+    {
+      "path": "docs/reports/validation/t3-capability-baseline.json",
+      "sha256": "dcc9c41b5b4e79f4f4dc2052e665c0e1e409ced95680df1fa7b10806b98ee5d2",
+      "bytes": 23788
+    },
+    {
+      "path": "docs/reports/validation/t4-package-audit.json",
+      "sha256": "e2a58dceb7dd715c7c862fa1e8ed98453bbe56969036146580a4ec47fe472cf3",
+      "bytes": 1781
+    },
+    {
+      "path": "docs/reports/validation/t5-package-audit.json",
+      "sha256": "4ed0ef60c1f1f51fab4570c8da5c8bb01e7eb0593a7b1f1fa18b33b3532d55ea",
+      "bytes": 1771
+    }
+  ],
+  "knownLimitations": [
+    "macOS and Windows have not been acceptance-tested; Bubblewrap confirmation execution remains Linux-specific.",
+    "Seven T3 research-capability dimensions remain not_evaluated through public schema 1.0.0.",
+    "T3 human-review fields remain pending; machine results are reported separately.",
+    "No npm package, Git tag, or GitHub Release has been published."
+  ],
+  "rollback": {
+    "database": "Stop writers and restore the pre-migration database plus Artifact CAS backup.",
+    "package": "Install the previously pinned package version and restore a database backup created before schema 16 writes.",
+    "bundle": "Retain the source instance until the imported Project compatibility report and Artifact states are reviewed."
+  }
+}

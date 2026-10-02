@@ -1,6 +1,6 @@
 {
   "name": "auto-research-agent",
-  "version": "1.5.0-rc.1",
+  "version": "1.5.0",
   "private": false,
   "type": "module",
   "main": "./dist/public/index.js",
@@ -86,7 +86,7 @@
     "probe:pi": "tsx scripts/pi_sdk_probe.ts",
     "prepack": "npm run build && npm run check:contracts && npm run check:python-sdk",
     "check:package": "python3 scripts/audit_release_package.py",
-    "validate:t4": "tsx scripts/validate_t4_release.ts"
+    "validate:release-package": "tsx scripts/validate_release_package.ts"
   },
   "dependencies": {
     "@earendil-works/pi-coding-agent": "0.85.1",

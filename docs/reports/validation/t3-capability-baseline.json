@@ -9,13 +9,13 @@
     "coreVersion": "1.0.0",
     "publicSchemaVersion": "1.0.0",
     "implementationHash": "65d95d929dde51adf6a862e44aa7b1816ae4f32d3266bebdaa494347ed01eb3e",
-    "repositoryHead": "ecd44999287e31241a3c9f0b4a2df9b9817ce084",
+    "repositoryHead": "27406ea3db104cc064ee85738790f7ce5f94e22c",
     "node": "v22.23.1",
     "platform": "linux",
     "arch": "x64",
     "model": null,
     "knownCostUsd": 0,
-    "elapsedMs": 1132
+    "elapsedMs": 899
   },
   "fixtureRootHash": "00319dd43fb002eaeb7d9c80202d5ecdfbe80f5303dc988c58d426c72e2f34f5",
   "dimensions": [
@@ -548,9 +548,9 @@
           "gateResult": "pass",
           "reasonCode": "BUNDLE_ROUNDTRIP_SUCCEEDED",
           "inputHash": "c9a011bda2e4bccebe9d633f026346312ef3cd2f7bef8c9548625d0de6585447",
-          "outputHash": "accebddb282d7c01185dffa1c1a34cc923ba7cb51ebc1601d82eaa950ac46e29",
+          "outputHash": "d4f4d199033e01ce390bc4fea78b745829be09974d647efb808134fa3bb62471",
           "artifactHashes": [
-            "6d3ca8963262c5b20ec370329e7d2929e32e4f2f40b26ab9b2af8c4e72bdde08"
+            "69d46323505f93e3df6af6003c99853203c33ffe0b43e11dee95acc586adfd7e"
           ],
           "publicOperations": [
             "project.bundle",
@@ -594,7 +594,7 @@
     {
       "id": "t2a-mllm",
       "role": "external_real_case",
-      "inputHash": "9ac7a67c00db96096199e0b648444ce4d45316b3286d35beffbba80ec1ec2f5c",
+      "inputHash": "1874e5964d2dc5f35148379479fc7afe6a3fe402e1e5d8fb37a04bcc49f170e0",
       "status": "pass",
       "artifactHashes": [
         "809c7cb6d76210abd8791d2471671d2d0f9b1c88e06f8ff4819dc45e0d47bd1b"
@@ -603,10 +603,10 @@
     {
       "id": "t2b-fasttext",
       "role": "external_real_case",
-      "inputHash": "f74a72c1412e360ca06b35134afcde7cb761f9445b6728c398edbcbbef67e2e3",
+      "inputHash": "3ff6bec8aef72dcb0f64cc2749ae6211afb6a84f5d527fdd18cf3915d9710fa0",
       "status": "pass",
       "artifactHashes": [
-        "9dfb1f310dc94a64249b1f0dce25027a6e4d794ea73300fdf1114325daac1715"
+        "8d6f2d3e21f14a26b85c7c58517f51bc27df0579512d395c996cec807635c8f9"
       ]
     }
   ],

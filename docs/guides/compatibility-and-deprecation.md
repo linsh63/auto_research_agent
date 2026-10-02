@@ -2,7 +2,7 @@
 
 ## 版本面
 
-- npm package 使用 SemVer；`1.5.0-rc.1` 是可审核候选，不是正式发布。
+- npm package 使用 SemVer；`1.5.0` 已通过本地发布验收；只有创建官方 tag/release 或发布到 registry 后才视为对外发布。
 - Core Service、TypeScript/Python client 和 JSON Schema 使用独立的公共 schema 版本，当前为 `1.0.0`。
 - Scenario SDK 版本、Plugin 的 `coreSchemaRange`/`piVersionRange` 和 Bundle 格式单独协商。
 - SQLite schema 是内部持久化版本，不作为客户端 API。
