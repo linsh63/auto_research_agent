@@ -5,9 +5,9 @@
   "dimensionTitle": "记忆提升",
   "kind": "success",
   "handler": "verified_memory",
-  "expectedOutcome": "not_evaluated",
-  "publicCapability": false,
-  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
   "input": {
     "fixtureClass": "verified_memory",
     "synthetic": true

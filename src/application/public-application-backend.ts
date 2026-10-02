@@ -14,20 +14,21 @@ import { ScientificDecisionStore } from "../infrastructure/db/scientific-decisio
 import { StudyStore } from "../infrastructure/db/study-store.js";
 import { LocalJobWorker, type LocalJobWorkerOptions } from "../runtime/local-job-worker.js";
 import type { WorkerDescriptor } from "../domain/job.js";
+import { PublicScientificCapabilities } from "./public-scientific-capabilities.js";
 
 /** Transitional backend hidden behind the v1.5 public facade. */
 export class PublicApplicationBackend{
   readonly workflow:WorkflowCoordinator;
-  private constructor(readonly research:ResearchStore,readonly projects:ProjectStore,readonly interactions:InteractionStore,readonly jobs:JobStore,readonly plugins:PluginStore,readonly bundles:BundleStore){this.workflow=new WorkflowCoordinator(research);}
+  private constructor(readonly research:ResearchStore,readonly projects:ProjectStore,readonly interactions:InteractionStore,readonly jobs:JobStore,readonly plugins:PluginStore,readonly bundles:BundleStore,readonly capabilities:PublicScientificCapabilities){this.workflow=new WorkflowCoordinator(research);}
   static async open(path:string,options:{maxDerivedRuns?:number;artifactRoots?:string[];artifactRoot?:string}={}):Promise<PublicApplicationBackend>{
     // Existing stores own earlier migrations. Stores apply schemas 11–16 in order.
     const researchBootstrap=await ResearchStore.open(path,{maxDerivedRuns:options.maxDerivedRuns});researchBootstrap.close();
     const evidence=await EvidenceSynthesisStore.open(path);evidence.close();
     const studies=await StudyStore.open(path);studies.close();
     const decisions=await ScientificDecisionStore.open(path);decisions.close();
-    const projects=await ProjectStore.open(path);let interactions:InteractionStore|undefined,jobs:JobStore|undefined,plugins:PluginStore|undefined,bundles:BundleStore|undefined;
-    try{interactions=await InteractionStore.open(path);jobs=await JobStore.open(path);plugins=await PluginStore.open(path);const serviceAudit=await ServiceAuditStore.open(path);serviceAudit.close();const evidence=new EvidenceStore(path);evidence.close();const memory=new MemoryStore(path);memory.close();const search=new SearchStore(path);search.close();bundles=await BundleStore.open(path,{artifactRoots:options.artifactRoots,artifactRoot:options.artifactRoot});const research=await ResearchStore.open(path,{maxDerivedRuns:options.maxDerivedRuns});return new PublicApplicationBackend(research,projects,interactions,jobs,plugins,bundles);}catch(error){bundles?.close();plugins?.close();jobs?.close();interactions?.close();projects.close();throw error;}
+    const projects=await ProjectStore.open(path);let interactions:InteractionStore|undefined,jobs:JobStore|undefined,plugins:PluginStore|undefined,bundles:BundleStore|undefined,capabilities:PublicScientificCapabilities|undefined;
+    try{interactions=await InteractionStore.open(path);jobs=await JobStore.open(path);plugins=await PluginStore.open(path);const serviceAudit=await ServiceAuditStore.open(path);serviceAudit.close();const evidence=new EvidenceStore(path);evidence.close();const memory=new MemoryStore(path);memory.close();const search=new SearchStore(path);search.close();bundles=await BundleStore.open(path,{artifactRoots:options.artifactRoots,artifactRoot:options.artifactRoot});capabilities=await PublicScientificCapabilities.open(path);const research=await ResearchStore.open(path,{maxDerivedRuns:options.maxDerivedRuns});return new PublicApplicationBackend(research,projects,interactions,jobs,plugins,bundles,capabilities);}catch(error){capabilities?.close();bundles?.close();plugins?.close();jobs?.close();interactions?.close();projects.close();throw error;}
   }
   createLocalWorker(descriptor:WorkerDescriptor,options:LocalJobWorkerOptions):LocalJobWorker{return new LocalJobWorker(this.jobs,descriptor,options);}
-  close():void{this.bundles.close();this.plugins.close();this.jobs.close();this.interactions.close();this.projects.close();this.research.close();}
+  close():void{this.capabilities.close();this.bundles.close();this.plugins.close();this.jobs.close();this.interactions.close();this.projects.close();this.research.close();}
 }

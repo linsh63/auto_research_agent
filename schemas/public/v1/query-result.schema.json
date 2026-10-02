@@ -3213,6 +3213,67 @@
                 "plugins"
               ],
               "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "capabilities": {
+                  "minItems": 7,
+                  "maxItems": 7,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "literature-evidence",
+                          "novelty-boundary",
+                          "rival-hypotheses",
+                          "design-confounding",
+                          "statistics-units",
+                          "memory-improvement",
+                          "scientific-writing"
+                        ]
+                      },
+                      "version": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "operations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "sideEffects": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "description",
+                      "operations",
+                      "sideEffects"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "capabilities"
+              ],
+              "additionalProperties": false
             }
           ]
         },

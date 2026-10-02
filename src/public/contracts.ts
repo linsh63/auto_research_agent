@@ -205,6 +205,34 @@ export const DisablePluginCommandSchema=CommandContextSchema.extend({type:z.lite
 export const UpdatePluginCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.update"),projectId:z.string().min(1).nullable(),payload:z.object({installationId:z.string().min(1),targetDescriptorId:z.string().min(1),approvedPermissions:z.array(PluginPermissionSchema)}).strict()}).strict();
 export const RemovePluginCommandSchema=CommandContextSchema.extend({type:z.literal("plugin.remove"),projectId:z.string().min(1).nullable(),payload:z.object({installationId:z.string().min(1)}).strict()}).strict();
 
+export const ScientificCapabilityIdSchema=z.enum(["literature-evidence","novelty-boundary","rival-hypotheses","design-confounding","statistics-units","memory-improvement","scientific-writing"]);
+export type ScientificCapabilityId=z.infer<typeof ScientificCapabilityIdSchema>;
+const EvidenceCapabilityInputSchema=z.discriminatedUnion("action",[
+  z.object({action:z.literal("ingest"),document:z.record(z.string(),z.unknown())}).strict(),
+  z.object({action:z.literal("search"),query:z.string().min(1),limit:z.number().int().positive().max(100).default(20)}).strict(),
+  z.object({action:z.literal("claim-check"),claim:z.record(z.string(),z.unknown()),links:z.array(z.record(z.string(),z.unknown())).default([])}).strict(),
+]);
+const NoveltyCapabilityInputSchema=z.object({coverageStatus:z.enum(["complete","incomplete"]),noveltyStatus:z.enum(["unresolved","likely_overlap","supported_with_scope"]),noveltyScope:z.string().nullable().default(null),comparisons:z.array(z.object({status:z.enum(["exact_overlap","partial_overlap","distinct","unresolved"]),evidencePassageIds:z.array(z.string())}).strict()).default([]),gaps:z.array(z.object({kind:z.enum(["full_text_unavailable","search_failure","conflict","coverage","other"]),severity:z.enum(["low","medium","high"]),resolved:z.boolean()}).strict()).default([])}).strict();
+const HypothesisCapabilityInputSchema=z.object({hypotheses:z.array(z.object({kind:z.enum(["target","null","rival"]),statement:z.string().min(20),prediction:z.string().min(10),falsification:z.string().min(10),discriminatingObservations:z.array(z.string().min(10)),updateRules:z.array(z.object({observation:z.string().min(10),effect:z.enum(["strengthen","weaken","refute","no_change"]),rationale:z.string().min(10)}).strict()),evidenceIds:z.array(z.string()).default([])}).strict()).min(2),rivalAbsenceJustification:z.string().min(10).nullable().default(null)}).strict();
+const DesignCapabilityInputSchema=z.object({experimentalUnit:z.string().min(3),assignment:z.enum(["randomized","blocked","matched","observational"]),comparator:z.string().min(3),primaryOutcome:z.string().min(3),confounders:z.array(z.string().min(2)).default([]),controls:z.array(z.string().min(2)).default([]),repeatedMeasures:z.boolean().default(false),clusterField:z.string().min(1).nullable().default(null)}).strict();
+const StatisticsCapabilityInputSchema=z.object({direction:z.enum(["maximize","minimize"]),observations:z.array(z.object({unitId:z.string().min(1),variant:z.enum(["baseline","candidate"]),value:z.number().finite().nullable(),missingReason:z.string().min(1).nullable()}).strict().refine(value=>(value.value===null)!==(value.missingReason===null),"Exactly one of value or missingReason is required")).min(2)}).strict();
+const MemoryCapabilityInputSchema=z.discriminatedUnion("action",[
+  z.object({action:z.literal("create"),id:z.string().min(1),memoryType:z.enum(["source","passage","claim","experiment","decision","procedure","hypothesis"]),content:z.string().min(1),evidenceIds:z.array(z.string()).default([]),applicability:z.string().default(""),invalidationCondition:z.string().nullable().default(null),revalidateAfter:z.string().nullable().default(null)}).strict(),
+  z.object({action:z.enum(["review","verify"]),id:z.string().min(1),note:z.string().default("")}).strict(),
+  z.object({action:z.literal("search"),query:z.string().min(1),limit:z.number().int().positive().max(100).default(10)}).strict(),
+]);
+const WritingCapabilityInputSchema=z.object({ledgerId:z.string().min(1),studyId:z.string().min(1).nullable().default(null),facts:z.array(z.object({id:z.string().regex(/^[a-z][a-z0-9_.-]*$/),kind:z.enum(["result","design","scope","runtime","threshold","identifier"]),value:z.union([z.string(),z.number().finite(),z.boolean(),z.null()]),unit:z.string().min(1).nullable().default(null),sourceObjectId:z.string().min(1),sourcePath:z.string().min(1),sourceHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict()).min(1),requiredFactIds:z.array(z.string()).default([]),assertions:z.array(z.object({factId:z.string().min(1),assertedValue:z.union([z.string(),z.number().finite(),z.boolean(),z.null()]),context:z.string().min(3)}).strict()),report:z.record(z.string(),z.unknown())}).strict();
+export const ScientificCapabilityInvocationSchema=z.discriminatedUnion("capability",[
+  z.object({capability:z.literal("literature-evidence"),input:EvidenceCapabilityInputSchema}).strict(),
+  z.object({capability:z.literal("novelty-boundary"),input:NoveltyCapabilityInputSchema}).strict(),
+  z.object({capability:z.literal("rival-hypotheses"),input:HypothesisCapabilityInputSchema}).strict(),
+  z.object({capability:z.literal("design-confounding"),input:DesignCapabilityInputSchema}).strict(),
+  z.object({capability:z.literal("statistics-units"),input:StatisticsCapabilityInputSchema}).strict(),
+  z.object({capability:z.literal("memory-improvement"),input:MemoryCapabilityInputSchema}).strict(),
+  z.object({capability:z.literal("scientific-writing"),input:WritingCapabilityInputSchema}).strict(),
+]);
+export const InvokeScientificCapabilityCommandSchema=CommandContextSchema.extend({type:z.literal("capability.invoke"),projectId:z.string().min(1),payload:ScientificCapabilityInvocationSchema}).strict();
+
 export const PublicCommandSchema = z.discriminatedUnion("type", [
   CreateProjectCommandSchema,
   ProposeQuestionCommandSchema,
@@ -226,6 +254,7 @@ export const PublicCommandSchema = z.discriminatedUnion("type", [
   DisablePluginCommandSchema,
   UpdatePluginCommandSchema,
   RemovePluginCommandSchema,
+  InvokeScientificCapabilityCommandSchema,
 ]);
 export type PublicCommand = z.infer<typeof PublicCommandSchema>;
 
@@ -262,7 +291,9 @@ export const PluginSourcesQuerySchema=z.object({schemaVersion:PublicSchemaVersio
 export const PluginInstallationsQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.installations"),workspaceId:z.string().min(1),projectId:z.string().min(1).nullable(),actor:ActorSchema}).strict();
 export const PluginRuntimeQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("plugin.runtime"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
 export const ProjectDependenciesQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("project.dependencies"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,ProjectDependenciesQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema]);
+export const ScientificCapabilityCatalogSchema=z.object({capabilities:z.array(z.object({id:ScientificCapabilityIdSchema,version:z.string().regex(/^\d+\.\d+\.\d+$/),description:z.string().min(1),operations:z.array(z.string().min(1)),sideEffects:z.array(z.string().min(1))}).strict()).length(7)}).strict();
+export const ScientificCapabilityCatalogQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("capability.catalog"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,ProjectDependenciesQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema,ScientificCapabilityCatalogQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -345,7 +376,7 @@ export const QueryResultSchema = z.object({
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),z.lazy(()=>BundleDependencyReadModelSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema]).nullable(),
+  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),z.lazy(()=>BundleDependencyReadModelSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema,ScientificCapabilityCatalogSchema]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {

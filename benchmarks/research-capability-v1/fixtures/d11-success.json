@@ -5,9 +5,9 @@
   "dimensionTitle": "科学写作",
   "kind": "success",
   "handler": "fact_bound_writing",
-  "expectedOutcome": "not_evaluated",
-  "publicCapability": false,
-  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
   "input": {
     "fixtureClass": "fact_bound_writing",
     "synthetic": true

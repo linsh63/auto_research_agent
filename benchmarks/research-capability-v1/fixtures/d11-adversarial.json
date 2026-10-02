@@ -5,9 +5,9 @@
   "dimensionTitle": "科学写作",
   "kind": "adversarial",
   "handler": "unsupported_numeric_claim",
-  "expectedOutcome": "not_evaluated",
-  "publicCapability": false,
-  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "expectedOutcome": "rejected",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
   "input": {
     "fixtureClass": "unsupported_numeric_claim",
     "synthetic": true

@@ -18,12 +18,13 @@ docs/
 
 ## 推荐阅读顺序
 
-1. [v1.5 核心产品化规划](planning/v1.5-plan.md)：下一阶段的 Headless Research Kernel、SDK、Worker、Scenario 和项目存档。
-2. [v1.4 规划](planning/v1.4-plan.md)：泛化、机制诊断和隔离确认。
-3. [v1.4 阶段报告](reports/stages/v1.4-progress.md)：最近一次真实研究和能力边界。
-4. [v1.3 规划](planning/v1.3-plan.md)：可靠性基础设施，以及 B/C 联合迭代。
-5. [v1.2 完整实施规划](planning/v1.2-plan.md)：确认性科研工作流与发布门禁。
-6. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
+1. [v1.6 公共科研能力与跨系统规划](planning/v1.6-plan.md)：七类公共科研接口，以及后续跨系统工作。
+2. [v1.5 核心产品化规划](planning/v1.5-plan.md)：已完成的 Headless Research Kernel、SDK、Worker、Scenario 和项目存档。
+3. [v1.4 规划](planning/v1.4-plan.md)：泛化、机制诊断和隔离确认。
+4. [v1.4 阶段报告](reports/stages/v1.4-progress.md)：最近一次真实研究和能力边界。
+5. [v1.3 规划](planning/v1.3-plan.md)：可靠性基础设施，以及 B/C 联合迭代。
+6. [v1.2 完整实施规划](planning/v1.2-plan.md)：确认性科研工作流与发布门禁。
+7. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
 
 ## 按主题查找
 
@@ -36,6 +37,7 @@ docs/
 - [v1.3 B/C 联合迭代计划](planning/v1.3-bc-plan.md)
 - [v1.4 泛化与隔离确认计划](planning/v1.4-plan.md)
 - [v1.5 Headless Research Kernel 产品化](planning/v1.5-plan.md)
+- [v1.6 公共科研能力与跨系统开发](planning/v1.6-plan.md)
 - [v1.5 T 阶段拆分计划](planning/v1.5-t-plan.md)
 - [下一阶段备选方案](planning/next-stage-options.md)
 
@@ -65,6 +67,7 @@ docs/
 - [Core Service、客户端 SDK 与参考 CLI](guides/core-service-and-sdks.md)
 - [Research Project Bundle v2](guides/project-bundle-v2.md)
 - [兼容、弃用与迁移政策](guides/compatibility-and-deprecation.md)
+- [公共科研能力接口](guides/public-scientific-capabilities.md)
 - [Scenario 扩展教程](guides/extensions/scenario-development.md)
 - [Plugin 扩展教程](guides/extensions/plugin-development.md)
 - [Worker 扩展教程](guides/extensions/worker-development.md)
@@ -100,6 +103,7 @@ docs/
 - [v1.5 T3 阶段：Research Capability Benchmark v1](reports/stages/v1.5-t3-progress.md)
 - [Research Capability Benchmark v1 基线](reports/stages/v1.5-t3-baseline.md)
 - [v1.5 T4 阶段：开源发布工程](reports/stages/v1.5-t4-progress.md)
+- [v1.6 U 阶段：七类公共科研能力](reports/stages/v1.6-u-progress.md)
 - [v1.0.1：证据与引用](reports/releases/v1.0.1-report.md)
 - [v1.0.2：长期记忆](reports/releases/v1.0.2-report.md)
 - [v1.0.3：自动实验迭代](reports/releases/v1.0.3-report.md)
@@ -131,6 +135,9 @@ docs/
 - [T4 npm 候选包机器审计](reports/validation/t4-package-audit.json)
 - [T5 最终 npm 包机器审计](reports/validation/t5-package-audit.json)
 - [v1.5.0 正式发布机器审计](reports/validation/v1.5-release-audit.json)
+- [T3 v1.1 公共能力机器基线](reports/validation/t3-capability-v1.1-baseline.json)
+- [T3 v1.1 与 v1.0 比较](reports/validation/t3-capability-v1.1-vs-v1.0.json)
+- [v1.6 package-only 能力审计](reports/validation/v1.6-package-audit.json)
 - [Skills 验证结果](reports/validation/skill-validation.json)
 - [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
 - [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)

@@ -5,9 +5,9 @@
   "dimensionTitle": "文献检索与全文证据",
   "kind": "success",
   "handler": "literature_supported",
-  "expectedOutcome": "not_evaluated",
-  "publicCapability": false,
-  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
   "input": {
     "fixtureClass": "literature_supported",
     "synthetic": true

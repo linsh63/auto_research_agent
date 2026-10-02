@@ -7,6 +7,7 @@ import {
   BundleDependencyReadModelSchema, JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
   PluginInspectionSchema, PluginInstallationsResultSchema, PluginInstallationSchema, PluginPermissionSchema, PluginRuntimeSelectionSchema, PluginSearchResultSchema, PluginSourceRecordSchema, PluginSourcesResultSchema,
   WorkerDescriptorSchema, WorkerRequestSchema, WorkerResultSchema,
+  ScientificCapabilityCatalogSchema,
   type Actor, type CommandResult, type ExecutionPolicy, type ProjectStatusReadModel, type PublicCommand,
   type PublicProjectBundle, type PublicQuery, type QueryResult, type ResearchAction, type ResearchActionCandidate, type WorkerResult,
 } from "./contracts.js";
@@ -130,6 +131,7 @@ export class ResearchApplication {
       if(command.type==="plugin.remove"){const installation=this.backend.plugins.remove(command.workspaceId,current.id,command.actor.id);return{data:{installation:PluginInstallationSchema.parse(installation)},eventType:command.projectId?"plugin.removed":null,eventPayload:{installation}};}
       const updated=this.backend.plugins.update({workspaceId:command.workspaceId,installationId:current.id,targetDescriptorId:command.payload.targetDescriptorId,approvedPermissions:command.payload.approvedPermissions,actorId:command.actor.id});return{data:{installation:PluginInstallationSchema.parse(updated.installation),permissionDiff:updated.permissionDiff},eventType:command.projectId?"plugin.updated":null,eventPayload:updated};
     }
+    if(command.type==="capability.invoke"){const project=this.backend.workflow.status(command.projectId).program;if(project.status==="draft")throw new PublicKernelError("GATE_REJECTED","Scientific capabilities require an approved research scope",false);if(command.payload.capability==="memory-improvement"&&["review","verify"].includes(command.payload.input.action)&&command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Memory review and verification require a user actor",false);const result=this.backend.capabilities.invoke(command.projectId,command.actor,command.payload);return{data:{capability:command.payload.capability,result},eventType:"capability.invoked",eventPayload:{capability:command.payload.capability,result}};}
     if(command.type==="conversation.send")return this.handleConversation(command,command.payload.sessionId,command.payload.message,"chat");
     if(command.type==="candidate.choose")return this.handleCandidateChoice(command);
     if(command.type==="action.execute")return this.executeAction(command,command.payload.action,"api",null,null);
@@ -244,6 +246,7 @@ export class ResearchApplication {
     if(query.type==="plugin.sources")return PluginSourcesResultSchema.parse({sources:this.backend.plugins.sources(query.workspaceId)});
     if(query.type==="plugin.installations")return PluginInstallationsResultSchema.parse({installations:this.backend.plugins.installations(query.workspaceId,query.projectId)});
     if(query.type==="plugin.runtime")return PluginRuntimeSelectionSchema.parse({plugins:this.backend.plugins.runtimeSelection(query.workspaceId,query.projectId)});
+    if(query.type==="capability.catalog")return ScientificCapabilityCatalogSchema.parse(this.backend.capabilities.catalog());
     const all=this.backend.projects.events(query.projectId),events=all.filter(item=>item.sequence>=query.fromSequence).slice(0,query.limit),last=events.at(-1)?.sequence??query.fromSequence-1,nextSequence=all.some(item=>item.sequence>last)?last+1:null;
     return ProjectEventListSchema.parse({schemaVersion:PUBLIC_SCHEMA_VERSION,workspaceId:query.workspaceId,projectId:query.projectId,events,nextSequence});
   }

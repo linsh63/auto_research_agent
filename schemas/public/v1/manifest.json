@@ -2,10 +2,10 @@
   "schemaVersion": "1.0.0",
   "jsonSchemaDraft": "2020-12",
   "files": {
-    "command.schema.json": "5c24c815a620021e59b8c247269b669eaf01a97584332d7789ed2c977e9e9738",
+    "command.schema.json": "4e53c24451b46d81640788c8c90161b9118e4fab49a1cb35bc85bfa17fd50e7d",
     "command-result.schema.json": "22892d9ec59899763a457d5cf395ab065f0f43fae8ba9362c1f4d87fd37416a4",
-    "query.schema.json": "5ce667b8bc29f904a2472d0847c0f3f97ed596b7dd8a3cec1db3fd422402892a",
-    "query-result.schema.json": "573e1454eecf797e5ea8fbc82e106a6adc4ff053ce5db498e9760cce98d13816",
+    "query.schema.json": "69a4bed16264154c1b0629088f6935ff6bab57bf8a7b0b464957ffd0c777e38c",
+    "query-result.schema.json": "796d36b14abed292796abf0a7dcc3a37b9c852ff32546a246db8e10c10290a5e",
     "project-status.schema.json": "cc38842d28a682d3740a28a9479965b6efdcd88daf1c3104b72156cb7c94e331",
     "project-events.schema.json": "5eb1e042dfcc5bd87a9e3753b9ee610adc3b8f80816abac5644e9a915e5bb417",
     "project-bundle.schema.json": "2438020cfd46f0ae2dd397c569ce80ad2446798f597bf8a803017bc6147f89f1",

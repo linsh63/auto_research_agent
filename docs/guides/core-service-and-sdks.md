@@ -31,6 +31,8 @@ npm run service -- --permissions filesystem.read,filesystem.write,process,confir
 | `GET /v1/stream` | ResearchEvent、候选更新和 JobLog SSE |
 | `GET /v1/audit` | 权限与外部服务审计 |
 
+`POST /v1/commands` 中的 `capability.invoke` 调用七类公共科研能力；`POST /v1/queries` 中的 `capability.catalog` 返回版本、操作和副作用。输入与门禁见[公共科研能力接口](public-scientific-capabilities.md)。
+
 全部端点要求 `Authorization: Bearer <token>`。请求体上限默认 1 MB。未允许的 Origin 和权限会在进入 Application 前被拒绝。
 
 ## TypeScript SDK

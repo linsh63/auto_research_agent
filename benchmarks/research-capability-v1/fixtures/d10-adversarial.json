@@ -5,9 +5,9 @@
   "dimensionTitle": "记忆提升",
   "kind": "adversarial",
   "handler": "unverified_memory_injection",
-  "expectedOutcome": "not_evaluated",
-  "publicCapability": false,
-  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "expectedOutcome": "rejected",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
   "input": {
     "fixtureClass": "unverified_memory_injection",
     "synthetic": true

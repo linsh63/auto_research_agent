@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "stage": "U",
+  "status": "pass",
+  "package": {
+    "name": "auto-research-agent",
+    "version": "1.6.0-alpha.1",
+    "filename": "auto-research-agent-1.6.0-alpha.1.tgz",
+    "sha256": "f07c6863d0767365fa1f2d57011760fc68faace477fa414b355badc1cea9d7c6",
+    "bytes": 220570,
+    "unpackedBytes": 1468963,
+    "entryCount": 197,
+    "publicExports": [
+      ".",
+      "./application",
+      "./client",
+      "./contracts",
+      "./kernel",
+      "./scenario",
+      "./server"
+    ]
+  },
+  "audits": {
+    "requiredFiles": true,
+    "forbiddenFiles": [],
+    "missingFiles": [],
+    "secretMatches": [],
+    "license": "Apache-2.0",
+    "private": false,
+    "thirdParty": [
+      {
+        "name": "@earendil-works/pi-coding-agent",
+        "version": "0.85.1",
+        "license": "MIT"
+      },
+      {
+        "name": "better-sqlite3",
+        "version": "13.0.3",
+        "license": "MIT"
+      },
+      {
+        "name": "typebox",
+        "version": "1.3.7",
+        "license": "MIT"
+      },
+      {
+        "name": "yaml",
+        "version": "2.9.1",
+        "license": "ISC"
+      },
+      {
+        "name": "zod",
+        "version": "4.6.5",
+        "license": "MIT"
+      }
+    ]
+  },
+  "freshInstall": {
+    "offline": true,
+    "node": "v22.23.1",
+    "quickstart": {
+      "status": "accepted",
+      "projectCreated": true,
+      "schemaVersion": "1.0.0"
+    },
+    "extensions": {
+      "scenario": true,
+      "workerClient": true,
+      "pluginDescriptor": true
+    },
+    "capabilities": {
+      "catalog": 7,
+      "invoke": "accepted"
+    }
+  },
+  "assertions": {
+    "packageOnlyPublicImports": true,
+    "migrationsResolveOutsideRepository": true,
+    "scenarioFixture": true,
+    "workerClientFixture": true,
+    "pluginDescriptorFixture": true,
+    "scientificCapabilitiesFixture": true,
+    "noPublishPerformed": true,
+    "noTagCreated": true
+  }
+}

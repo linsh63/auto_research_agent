@@ -5,9 +5,9 @@
   "dimensionTitle": "竞争假设",
   "kind": "success",
   "handler": "rivals_discriminated",
-  "expectedOutcome": "not_evaluated",
-  "publicCapability": false,
-  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "expectedOutcome": "demonstrated",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
   "input": {
     "fixtureClass": "rivals_discriminated",
     "synthetic": true

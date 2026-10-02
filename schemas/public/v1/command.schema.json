@@ -3367,6 +3367,859 @@
         "payload"
       ],
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "commandId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspaceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "agent",
+                "worker",
+                "system"
+              ]
+            },
+            "displayName": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "capability.invoke"
+        },
+        "payload": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "capability": {
+                  "type": "string",
+                  "const": "literature-evidence"
+                },
+                "input": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "const": "ingest"
+                        },
+                        "document": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {}
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "document"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "const": "search"
+                        },
+                        "query": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "limit": {
+                          "default": 20,
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 100
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "query",
+                        "limit"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "const": "claim-check"
+                        },
+                        "claim": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {}
+                        },
+                        "links": {
+                          "default": [],
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "claim",
+                        "links"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "capability",
+                "input"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "capability": {
+                  "type": "string",
+                  "const": "novelty-boundary"
+                },
+                "input": {
+                  "type": "object",
+                  "properties": {
+                    "coverageStatus": {
+                      "type": "string",
+                      "enum": [
+                        "complete",
+                        "incomplete"
+                      ]
+                    },
+                    "noveltyStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unresolved",
+                        "likely_overlap",
+                        "supported_with_scope"
+                      ]
+                    },
+                    "noveltyScope": {
+                      "default": null,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "comparisons": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "exact_overlap",
+                              "partial_overlap",
+                              "distinct",
+                              "unresolved"
+                            ]
+                          },
+                          "evidencePassageIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "evidencePassageIds"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "gaps": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "full_text_unavailable",
+                              "search_failure",
+                              "conflict",
+                              "coverage",
+                              "other"
+                            ]
+                          },
+                          "severity": {
+                            "type": "string",
+                            "enum": [
+                              "low",
+                              "medium",
+                              "high"
+                            ]
+                          },
+                          "resolved": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "severity",
+                          "resolved"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "coverageStatus",
+                    "noveltyStatus",
+                    "noveltyScope",
+                    "comparisons",
+                    "gaps"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "capability",
+                "input"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "capability": {
+                  "type": "string",
+                  "const": "rival-hypotheses"
+                },
+                "input": {
+                  "type": "object",
+                  "properties": {
+                    "hypotheses": {
+                      "minItems": 2,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "target",
+                              "null",
+                              "rival"
+                            ]
+                          },
+                          "statement": {
+                            "type": "string",
+                            "minLength": 20
+                          },
+                          "prediction": {
+                            "type": "string",
+                            "minLength": 10
+                          },
+                          "falsification": {
+                            "type": "string",
+                            "minLength": 10
+                          },
+                          "discriminatingObservations": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 10
+                            }
+                          },
+                          "updateRules": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "observation": {
+                                  "type": "string",
+                                  "minLength": 10
+                                },
+                                "effect": {
+                                  "type": "string",
+                                  "enum": [
+                                    "strengthen",
+                                    "weaken",
+                                    "refute",
+                                    "no_change"
+                                  ]
+                                },
+                                "rationale": {
+                                  "type": "string",
+                                  "minLength": 10
+                                }
+                              },
+                              "required": [
+                                "observation",
+                                "effect",
+                                "rationale"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "evidenceIds": {
+                            "default": [],
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "statement",
+                          "prediction",
+                          "falsification",
+                          "discriminatingObservations",
+                          "updateRules",
+                          "evidenceIds"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "rivalAbsenceJustification": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 10
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "hypotheses",
+                    "rivalAbsenceJustification"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "capability",
+                "input"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "capability": {
+                  "type": "string",
+                  "const": "design-confounding"
+                },
+                "input": {
+                  "type": "object",
+                  "properties": {
+                    "experimentalUnit": {
+                      "type": "string",
+                      "minLength": 3
+                    },
+                    "assignment": {
+                      "type": "string",
+                      "enum": [
+                        "randomized",
+                        "blocked",
+                        "matched",
+                        "observational"
+                      ]
+                    },
+                    "comparator": {
+                      "type": "string",
+                      "minLength": 3
+                    },
+                    "primaryOutcome": {
+                      "type": "string",
+                      "minLength": 3
+                    },
+                    "confounders": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "controls": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 2
+                      }
+                    },
+                    "repeatedMeasures": {
+                      "default": false,
+                      "type": "boolean"
+                    },
+                    "clusterField": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "experimentalUnit",
+                    "assignment",
+                    "comparator",
+                    "primaryOutcome",
+                    "confounders",
+                    "controls",
+                    "repeatedMeasures",
+                    "clusterField"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "capability",
+                "input"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "capability": {
+                  "type": "string",
+                  "const": "statistics-units"
+                },
+                "input": {
+                  "type": "object",
+                  "properties": {
+                    "direction": {
+                      "type": "string",
+                      "enum": [
+                        "maximize",
+                        "minimize"
+                      ]
+                    },
+                    "observations": {
+                      "minItems": 2,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "unitId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "variant": {
+                            "type": "string",
+                            "enum": [
+                              "baseline",
+                              "candidate"
+                            ]
+                          },
+                          "value": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "missingReason": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "unitId",
+                          "variant",
+                          "value",
+                          "missingReason"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "direction",
+                    "observations"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "capability",
+                "input"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "capability": {
+                  "type": "string",
+                  "const": "memory-improvement"
+                },
+                "input": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "const": "create"
+                        },
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "memoryType": {
+                          "type": "string",
+                          "enum": [
+                            "source",
+                            "passage",
+                            "claim",
+                            "experiment",
+                            "decision",
+                            "procedure",
+                            "hypothesis"
+                          ]
+                        },
+                        "content": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "evidenceIds": {
+                          "default": [],
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "applicability": {
+                          "default": "",
+                          "type": "string"
+                        },
+                        "invalidationCondition": {
+                          "default": null,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "revalidateAfter": {
+                          "default": null,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "id",
+                        "memoryType",
+                        "content",
+                        "evidenceIds",
+                        "applicability",
+                        "invalidationCondition",
+                        "revalidateAfter"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "review",
+                            "verify"
+                          ]
+                        },
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "note": {
+                          "default": "",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "id",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "const": "search"
+                        },
+                        "query": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "limit": {
+                          "default": 10,
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 100
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "query",
+                        "limit"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "capability",
+                "input"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "capability": {
+                  "type": "string",
+                  "const": "scientific-writing"
+                },
+                "input": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "studyId": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "facts": {
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]*$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "result",
+                              "design",
+                              "scope",
+                              "runtime",
+                              "threshold",
+                              "identifier"
+                            ]
+                          },
+                          "value": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean",
+                              "null"
+                            ]
+                          },
+                          "unit": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "sourceObjectId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "sourcePath": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "sourceHash": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "value",
+                          "unit",
+                          "sourceObjectId",
+                          "sourcePath",
+                          "sourceHash"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "requiredFactIds": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "assertions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "factId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "assertedValue": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean",
+                              "null"
+                            ]
+                          },
+                          "context": {
+                            "type": "string",
+                            "minLength": 3
+                          }
+                        },
+                        "required": [
+                          "factId",
+                          "assertedValue",
+                          "context"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "report": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "ledgerId",
+                    "studyId",
+                    "facts",
+                    "requiredFactIds",
+                    "assertions",
+                    "report"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "capability",
+                "input"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "commandId",
+        "idempotencyKey",
+        "workspaceId",
+        "projectId",
+        "actor",
+        "issuedAt",
+        "type",
+        "payload"
+      ],
+      "additionalProperties": false
     }
   ],
   "$defs": {

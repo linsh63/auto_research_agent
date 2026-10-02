@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "benchmarkId": "research-capability-v1",
-  "benchmarkVersion": "1.0.0",
+  "benchmarkVersion": "1.1.0",
   "publicSchemaVersion": "1.0.0",
   "resultSchema": "result.schema.json",
   "dimensions": [
@@ -17,28 +17,28 @@
       "title": "文献检索与全文证据",
       "successFixture": "fixtures/d02-success.json",
       "adversarialFixture": "fixtures/d02-adversarial.json",
-      "coverage": "not_evaluated"
+      "coverage": "full"
     },
     {
       "id": "03-novelty-boundary",
       "title": "创新性边界",
       "successFixture": "fixtures/d03-success.json",
       "adversarialFixture": "fixtures/d03-adversarial.json",
-      "coverage": "not_evaluated"
+      "coverage": "full"
     },
     {
       "id": "04-rival-hypotheses",
       "title": "竞争假设",
       "successFixture": "fixtures/d04-success.json",
       "adversarialFixture": "fixtures/d04-adversarial.json",
-      "coverage": "not_evaluated"
+      "coverage": "full"
     },
     {
       "id": "05-design-confounding",
       "title": "实验设计与混杂",
       "successFixture": "fixtures/d05-success.json",
       "adversarialFixture": "fixtures/d05-adversarial.json",
-      "coverage": "not_evaluated"
+      "coverage": "full"
     },
     {
       "id": "06-baseline-execution",
@@ -59,7 +59,7 @@
       "title": "统计与实验单位",
       "successFixture": "fixtures/d08-success.json",
       "adversarialFixture": "fixtures/d08-adversarial.json",
-      "coverage": "not_evaluated"
+      "coverage": "full"
     },
     {
       "id": "09-failure-diagnosis",
@@ -73,14 +73,14 @@
       "title": "记忆提升",
       "successFixture": "fixtures/d10-success.json",
       "adversarialFixture": "fixtures/d10-adversarial.json",
-      "coverage": "not_evaluated"
+      "coverage": "full"
     },
     {
       "id": "11-scientific-writing",
       "title": "科学写作",
       "successFixture": "fixtures/d11-success.json",
       "adversarialFixture": "fixtures/d11-adversarial.json",
-      "coverage": "not_evaluated"
+      "coverage": "full"
     },
     {
       "id": "12-reproduction-release",

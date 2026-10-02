@@ -5,9 +5,9 @@
   "dimensionTitle": "创新性边界",
   "kind": "adversarial",
   "handler": "novelty_overclaim",
-  "expectedOutcome": "not_evaluated",
-  "publicCapability": false,
-  "notEvaluatedReason": "No public Core Service command/query exposes this scientific capability in schema 1.0.0.",
+  "expectedOutcome": "rejected",
+  "publicCapability": true,
+  "notEvaluatedReason": null,
   "input": {
     "fixtureClass": "novelty_overclaim",
     "synthetic": true
