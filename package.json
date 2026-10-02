@@ -91,7 +91,6 @@
     "verify:platform": "tsx scripts/verify_platform_ci.ts"
   },
   "dependencies": {
-    "@earendil-works/pi-coding-agent": "0.85.1",
     "better-sqlite3": "13.0.3",
     "typebox": "1.3.7",
     "yaml": "2.9.1",
@@ -152,5 +151,8 @@
   "bin": {
     "auto-research-core": "dist/service/cli.js",
     "auto-research-reference": "dist/reference-cli.js"
+  },
+  "optionalDependencies": {
+    "@earendil-works/pi-coding-agent": "0.85.1"
   }
 }

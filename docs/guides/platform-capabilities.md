@@ -26,4 +26,6 @@ const spec={
 
 macOS 和 Windows 本地 Core 可以继续创建 Project、调用科研能力和操作 Bundle。其本机 snapshot 会把 Bubblewrap 标记为 `unavailable`；后续 W/X 阶段的 Linux SSH Worker 注册后才能领取此类 Job。
 
+Pi coding agent 是 optional dependency。安装成功时本地 `pi` executor 为 available；某个平台无法安装 Pi 时，基础 Core 安装继续完成且 snapshot 报告 Pi unavailable。需要 Pi 的 Job 会等待具备该 executor 的本地或远端 Worker。
+
 Artifact 和 Python script 使用 portable relative path：允许目录中的空格，同时拒绝绝对路径、Windows drive/UNC、`..`、空 path segment、NUL 和换行。workspace 本身仍可使用当前平台的绝对路径。Windows 超时与取消使用参数数组调用 `taskkill /t`；POSIX 使用进程组 signal。

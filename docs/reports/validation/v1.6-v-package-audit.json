@@ -6,9 +6,9 @@
     "name": "auto-research-agent",
     "version": "1.6.0-alpha.1",
     "filename": "auto-research-agent-1.6.0-alpha.1.tgz",
-    "sha256": "de038891ef356e6deabd4dea78a47858a0c3ec39607e3000648d27d1755c519a",
-    "bytes": 229359,
-    "unpackedBytes": 1543481,
+    "sha256": "3d8fc721672f12491cb1254988cb3254c245e9e96405be28761d305562d6fe57",
+    "bytes": 229673,
+    "unpackedBytes": 1544367,
     "entryCount": 200,
     "publicExports": [
       ".",
