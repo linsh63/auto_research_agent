@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "release": "v1.6.0",
+  "status": "blocked",
+  "decision": "awaiting_mac_cross_host",
+  "startedAt": "2026-10-03T14:25:39.891Z",
+  "finishedAt": "2026-10-03T14:27:16.171Z",
+  "environment": {
+    "node": "v22.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "publicSchemaVersion": "1.0.0",
+    "databaseSchemaVersion": 17
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "pass",
+      "durationMs": 1788,
+      "summary": "> tsc -p tsconfig.json"
+    },
+    {
+      "name": "full-test-suite",
+      "status": "pass",
+      "durationMs": 67287,
+      "summary": "# duration_ms 67092.207447"
+    },
+    {
+      "name": "linux-ssh-workspace",
+      "status": "pass",
+      "durationMs": 14441,
+      "summary": "# duration_ms 14251.751244"
+    },
+    {
+      "name": "typecheck",
+      "status": "pass",
+      "durationMs": 1583,
+      "summary": "> tsc --noEmit -p tsconfig.json"
+    },
+    {
+      "name": "public-boundary",
+      "status": "pass",
+      "durationMs": 189,
+      "summary": "{\"status\": \"pass\", \"publicFiles\": 8, \"exports\": [\".\", \"./application\", \"./client\", \"./contracts\", \"./kernel\", \"./scenario\", \"./server\", \"./ssh\"]}"
+    },
+    {
+      "name": "scenario-boundary",
+      "status": "pass",
+      "durationMs": 184,
+      "summary": "{\"status\": \"pass\", \"scenarioFiles\": 4}"
+    },
+    {
+      "name": "t3-boundary",
+      "status": "pass",
+      "durationMs": 151,
+      "summary": "{\"status\": \"pass\", \"runnerImports\": [\"node:crypto\", \"node:child_process\", \"node:fs\", \"node:path\", \"node:os\", \"auto-research-agent/client\", \"auto-research-agent/server\", \"auto-research-agent/contracts\"], \"fixtures\": 24}"
+    },
+    {
+      "name": "contracts",
+      "status": "pass",
+      "durationMs": 711,
+      "summary": "{\"status\":\"pass\",\"schemaVersion\":\"1.0.0\",\"files\":31}"
+    },
+    {
+      "name": "python-sdk",
+      "status": "pass",
+      "durationMs": 193,
+      "summary": "{\"status\": \"pass\", \"schemas\": 17, \"output\": \"python/research_sdk/generated_models.py\"}"
+    },
+    {
+      "name": "docs",
+      "status": "pass",
+      "durationMs": 199,
+      "summary": "Docs OK: 101 Markdown files, 0 broken local links"
+    },
+    {
+      "name": "package-install",
+      "status": "pass",
+      "durationMs": 9504,
+      "summary": "{\"status\":\"pass\",\"tarball\":\"auto-research-agent-1.6.0-alpha.1.tgz\",\"entries\":217,\"bytes\":265997,\"quickstart\":{\"status\":\"accepted\",\"projectCreated\":true,\"schemaVersion\":\"1.0.0\"},\"extensions\":{\"scenario\":true,\"workerClient\":true,\"pluginDescriptor\":true},\"capabilities\":{\"catalog\":7,\"invoke\":\"accepted\"}}"
+    }
+  ],
+  "tests": {
+    "count": 113,
+    "failed": 0
+  },
+  "releaseEvaluation": {
+    "status": "blocked",
+    "checks": [
+      {
+        "id": "migration",
+        "status": "passed",
+        "mandatory": true,
+        "artifactHashes": [
+          "251fb334aca2af95567414830263e69c5553e3af5f1cdb4e4d7a01db0375b5e2"
+        ],
+        "detail": "Full migration and rollback tests"
+      },
+      {
+        "id": "bundle",
+        "status": "passed",
+        "mandatory": true,
+        "artifactHashes": [
+          "5dba23e0a0d4e8fc8291724d9ff34061dc01201f97b1072eba43549ce86001ce"
+        ],
+        "detail": "Bundle roundtrip, tamper, collision, and redaction tests"
+      },
+      {
+        "id": "real_scenario",
+        "status": "passed",
+        "mandatory": true,
+        "artifactHashes": [
+          "1874e5964d2dc5f35148379479fc7afe6a3fe402e1e5d8fb37a04bcc49f170e0",
+          "3ff6bec8aef72dcb0f64cc2749ae6211afb6a84f5d527fdd18cf3915d9710fa0"
+        ],
+        "detail": "Two recorded real scenarios"
+      },
+      {
+        "id": "t3",
+        "status": "passed",
+        "mandatory": true,
+        "artifactHashes": [
+          "15f89e9ca55738b2a6562c14685eb738a75d47443b4704bee76439bf2f23c59b"
+        ],
+        "detail": "T3 v1.2 12/12 and repeat stability"
+      },
+      {
+        "id": "package",
+        "status": "passed",
+        "mandatory": true,
+        "artifactHashes": [
+          "195d624241b2331129a788f640280193c7a89ccdc988b9ba962888a25e5d0926"
+        ],
+        "detail": "Clean package installation and public exports"
+      },
+      {
+        "id": "license",
+        "status": "passed",
+        "mandatory": true,
+        "artifactHashes": [
+          "c8e0c3beb845794332ba5c96c8d6fb69776cd77fa0272e723c2f6a1229ba30c8",
+          "7d42bd85ac3a445ba4025c4420aea854667e6820f4bbebfd6a81396869fcb5b7"
+        ],
+        "detail": "License and third-party notices"
+      },
+      {
+        "id": "secret",
+        "status": "passed",
+        "mandatory": true,
+        "artifactHashes": [
+          "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        ],
+        "detail": "Tracked/untracked secret scan: 0 hits"
+      },
+      {
+        "id": "platform_matrix",
+        "status": "not_evaluated",
+        "mandatory": true,
+        "artifactHashes": [
+          "47304e982bc7394274f050dd6d4464f20f30f410257c2f5a062b516158faf640",
+          "c8afa64322d40ba44a56fea2878ffc8183a8cd4832398306e1f53a9be2c43e28"
+        ],
+        "detail": "Linux and native macOS component matrices pass; real Mac→user Linux exploration+confirmation remains pending"
+      }
+    ],
+    "blockers": [
+      "platform_matrix:not_evaluated"
+    ],
+    "knownLimitations": [
+      "Real Mac→user-controlled Linux exploration and confirmation must be run by the user before release."
+    ],
+    "evaluatedAt": "2026-10-03T14:27:16.157Z",
+    "sideEffects": "none"
+  },
+  "artifacts": [
+    {
+      "path": "docs/reports/validation/v1.6-v-platform-matrix.json",
+      "sha256": "47304e982bc7394274f050dd6d4464f20f30f410257c2f5a062b516158faf640",
+      "bytes": 1486,
+      "status": "pass"
+    },
+    {
+      "path": "docs/reports/validation/v1.6-w-ssh-matrix.json",
+      "sha256": "c8afa64322d40ba44a56fea2878ffc8183a8cd4832398306e1f53a9be2c43e28",
+      "bytes": 1460,
+      "status": "pass"
+    },
+    {
+      "path": "docs/reports/validation/v1.6-x-local.json",
+      "sha256": "5dba23e0a0d4e8fc8291724d9ff34061dc01201f97b1072eba43549ce86001ce",
+      "bytes": 1153,
+      "status": "pass"
+    },
+    {
+      "path": "docs/reports/validation/v1.6-y-local.json",
+      "sha256": "251fb334aca2af95567414830263e69c5553e3af5f1cdb4e4d7a01db0375b5e2",
+      "bytes": 1118,
+      "status": "pass"
+    },
+    {
+      "path": "docs/reports/validation/t3-capability-v1.2-repeat.json",
+      "sha256": "15f89e9ca55738b2a6562c14685eb738a75d47443b4704bee76439bf2f23c59b",
+      "bytes": 23943,
+      "status": "pass"
+    },
+    {
+      "path": "docs/reports/validation/t2a-mllm-run.json",
+      "sha256": "1874e5964d2dc5f35148379479fc7afe6a3fe402e1e5d8fb37a04bcc49f170e0",
+      "bytes": 3082,
+      "status": "pass"
+    },
+    {
+      "path": "docs/reports/validation/t2b-fasttext-run.json",
+      "sha256": "3ff6bec8aef72dcb0f64cc2749ae6211afb6a84f5d527fdd18cf3915d9710fa0",
+      "bytes": 6699,
+      "status": "pass"
+    },
+    {
+      "path": "docs/reports/validation/v1.6-z-package-audit.json",
+      "sha256": "195d624241b2331129a788f640280193c7a89ccdc988b9ba962888a25e5d0926",
+      "bytes": 1920,
+      "status": "pass"
+    }
+  ],
+  "macCrossHost": {
+    "status": "not_evaluated",
+    "expectedPath": ".research-data/z-mac-linux.json"
+  },
+  "security": {
+    "secretMatches": [],
+    "tagsBefore": [],
+    "tagsAfter": [],
+    "npmPublishPerformed": false,
+    "githubReleaseCreated": false
+  },
+  "rollback": {
+    "database": "Stop writers; restore the pre-migration SQLite backup and CAS manifest snapshot.",
+    "package": "Reinstall the previously pinned package and restore its compatible database backup.",
+    "worker": "Disable the new installation hash and re-enable the previous versioned SSH Worker."
+  }
+}

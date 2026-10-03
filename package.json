@@ -95,7 +95,8 @@
     "verify:platform": "tsx scripts/verify_platform_ci.ts",
     "test:ssh": "node --import tsx --test --test-concurrency=1 tests/ssh-portable.test.ts tests/ssh-remote-worker.test.ts",
     "verify:ssh": "tsx scripts/verify_ssh_ci.ts",
-    "test:ssh-workspace": "node --import tsx --test --test-concurrency=1 tests/ssh-portable-workspace.test.ts"
+    "test:ssh-workspace": "node --import tsx --test --test-concurrency=1 tests/ssh-portable-workspace.test.ts",
+    "audit:v1.6": "tsx scripts/run_v16_release_audit.ts"
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",
