@@ -24,8 +24,20 @@ export const JobLimitsSchema=z.object({
   wallTimeMs:z.number().int().positive(),cpuTimeSeconds:z.number().int().positive(),maxOutputBytes:z.number().int().positive(),maxArtifactBytes:z.number().int().positive(),
 }).strict();
 
-export const AuthorizedMountSchema=z.object({source:z.string().min(1),target:z.string().startsWith("/data/")}).strict();
 export const PortableRelativePathSchema=z.string().min(1).superRefine((value,context)=>{if(/[\0\r\n]/.test(value)||value.startsWith("/")||value.startsWith("\\")||/^[A-Za-z]:/.test(value)||value.split(/[\\/]/).some(part=>part===".."||part===""))context.addIssue({code:"custom",message:"Path must be a portable relative path without traversal, drive, UNC, empty segment, or control characters"});});
+export const ContentHashSchema=z.string().regex(/^[a-f0-9]{64}$/);
+export const PortableWorkspaceSpecSchema=z.object({
+  workspaceMode:z.enum(["cas_sync","remote_existing"]),
+  inputs:z.array(z.object({contentHash:ContentHashSchema,bytes:z.number().int().nonnegative(),access:z.enum(["public","project","private"]),target:PortableRelativePathSchema}).strict()).default([]),
+  remoteData:z.array(z.object({alias:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/),manifestHash:ContentHashSchema,target:z.string().regex(/^\/data\/[A-Za-z0-9._/-]+$/).refine(value=>!value.split("/").includes("..")),access:z.enum(["project","private"]).default("project")}).strict()).default([]),
+  outputs:z.array(z.object({name:z.string().min(1),path:PortableRelativePathSchema,mediaType:z.string().min(1),access:z.enum(["public","project","private"]).default("project"),maxBytes:z.number().int().positive()}).strict()).default([]),
+  transferQuotaBytes:z.number().int().positive(),
+}).strict().superRefine((value,context)=>{const paths=[...value.inputs.map(item=>item.target),...value.outputs.map(item=>item.path)];if(new Set(paths.map(item=>item.toLowerCase())).size!==paths.length)context.addIssue({code:"custom",message:"Portable workspace paths must not collide, including case-insensitive filesystems"});});
+export type PortableWorkspaceSpec=z.infer<typeof PortableWorkspaceSpecSchema>;
+export const AuthorizedMountSchema=z.union([
+  z.object({source:z.string().min(1),target:z.string().startsWith("/data/")}).strict(),
+  z.object({kind:z.literal("remote_alias"),alias:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/),manifestHash:ContentHashSchema,target:z.string().startsWith("/data/")}).strict(),
+]);
 export const JobExecutionSchema=z.discriminatedUnion("kind",[
   z.object({kind:z.literal("python"),workspace:z.string().min(1),script:PortableRelativePathSchema,args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(PortableRelativePathSchema).default([])}).strict(),
   z.object({kind:z.literal("bubblewrap"),workspace:z.string().min(1),command:z.string().startsWith("/"),args:z.array(z.string()),env:z.record(z.string(),z.string()).default({}),artifactPaths:z.array(PortableRelativePathSchema).default([])}).strict(),
@@ -37,10 +49,14 @@ export const JobSpecSchema=z.object({
   name:z.string().min(1),dataRole:z.enum(["exploration","confirmation"]),studyId:z.string().min(1).nullable().default(null),
   execution:JobExecutionSchema,resources:JobResourcesSchema,limits:JobLimitsSchema,priority:z.number().int().min(-100).max(100).default(0),
   resumable:z.boolean().default(true),maxAttempts:z.number().int().positive().max(10).default(3),
+  portableWorkspace:PortableWorkspaceSpecSchema.optional(),
   platformConstraints:z.object({os:z.array(z.enum(["linux","darwin","win32"])).default([]),arch:z.array(z.string().min(1)).default([]),requiresSandbox:z.boolean().default(false),storageModes:z.array(z.enum(["local","cas_sync","remote_existing"])).default([])}).strict().optional(),
 }).strict().superRefine((value,context)=>{
   if((value.dataRole==="confirmation")!==(value.studyId!==null))context.addIssue({code:"custom",message:"Confirmation jobs require studyId; exploration jobs must not provide it"});
   if(value.dataRole==="confirmation"&&value.execution.kind!=="bubblewrap")context.addIssue({code:"custom",message:"Confirmation jobs require the bubblewrap executor"});
+  if(value.portableWorkspace&&value.execution.kind==="pi")context.addIssue({code:"custom",message:"Portable workspaces do not support the Pi executor"});
+  if(value.portableWorkspace&&value.execution.kind!=="pi"&&value.execution.artifactPaths.length)context.addIssue({code:"custom",message:"Portable jobs declare outputs in portableWorkspace.outputs"});
+  if(value.dataRole==="confirmation"&&value.portableWorkspace&&!value.portableWorkspace.remoteData.some(item=>item.target==="/data/confirmation"))context.addIssue({code:"custom",message:"Portable confirmation jobs require a /data/confirmation remote alias"});
 });
 export type JobSpec=z.infer<typeof JobSpecSchema>;
 

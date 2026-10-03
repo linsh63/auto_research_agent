@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "stage": "X",
+  "status": "pass",
+  "recordedAt": "2026-10-03T07:57:01.490323+00:00",
+  "environment": {
+    "client": "linux",
+    "remote": "linux",
+    "transport": "real localhost OpenSSH sshd",
+    "sandbox": "bubblewrap"
+  },
+  "tests": {
+    "full": {
+      "passed": 110,
+      "failed": 0,
+      "durationMs": 62951.677603
+    },
+    "xAndJob": {
+      "passed": 12,
+      "failed": 0,
+      "durationMs": 15659.991546
+    }
+  },
+  "gates": {
+    "casSync": true,
+    "remoteExisting": true,
+    "artifactRoundTrip": true,
+    "confirmationRemoteAlias": true,
+    "cancellation": true,
+    "timeout": true,
+    "disconnectRecovery": true,
+    "quota": true,
+    "hashMismatch": true,
+    "pathEscape": true,
+    "duplicateSubmission": true,
+    "bundleSecretAbsence": true
+  },
+  "artifacts": {
+    "workerSha256": "a5ab8ea0c3bed4c91225935843c52beea8d19036c3f36eacfe851cb4ce4ba70c",
+    "packageSha256": "71fe7f7275a456bdadf943d7b4a84cb7ffb2a096508995b4b1cacb4639077fd3",
+    "packageEntries": 213
+  },
+  "limitations": [
+    "Native macOS arm64/x64 to Linux VM matrix is recorded separately by GitHub Actions."
+  ]
+}

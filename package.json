@@ -33,6 +33,10 @@
     "./server": {
       "types": "./dist/public/service.d.ts",
       "import": "./dist/public/service.js"
+    },
+    "./ssh": {
+      "types": "./dist/public/ssh.d.ts",
+      "import": "./dist/public/ssh.js"
     }
   },
   "engines": {
@@ -90,7 +94,8 @@
     "test:platform": "node --import tsx --test --test-concurrency=1 tests/platform-capabilities.test.ts tests/platform-smoke.test.ts",
     "verify:platform": "tsx scripts/verify_platform_ci.ts",
     "test:ssh": "node --import tsx --test --test-concurrency=1 tests/ssh-portable.test.ts tests/ssh-remote-worker.test.ts",
-    "verify:ssh": "tsx scripts/verify_ssh_ci.ts"
+    "verify:ssh": "tsx scripts/verify_ssh_ci.ts",
+    "test:ssh-workspace": "node --import tsx --test --test-concurrency=1 tests/ssh-portable-workspace.test.ts"
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",
@@ -133,6 +138,8 @@
     "dist/runtime/platform-capabilities.js",
     "dist/runtime/process-control.js",
     "dist/runtime/ssh-remote-worker.js",
+    "dist/runtime/ssh-remote-job-worker.js",
+    "dist/runtime/remote-data-alias-registry.js",
     "dist/adapters/bubblewrap-runner.js",
     "dist/adapters/process.js",
     "dist/reference-cli.js",

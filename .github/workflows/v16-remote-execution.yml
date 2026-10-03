@@ -1,0 +1,53 @@
+name: v1.6 remote execution
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-real-sshd:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci
+      - run: sudo apt-get update && sudo apt-get install -y openssh-server bubblewrap && sudo mkdir -p /run/sshd
+      - run: node --import tsx --test --test-concurrency=1 tests/ssh-portable-workspace.test.ts
+
+  macos-to-linux:
+    name: ${{ matrix.name }} to Linux VM
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS arm64
+            os: macos-15
+          - name: macOS x64
+            os: macos-15-intel
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci
+      - uses: lima-vm/lima-actions/setup@v1
+        with:
+          version: v1.1.0
+      - name: Start Linux SSH target
+        run: |
+          limactl start --plain --name=default --cpus=2 --memory=2 template://ubuntu-lts
+          ssh lima-default 'sudo apt-get update && sudo apt-get install -y bubblewrap curl ca-certificates && curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs'
+      - name: Submit from native macOS and execute on Linux
+        run: npx tsx scripts/validate_x_external_ssh.ts

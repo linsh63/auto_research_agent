@@ -2468,6 +2468,147 @@
                   "exclusiveMinimum": 0,
                   "maximum": 10
                 },
+                "portableWorkspace": {
+                  "type": "object",
+                  "properties": {
+                    "workspaceMode": {
+                      "type": "string",
+                      "enum": [
+                        "cas_sync",
+                        "remote_existing"
+                      ]
+                    },
+                    "inputs": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "contentHash": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "access": {
+                            "type": "string",
+                            "enum": [
+                              "public",
+                              "project",
+                              "private"
+                            ]
+                          },
+                          "target": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "contentHash",
+                          "bytes",
+                          "access",
+                          "target"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "remoteData": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "alias": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+                          },
+                          "manifestHash": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "target": {
+                            "type": "string",
+                            "pattern": "^\\/data\\/[A-Za-z0-9._/-]+$"
+                          },
+                          "access": {
+                            "default": "project",
+                            "type": "string",
+                            "enum": [
+                              "project",
+                              "private"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "alias",
+                          "manifestHash",
+                          "target",
+                          "access"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "outputs": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "path": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "mediaType": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "access": {
+                            "default": "project",
+                            "type": "string",
+                            "enum": [
+                              "public",
+                              "project",
+                              "private"
+                            ]
+                          },
+                          "maxBytes": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "path",
+                          "mediaType",
+                          "access",
+                          "maxBytes"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "transferQuotaBytes": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "workspaceMode",
+                    "inputs",
+                    "remoteData",
+                    "outputs",
+                    "transferQuotaBytes"
+                  ],
+                  "additionalProperties": false
+                },
                 "platformConstraints": {
                   "type": "object",
                   "properties": {

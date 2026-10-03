@@ -17,6 +17,7 @@ import { LocalJobWorker, type LocalJobWorkerOptions } from "../runtime/local-job
 import type { WorkerDescriptor } from "../domain/job.js";
 import { PublicScientificCapabilities } from "./public-scientific-capabilities.js";
 import { PublicSshManager } from "./public-ssh-manager.js";
+import { SshRemoteJobWorker,type SshRemoteJobWorkerOptions } from "../runtime/ssh-remote-job-worker.js";
 
 /** Transitional backend hidden behind the v1.5 public facade. */
 export class PublicApplicationBackend{
@@ -32,5 +33,6 @@ export class PublicApplicationBackend{
     try{interactions=await InteractionStore.open(path);jobs=await JobStore.open(path);plugins=await PluginStore.open(path);const serviceAudit=await ServiceAuditStore.open(path);serviceAudit.close();const evidence=new EvidenceStore(path);evidence.close();const memory=new MemoryStore(path);memory.close();const search=new SearchStore(path);search.close();bundles=await BundleStore.open(path,{artifactRoots:options.artifactRoots,artifactRoot:options.artifactRoot});ssh=await PublicSshManager.open(path,options.sshStateDir??resolve(dirname(path),"ssh"));capabilities=await PublicScientificCapabilities.open(path);const research=await ResearchStore.open(path,{maxDerivedRuns:options.maxDerivedRuns});return new PublicApplicationBackend(research,projects,interactions,jobs,plugins,bundles,capabilities,ssh);}catch(error){ssh?.close();capabilities?.close();bundles?.close();plugins?.close();jobs?.close();interactions?.close();projects.close();throw error;}
   }
   createLocalWorker(descriptor:WorkerDescriptor,options:LocalJobWorkerOptions):LocalJobWorker{return new LocalJobWorker(this.jobs,descriptor,options);}
+  createSshWorker(workspaceId:string,profileId:string,installationId:string,options:SshRemoteJobWorkerOptions):SshRemoteJobWorker{const profile=this.ssh.store.profile(workspaceId,profileId),installation=this.ssh.store.installation(workspaceId,installationId);if(profile.status!=="trusted"||installation.status!=="enabled"||installation.profileId!==profile.id)throw new Error("SSH Worker requires a trusted profile and enabled matching installation");return new SshRemoteJobWorker(this.jobs,this.ssh.runtime,profile,installation,options);}
   close():void{this.ssh.close();this.capabilities.close();this.bundles.close();this.plugins.close();this.jobs.close();this.interactions.close();this.projects.close();this.research.close();}
 }

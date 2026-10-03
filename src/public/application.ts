@@ -24,6 +24,8 @@ export interface ResearchApplicationOptions {
 }
 export interface LocalWorkerOptions{descriptor:import("./contracts.js").WorkerDescriptor;artifactRoot:string;pythonExecutable?:string;pythonRunnerPath?:string;heartbeatIntervalMs?:number}
 export interface LocalWorkerController{runOnce():Promise<import("./contracts.js").JobLease|null>}
+export interface SshWorkerOptions{workspaceId:string;profileId:string;installationId:string;artifactRoot:string;aliases?:Array<{alias:string;manifestHash:string;remotePath:string;access:"project"|"private"}>;heartbeatIntervalMs?:number;retainRemoteWorkspace?:boolean}
+export interface SshWorkerController{readonly descriptor:import("./contracts.js").WorkerDescriptor;runOnce():Promise<import("./contracts.js").JobLease|null>}
 export interface ExecutionAuditContext{permissions?:import("./contracts.js").PluginPermission[];externalServices?:string[]}
 
 interface DispatchOutcome {
@@ -52,6 +54,8 @@ export class ResearchApplication {
     const worker=this.backend.createLocalWorker(descriptor,{artifactRoot:options.artifactRoot,pythonExecutable:options.pythonExecutable,pythonRunnerPath:options.pythonRunnerPath,heartbeatIntervalMs:options.heartbeatIntervalMs});
     return{runOnce:()=>worker.runOnce()};
   }
+
+  createSshWorker(options:SshWorkerOptions):SshWorkerController{const worker=this.backend.createSshWorker(options.workspaceId,options.profileId,options.installationId,{artifactRoot:options.artifactRoot,aliases:options.aliases,heartbeatIntervalMs:options.heartbeatIntervalMs,retainRemoteWorkspace:options.retainRemoteWorkspace});return{descriptor:worker.descriptor,runOnce:()=>worker.runOnce()};}
 
   async execute(input: unknown,auditContext:ExecutionAuditContext={}): Promise<CommandResult> {
     const parsed = PublicCommandSchema.safeParse(input);

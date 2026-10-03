@@ -1,6 +1,6 @@
 # SSH 远程 Linux Worker
 
-W 阶段提供版本化 SSH Host profile、host-key trust gate、SFTP 安装和 stdio Worker transport。它只负责安全连接与 Worker 生命周期；远程科研任务、workspace、Artifact 和 confirmation 属于 X 阶段。
+W 阶段提供版本化 SSH Host profile、host-key trust gate、SFTP 安装和 stdio Worker transport；X 阶段在其上增加 portable workspace、Artifact 回传和 remote confirmation。详见 [Portable SSH workspaces](portable-ssh-workspaces.md)。
 
 ## 前置条件
 
