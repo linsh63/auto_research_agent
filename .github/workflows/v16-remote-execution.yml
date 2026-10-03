@@ -20,7 +20,12 @@ jobs:
           node-version: 22.19.0
           cache: npm
       - run: npm ci
-      - run: sudo apt-get update && sudo apt-get install -y openssh-server bubblewrap && sudo mkdir -p /run/sshd
+      - name: Install Linux SSH and sandbox capabilities
+        run: |
+          sudo apt-get update && sudo apt-get install -y openssh-server bubblewrap
+          sudo mkdir -p /run/sshd
+          sudo sysctl -w kernel.unprivileged_userns_clone=1
+          if sysctl kernel.apparmor_restrict_unprivileged_userns >/dev/null 2>&1; then sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0; fi
       - run: node --import tsx --test --test-concurrency=1 tests/ssh-portable-workspace.test.ts
 
   macos-to-linux:
@@ -42,12 +47,11 @@ jobs:
           node-version: 22.19.0
           cache: npm
       - run: npm ci
-      - uses: lima-vm/lima-actions/setup@v1
-        with:
-          version: v1.1.0
+      - name: Install Lima and QEMU on macOS
+        run: brew install lima qemu
       - name: Start Linux SSH target
         run: |
-          limactl start --plain --name=default --cpus=2 --memory=2 template://ubuntu-lts
-          ssh lima-default 'sudo apt-get update && sudo apt-get install -y bubblewrap curl ca-certificates && curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt-get install -y nodejs'
+          limactl start --plain --name=default --vm-type=qemu --cpus=2 --memory=2 template://ubuntu-lts
+          ssh lima-default 'sudo apt-get update && sudo apt-get install -y bubblewrap curl ca-certificates && sudo sysctl -w kernel.unprivileged_userns_clone=1 && (sysctl kernel.apparmor_restrict_unprivileged_userns >/dev/null 2>&1 && sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true) && curl -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource.sh && sudo bash /tmp/nodesource.sh && rm /tmp/nodesource.sh && sudo apt-get install -y nodejs'
       - name: Submit from native macOS and execute on Linux
         run: npx tsx scripts/validate_x_external_ssh.ts
