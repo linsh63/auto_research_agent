@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "stage": "W",
+  "status": "pass",
+  "workflow": {
+    "name": "v1.6 SSH transport",
+    "runId": 37086666957,
+    "url": "https://github.com/linsh63/auto_research_agent/actions/runs/37086666957",
+    "commit": "ced51db",
+    "conclusion": "success",
+    "duration": "1m31s"
+  },
+  "platforms": [
+    {"name": "Linux x64 real sshd", "status": "pass", "artifactDigest": "9e58e4a39606fae4a7c89c606aaa1852e44e4248236d95b61f33f1bc045efb1d", "coverage": ["OpenSSH client", "real sshd", "fingerprint", "SFTP install", "hash handshake", "stdio lifecycle", "migration", "service audit"]},
+    {"name": "macOS arm64 client", "status": "pass", "artifactDigest": "75a2c5fb3df12d70a1c4858bba45b77cfd85a25744f51263269ed44837524723", "coverage": ["system OpenSSH", "ssh -G", "SFTP client", "stdio lifecycle"]},
+    {"name": "macOS x64 client", "status": "pass", "artifactDigest": "088928e7e68f6ef43323d66ad42e85595b2fd74b8d6a394c494da81c1d145b55", "coverage": ["system OpenSSH", "ssh -G", "SFTP client", "stdio lifecycle"]}
+  ],
+  "assertions": {
+    "fixedLauncher": true,
+    "exactWorkerHash": true,
+    "strictKnownHosts": true,
+    "noCoreBearerOnRemote": true,
+    "noCorePublicListener": true,
+    "disconnectRecovery": true,
+    "staleLeaseRejected": true,
+    "windowsSupported": false
+  },
+  "notes": ["Full macOS-to-Linux research Job execution is intentionally reserved for X/Z after portable workspace and Artifact transport exist."]
+}

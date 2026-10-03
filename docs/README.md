@@ -148,6 +148,7 @@ docs/
 - [v1.6 V Linux/macOS 原生矩阵](reports/validation/v1.6-v-platform-matrix.json)
 - [v1.6 W 本地 SSH transport](reports/validation/v1.6-w-ssh-local.json)
 - [v1.6 W package-only 安装审计](reports/validation/v1.6-w-package-audit.json)
+- [v1.6 W Linux/macOS SSH transport 矩阵](reports/validation/v1.6-w-ssh-matrix.json)
 - [Skills 验证结果](reports/validation/skill-validation.json)
 - [v1.2 正式发布人工盲评包](reports/validation/v1.2-blind-review-packet.md)
 - [v1.2 正式发布机器审计](reports/validation/v1.2-release-audit.json)
