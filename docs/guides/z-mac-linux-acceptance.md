@@ -23,12 +23,12 @@ ssh my-research-linux 'uname -s && node --version && bwrap --version'
 npx tsx scripts/validate_z_mac_linux.ts \
   --host my-research-linux \
   --remote-root /data0/linsihan/ara-z-worker \
-  --output .research-data/z-mac-linux.json
+  --output docs/reports/validation/v1.6-z-mac-linux.json
 ```
 
 脚本会人工显示首次 host fingerprint gate，安装精确 hash Worker，运行一个 `cas_sync` exploration 和一个一次性 `remote_existing` confirmation，校验 Artifact 回传，并确认 sealed confirmation 未进入 Mac CAS、日志或 Bundle。成功时输出 `status: pass`。
 
-4. 将 `.research-data/z-mac-linux.json` 安全复制到这台开发服务器仓库的同一路径，然后再次执行：
+4. 将 `docs/reports/validation/v1.6-z-mac-linux.json` 安全复制到这台开发服务器仓库的同一路径，然后再次执行：
 
 ```bash
 npm run audit:v1.6

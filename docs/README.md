@@ -74,6 +74,7 @@ docs/
 - [Portable SSH workspace 与 Artifact](guides/portable-ssh-workspaces.md)
 - [Baseline 与发布评估](guides/baseline-and-release-evaluation.md)
 - [Z Mac → Linux 最终验收](guides/z-mac-linux-acceptance.md)
+- [交给 Mac Codex 的 Z 验收 Prompt](handoffs/v1.6-z-mac-codex-prompt.md)
 - [Scenario 扩展教程](guides/extensions/scenario-development.md)
 - [Plugin 扩展教程](guides/extensions/plugin-development.md)
 - [Worker 扩展教程](guides/extensions/worker-development.md)

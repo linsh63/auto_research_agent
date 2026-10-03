@@ -224,7 +224,7 @@
   ],
   "macCrossHost": {
     "status": "not_evaluated",
-    "expectedPath": ".research-data/z-mac-linux.json"
+    "expectedPath": "docs/reports/validation/v1.6-z-mac-linux.json"
   },
   "security": {
     "secretMatches": [],
