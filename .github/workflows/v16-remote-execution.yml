@@ -52,6 +52,9 @@ jobs:
       - name: Start Linux SSH target
         run: |
           limactl start --plain --name=default --vm-type=qemu --cpus=2 --memory=2 template://ubuntu-lts
+          mkdir -p -m 0700 ~/.ssh
+          printf 'Include ~/.lima/*/ssh.config\n' > ~/.ssh/config
+          chmod 0600 ~/.ssh/config
           ssh lima-default 'sudo apt-get update && sudo apt-get install -y bubblewrap curl ca-certificates && sudo sysctl -w kernel.unprivileged_userns_clone=1 && (sysctl kernel.apparmor_restrict_unprivileged_userns >/dev/null 2>&1 && sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true) && curl -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource.sh && sudo bash /tmp/nodesource.sh && rm /tmp/nodesource.sh && sudo apt-get install -y nodejs'
       - name: Submit from native macOS and execute on Linux
         run: npx tsx scripts/validate_x_external_ssh.ts
