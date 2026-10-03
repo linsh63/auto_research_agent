@@ -49,6 +49,7 @@ export const JobSpecSchema=z.object({
   name:z.string().min(1),dataRole:z.enum(["exploration","confirmation"]),studyId:z.string().min(1).nullable().default(null),
   execution:JobExecutionSchema,resources:JobResourcesSchema,limits:JobLimitsSchema,priority:z.number().int().min(-100).max(100).default(0),
   resumable:z.boolean().default(true),maxAttempts:z.number().int().positive().max(10).default(3),
+  executionPhase:z.enum(["general","baseline","exploration"]).default("general"),baselineGate:z.object({resultId:z.string().min(1),resultHash:ContentHashSchema}).strict().optional(),
   portableWorkspace:PortableWorkspaceSpecSchema.optional(),
   platformConstraints:z.object({os:z.array(z.enum(["linux","darwin","win32"])).default([]),arch:z.array(z.string().min(1)).default([]),requiresSandbox:z.boolean().default(false),storageModes:z.array(z.enum(["local","cas_sync","remote_existing"])).default([])}).strict().optional(),
 }).strict().superRefine((value,context)=>{
@@ -57,6 +58,8 @@ export const JobSpecSchema=z.object({
   if(value.portableWorkspace&&value.execution.kind==="pi")context.addIssue({code:"custom",message:"Portable workspaces do not support the Pi executor"});
   if(value.portableWorkspace&&value.execution.kind!=="pi"&&value.execution.artifactPaths.length)context.addIssue({code:"custom",message:"Portable jobs declare outputs in portableWorkspace.outputs"});
   if(value.dataRole==="confirmation"&&value.portableWorkspace&&!value.portableWorkspace.remoteData.some(item=>item.target==="/data/confirmation"))context.addIssue({code:"custom",message:"Portable confirmation jobs require a /data/confirmation remote alias"});
+  if(value.executionPhase==="exploration"&&!value.baselineGate)context.addIssue({code:"custom",message:"Exploration jobs require a passed baseline gate"});
+  if(value.executionPhase!=="exploration"&&value.baselineGate)context.addIssue({code:"custom",message:"baselineGate is only valid for exploration jobs"});
 });
 export type JobSpec=z.infer<typeof JobSpecSchema>;
 

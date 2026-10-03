@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "stage": "Y",
+  "status": "pass",
+  "recordedAt": "2026-10-03T12:48:59.975193+00:00",
+  "tests": {
+    "full": {
+      "passed": 113,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 114925.925995
+    },
+    "baselineRelease": {
+      "passed": 3,
+      "failed": 0
+    },
+    "t3": {
+      "version": "1.2.0",
+      "demonstrated": 12,
+      "partial": 0,
+      "notEvaluated": 0,
+      "failed": 0,
+      "deterministicGateHash": "45b5d554486fb707db3c1e4db41c163c5b291b7f0a65cc2151a1fabc9684039d",
+      "repeatSameGateHash": true,
+      "repeatChangedCases": 0
+    }
+  },
+  "adversarialGates": [
+    "fake_baseline",
+    "unit_drift",
+    "missing_run",
+    "failed_run",
+    "manifest_mismatch",
+    "tolerance",
+    "missing_platform",
+    "missing_license",
+    "secret_hit",
+    "missing_audit_artifact"
+  ],
+  "package": {
+    "status": "pass",
+    "sha256": "f768bccfc9586fcca6f75215f9f379623c04954763138ef8466bf50112032064",
+    "entries": 217,
+    "secretMatches": []
+  },
+  "sideEffects": {
+    "gitTag": false,
+    "githubRelease": false,
+    "npmPublish": false
+  }
+}

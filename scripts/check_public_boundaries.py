@@ -10,6 +10,7 @@ IMPORT = re.compile(r'(?:from\s+|import\s*)["\']([^"\']+)["\']')
 FORBIDDEN_PREFIXES = ("../domain/", "../application/", "../infrastructure/", "../adapters/", "../core/")
 APPLICATION_ALLOWLIST = {
     "../application/public-application-backend.js",
+    "../application/public-baseline-release.js",
 }
 SERVICE_ALLOWLIST = {"../service/core-service.js"}
 issues = []

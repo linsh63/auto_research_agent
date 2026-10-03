@@ -4,12 +4,12 @@
   "dimensionId": "06-baseline-execution",
   "dimensionTitle": "baseline 与执行",
   "kind": "adversarial",
-  "handler": "job_over_capacity",
-  "expectedOutcome": "degraded",
+  "handler": "false_baseline_rejected",
+  "expectedOutcome": "rejected",
   "publicCapability": true,
   "notEvaluatedReason": null,
   "input": {
-    "fixtureClass": "job_over_capacity",
+    "fixtureClass": "false_baseline_rejected",
     "synthetic": true
   },
   "humanRubric": "Review whether baseline 与执行 is demonstrated with traceable evidence and an appropriate claim boundary."

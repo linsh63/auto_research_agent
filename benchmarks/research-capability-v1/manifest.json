@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "benchmarkId": "research-capability-v1",
-  "benchmarkVersion": "1.1.0",
+  "benchmarkVersion": "1.2.0",
   "publicSchemaVersion": "1.0.0",
   "resultSchema": "result.schema.json",
   "dimensions": [
@@ -45,7 +45,7 @@
       "title": "baseline 与执行",
       "successFixture": "fixtures/d06-success.json",
       "adversarialFixture": "fixtures/d06-adversarial.json",
-      "coverage": "partial"
+      "coverage": "full"
     },
     {
       "id": "07-sequential-decision",
@@ -87,7 +87,7 @@
       "title": "复现与发布",
       "successFixture": "fixtures/d12-success.json",
       "adversarialFixture": "fixtures/d12-adversarial.json",
-      "coverage": "partial"
+      "coverage": "full"
     }
   ],
   "realCaseEvidence": [

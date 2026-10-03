@@ -2230,6 +2230,33 @@
                           "exclusiveMinimum": 0,
                           "maximum": 10
                         },
+                        "executionPhase": {
+                          "default": "general",
+                          "type": "string",
+                          "enum": [
+                            "general",
+                            "baseline",
+                            "exploration"
+                          ]
+                        },
+                        "baselineGate": {
+                          "type": "object",
+                          "properties": {
+                            "resultId": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "resultHash": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "resultId",
+                            "resultHash"
+                          ],
+                          "additionalProperties": false
+                        },
                         "portableWorkspace": {
                           "type": "object",
                           "properties": {
@@ -2429,7 +2456,8 @@
                         "limits",
                         "priority",
                         "resumable",
-                        "maxAttempts"
+                        "maxAttempts",
+                        "executionPhase"
                       ],
                       "additionalProperties": false
                     },
@@ -3471,6 +3499,98 @@
               },
               "required": [
                 "capabilities"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ready",
+                    "blocked"
+                  ]
+                },
+                "checks": {
+                  "minItems": 8,
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "migration",
+                          "bundle",
+                          "real_scenario",
+                          "t3",
+                          "package",
+                          "license",
+                          "secret",
+                          "platform_matrix"
+                        ]
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "passed",
+                          "failed",
+                          "not_evaluated"
+                        ]
+                      },
+                      "mandatory": {
+                        "type": "boolean"
+                      },
+                      "artifactHashes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        }
+                      },
+                      "detail": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "status",
+                      "mandatory",
+                      "artifactHashes",
+                      "detail"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "blockers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "knownLimitations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "evaluatedAt": {
+                  "type": "string"
+                },
+                "sideEffects": {
+                  "type": "string",
+                  "const": "none"
+                }
+              },
+              "required": [
+                "status",
+                "checks",
+                "blockers",
+                "knownLimitations",
+                "evaluatedAt",
+                "sideEffects"
               ],
               "additionalProperties": false
             },

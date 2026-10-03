@@ -4,12 +4,12 @@
   "dimensionId": "06-baseline-execution",
   "dimensionTitle": "baseline 与执行",
   "kind": "success",
-  "handler": "job_executes",
+  "handler": "baseline_gates_exploration",
   "expectedOutcome": "demonstrated",
   "publicCapability": true,
   "notEvaluatedReason": null,
   "input": {
-    "fixtureClass": "job_executes",
+    "fixtureClass": "baseline_gates_exploration",
     "synthetic": true
   },
   "humanRubric": "Review whether baseline 与执行 is demonstrated with traceable evidence and an appropriate claim boundary."

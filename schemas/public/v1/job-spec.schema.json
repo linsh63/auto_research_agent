@@ -250,6 +250,33 @@
       "exclusiveMinimum": 0,
       "maximum": 10
     },
+    "executionPhase": {
+      "default": "general",
+      "type": "string",
+      "enum": [
+        "general",
+        "baseline",
+        "exploration"
+      ]
+    },
+    "baselineGate": {
+      "type": "object",
+      "properties": {
+        "resultId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resultHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "resultId",
+        "resultHash"
+      ],
+      "additionalProperties": false
+    },
     "portableWorkspace": {
       "type": "object",
       "properties": {
@@ -449,7 +476,8 @@
     "limits",
     "priority",
     "resumable",
-    "maxAttempts"
+    "maxAttempts",
+    "executionPhase"
   ],
   "additionalProperties": false
 }

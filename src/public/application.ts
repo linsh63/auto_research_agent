@@ -8,10 +8,12 @@ import {
   PluginInspectionSchema, PluginInstallationsResultSchema, PluginInstallationSchema, PluginPermissionSchema, PluginRuntimeSelectionSchema, PluginSearchResultSchema, PluginSourceRecordSchema, PluginSourcesResultSchema,
   WorkerDescriptorSchema, WorkerRequestSchema, WorkerResultSchema,
   ScientificCapabilityCatalogSchema,
+  BaselineResultSchema,ReleaseEvaluationSchema,
   type Actor, type CommandResult, type ExecutionPolicy, type ProjectStatusReadModel, type PublicCommand,
   type PublicProjectBundle, type PublicQuery, type QueryResult, type ResearchAction, type ResearchActionCandidate, type WorkerResult,
 } from "./contracts.js";
 import { assertCommandContext, assertQueryContext, PublicKernelError, toPublicError } from "./kernel.js";
+import { evaluateBaseline,evaluateRelease } from "../application/public-baseline-release.js";
 
 export interface ResearchApplicationOptions {
   databasePath: string;
@@ -119,9 +121,11 @@ export class ResearchApplication {
     }
     if(command.type==="job.submit"){
       if(command.payload.spec.dataRole==="confirmation"&&command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Only a user actor can submit a confirmation job",false);
+      if(command.payload.spec.executionPhase==="exploration"){const gate=command.payload.spec.baselineGate!,event=this.backend.projects.events(command.projectId).find(item=>item.type==="baseline.evaluated"&&(item.payload as any)?.result?.id===gate.resultId&&(item.payload as any)?.result?.contentHash===gate.resultHash&&(item.payload as any)?.result?.status==="passed");if(!event)throw new PublicKernelError("GATE_REJECTED","Exploration requires a passed baseline result recorded in this Project",false);}
       const job=this.backend.jobs.submit({workspaceId:command.workspaceId,projectId:command.projectId,spec:command.payload.spec,confirmationToken:command.payload.confirmationToken});
       return{data:{job:JobRecordSchema.parse(job)},eventType:"job.submitted",eventPayload:{job}};
     }
+    if(command.type==="baseline.evaluate"){const result=BaselineResultSchema.parse(evaluateBaseline(command.payload.spec,command.payload.runs));return{data:{result},eventType:"baseline.evaluated",eventPayload:{result,spec:command.payload.spec}};}
     if(command.type==="job.cancel"||command.type==="job.retry"){
       if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN",`Only a user actor can ${command.type==="job.cancel"?"cancel":"retry"} a job`,false);
       const job=command.type==="job.cancel"?this.backend.jobs.cancel(command.workspaceId,command.projectId,command.payload.jobId):this.backend.jobs.retry(command.workspaceId,command.projectId,command.payload.jobId);
@@ -265,6 +269,7 @@ export class ResearchApplication {
     if(query.type==="plugin.installations")return PluginInstallationsResultSchema.parse({installations:this.backend.plugins.installations(query.workspaceId,query.projectId)});
     if(query.type==="plugin.runtime")return PluginRuntimeSelectionSchema.parse({plugins:this.backend.plugins.runtimeSelection(query.workspaceId,query.projectId)});
     if(query.type==="capability.catalog")return ScientificCapabilityCatalogSchema.parse(this.backend.capabilities.catalog());
+    if(query.type==="release.evaluate")return ReleaseEvaluationSchema.parse(evaluateRelease(query.evidence));
     if(query.type==="ssh.profiles")return this.backend.ssh.profiles(query.workspaceId);
     if(query.type==="ssh.profile")return this.backend.ssh.profile(query.workspaceId,query.profileId);
     if(query.type==="ssh.project")return this.backend.ssh.project(query.workspaceId,query.projectId);

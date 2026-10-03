@@ -126,6 +126,7 @@
     "dist/public/",
     "dist/service/",
     "dist/application/public-application-backend.js",
+    "dist/application/public-baseline-release.js",
     "dist/application/public-scientific-capabilities.js",
     "dist/application/public-ssh-manager.js",
     "dist/application/structured-report.js",

@@ -4,12 +4,12 @@
   "dimensionId": "12-reproduction-release",
   "dimensionTitle": "复现与发布",
   "kind": "adversarial",
-  "handler": "tampered_bundle",
+  "handler": "release_incomplete_blocked",
   "expectedOutcome": "rejected",
   "publicCapability": true,
   "notEvaluatedReason": null,
   "input": {
-    "fixtureClass": "tampered_bundle",
+    "fixtureClass": "release_incomplete_blocked",
     "synthetic": true
   },
   "humanRubric": "Review whether 复现与发布 is demonstrated with traceable evidence and an appropriate claim boundary."
