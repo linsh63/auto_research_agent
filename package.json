@@ -88,7 +88,9 @@
     "check:package": "python3 scripts/audit_release_package.py",
     "validate:release-package": "tsx scripts/validate_release_package.ts",
     "test:platform": "node --import tsx --test --test-concurrency=1 tests/platform-capabilities.test.ts tests/platform-smoke.test.ts",
-    "verify:platform": "tsx scripts/verify_platform_ci.ts"
+    "verify:platform": "tsx scripts/verify_platform_ci.ts",
+    "test:ssh": "node --import tsx --test --test-concurrency=1 tests/ssh-portable.test.ts tests/ssh-remote-worker.test.ts",
+    "verify:ssh": "tsx scripts/verify_ssh_ci.ts"
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",
@@ -120,6 +122,7 @@
     "dist/service/",
     "dist/application/public-application-backend.js",
     "dist/application/public-scientific-capabilities.js",
+    "dist/application/public-ssh-manager.js",
     "dist/application/structured-report.js",
     "dist/application/workflow-coordinator.js",
     "dist/domain/",
@@ -129,6 +132,7 @@
     "dist/runtime/pi-plugin-bridge.js",
     "dist/runtime/platform-capabilities.js",
     "dist/runtime/process-control.js",
+    "dist/runtime/ssh-remote-worker.js",
     "dist/adapters/bubblewrap-runner.js",
     "dist/adapters/process.js",
     "dist/reference-cli.js",
@@ -136,6 +140,7 @@
     "schemas/public/v1/",
     "python/research_sdk/*.py",
     "python/worker/runner.py",
+    "remote/worker-stdio.mjs",
     "docs/guides/core-service-and-sdks.md",
     "docs/guides/scenario-sdk.md",
     "docs/guides/jobs-and-workers.md",
@@ -143,6 +148,7 @@
     "docs/guides/compatibility-and-deprecation.md",
     "docs/guides/public-scientific-capabilities.md",
     "docs/guides/platform-capabilities.md",
+    "docs/guides/ssh-remote-workers.md",
     "README.md",
     "LICENSE",
     "NOTICE",

@@ -11,12 +11,12 @@ export function assertSupportedSchema(version: unknown): asserts version is type
 
 export function assertCommandContext(command: PublicCommand): void {
   assertSupportedSchema(command.schemaVersion);
-  if (command.type!=="project.create"&&command.type!=="project.import"&&!command.type.startsWith("plugin.")&&!command.projectId) throw new PublicKernelError("INVALID_COMMAND", `${command.type} requires projectId`, false);
+  if (command.type!=="project.create"&&command.type!=="project.import"&&!command.type.startsWith("plugin.")&&!command.type.startsWith("ssh.")&&!command.projectId) throw new PublicKernelError("INVALID_COMMAND", `${command.type} requires projectId`, false);
 }
 
 export function assertQueryContext(query: PublicQuery): void {
   assertSupportedSchema(query.schemaVersion);
-  if (!query.type.startsWith("plugin.")&&!query.projectId) throw new PublicKernelError("INVALID_COMMAND", `${query.type} requires projectId`, false);
+  if (!query.type.startsWith("plugin.")&&!query.type.startsWith("ssh.")&&!query.projectId) throw new PublicKernelError("INVALID_COMMAND", `${query.type} requires projectId`, false);
 }
 
 export class PublicKernelError extends Error {

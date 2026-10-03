@@ -18,6 +18,7 @@ export interface ResearchApplicationOptions {
   maxDerivedRuns?: number;
   artifactRoots?:string[];
   artifactRoot?:string;
+  sshStateDir?:string;
   /** Explicit compatibility bindings for projects created before Workspace persistence exists. */
   workspaceBindings?: Record<string, string>;
 }
@@ -33,12 +34,14 @@ interface DispatchOutcome {
 }
 type PluginCommand=Extract<PublicCommand,{type:"plugin.source.add"|"plugin.source.refresh"|"plugin.install"|"plugin.enable"|"plugin.disable"|"plugin.update"|"plugin.remove"}>;
 function isPluginCommand(command:PublicCommand):command is PluginCommand{return command.type.startsWith("plugin.");}
+type SshCommand=Extract<PublicCommand,{type:"ssh.profile.add"|"ssh.profile.update"|"ssh.profile.remove"|"ssh.profile.probe"|"ssh.host.approve"|"ssh.worker.install"|"ssh.worker.enable"|"ssh.worker.disable"|"ssh.project.attach"}>;
+function isSshCommand(command:PublicCommand):command is SshCommand{return command.type.startsWith("ssh.");}
 
 export class ResearchApplication {
   private constructor(private readonly backend: PublicApplicationBackend) {}
 
   static async open(options: ResearchApplicationOptions): Promise<ResearchApplication> {
-    const backend=await PublicApplicationBackend.open(options.databasePath,{maxDerivedRuns:options.maxDerivedRuns,artifactRoots:options.artifactRoots,artifactRoot:options.artifactRoot});
+    const backend=await PublicApplicationBackend.open(options.databasePath,{maxDerivedRuns:options.maxDerivedRuns,artifactRoots:options.artifactRoots,artifactRoot:options.artifactRoot,sshStateDir:options.sshStateDir});
     try{for(const[projectId,workspaceId]of Object.entries(options.workspaceBindings??{}))backend.projects.adoptLegacyProject({projectId,workspaceId,actor:{id:"system:compatibility",kind:"system",displayName:"Compatibility importer"},schemaVersion:PUBLIC_SCHEMA_VERSION});return new ResearchApplication(backend);}catch(error){backend.close();throw error;}
   }
 
@@ -62,7 +65,7 @@ export class ResearchApplication {
     if(prepared.kind==="replay")return CommandResultSchema.parse(prepared.receipt.result);
     try{assertCommandContext(command);}catch(error){const result=this.reject(command,error);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result});return result;}
     let outcome:DispatchOutcome;
-    try{outcome=this.dispatch(command);}catch(error){const eventId=command.projectId?`event-${randomUUID()}`:null,result=this.reject(command,error,eventId?[eventId]:[]);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:eventId?{eventId,type:"command.rejected",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{commandType:command.type,error:result.error},...security}:undefined});return result;}
+    try{outcome=await this.dispatch(command);}catch(error){const eventId=command.projectId?`event-${randomUUID()}`:null,result=this.reject(command,error,eventId?[eventId]:[]);this.backend.projects.completeExistingCommand({receipt:prepared.receipt,result,event:eventId?{eventId,type:"command.rejected",schemaVersion:PUBLIC_SCHEMA_VERSION,actor:command.actor,causationId:command.commandId,correlationId:command.commandId,payload:{commandType:command.type,error:result.error},...security}:undefined});return result;}
     const data=outcome.data;
     const eventIds=command.type==="project.fork"?[`event-${randomUUID()}`,`event-${randomUUID()}`]:command.type==="project.import"?[(data as any).importEventId]:outcome.eventType?[`event-${randomUUID()}`]:[],result=this.accept(command,data,eventIds);
     try{
@@ -98,7 +101,7 @@ export class ResearchApplication {
     catch(error){return WorkerResultSchema.parse({requestId:request.requestId,status:"rejected",data:null,error:toPublicError(error),handledAt:new Date().toISOString()});}
   }
 
-  private dispatch(command: PublicCommand): DispatchOutcome {
+  private async dispatch(command: PublicCommand): Promise<DispatchOutcome> {
     if (command.type === "project.create") {
       const program = this.backend.workflow.createIntent(command.payload.intent);
       return { data:{ project: this.projectSummary(program), workspaceId: command.workspaceId },eventType:"project.created" };
@@ -130,6 +133,17 @@ export class ResearchApplication {
       if(command.type==="plugin.disable"){const installation=this.backend.plugins.disable(command.workspaceId,current.id,command.actor.id);return{data:{installation:PluginInstallationSchema.parse(installation)},eventType:command.projectId?"plugin.disabled":null,eventPayload:{installation}};}
       if(command.type==="plugin.remove"){const installation=this.backend.plugins.remove(command.workspaceId,current.id,command.actor.id);return{data:{installation:PluginInstallationSchema.parse(installation)},eventType:command.projectId?"plugin.removed":null,eventPayload:{installation}};}
       const updated=this.backend.plugins.update({workspaceId:command.workspaceId,installationId:current.id,targetDescriptorId:command.payload.targetDescriptorId,approvedPermissions:command.payload.approvedPermissions,actorId:command.actor.id});return{data:{installation:PluginInstallationSchema.parse(updated.installation),permissionDiff:updated.permissionDiff},eventType:command.projectId?"plugin.updated":null,eventPayload:updated};
+    }
+    if(isSshCommand(command)){
+      if(command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","SSH host and Worker lifecycle changes require a user actor",false);
+      if(command.type==="ssh.profile.add")return{data:{profile:this.backend.ssh.add(command.workspaceId,command.payload)},eventType:null};
+      if(command.type==="ssh.profile.update")return{data:{profile:this.backend.ssh.update(command.workspaceId,command.payload)},eventType:null};
+      if(command.type==="ssh.profile.remove")return{data:this.backend.ssh.remove(command.workspaceId,command.payload.profileId),eventType:null};
+      if(command.type==="ssh.profile.probe")return{data:{preflight:await this.backend.ssh.probe(command.workspaceId,command.payload.profileId)},eventType:null};
+      if(command.type==="ssh.host.approve")return{data:{profile:this.backend.ssh.approve(command.workspaceId,command.payload.profileId,command.payload.fingerprint,command.actor.id)},eventType:null};
+      if(command.type==="ssh.worker.install")return{data:{installation:await this.backend.ssh.install(command.workspaceId,command.payload.profileId)},eventType:null};
+      if(command.type==="ssh.worker.enable"||command.type==="ssh.worker.disable")return{data:{installation:this.backend.ssh.setInstallation(command.workspaceId,command.payload.installationId,command.type.endsWith("enable")?"enabled":"disabled")},eventType:null};
+      const requirement=this.backend.ssh.attach(command.workspaceId,command.projectId,command.payload.profileId,command.payload.installationId);return{data:{requirement},eventType:"ssh.worker.attached",eventPayload:{requirement}};
     }
     if(command.type==="capability.invoke"){const project=this.backend.workflow.status(command.projectId).program;if(project.status==="draft")throw new PublicKernelError("GATE_REJECTED","Scientific capabilities require an approved research scope",false);if(command.payload.capability==="memory-improvement"&&["review","verify"].includes(command.payload.input.action)&&command.actor.kind!=="user")throw new PublicKernelError("FORBIDDEN","Memory review and verification require a user actor",false);const result=this.backend.capabilities.invoke(command.projectId,command.actor,command.payload);return{data:{capability:command.payload.capability,result},eventType:"capability.invoked",eventPayload:{capability:command.payload.capability,result}};}
     if(command.type==="conversation.send")return this.handleConversation(command,command.payload.sessionId,command.payload.message,"chat");
@@ -247,6 +261,9 @@ export class ResearchApplication {
     if(query.type==="plugin.installations")return PluginInstallationsResultSchema.parse({installations:this.backend.plugins.installations(query.workspaceId,query.projectId)});
     if(query.type==="plugin.runtime")return PluginRuntimeSelectionSchema.parse({plugins:this.backend.plugins.runtimeSelection(query.workspaceId,query.projectId)});
     if(query.type==="capability.catalog")return ScientificCapabilityCatalogSchema.parse(this.backend.capabilities.catalog());
+    if(query.type==="ssh.profiles")return this.backend.ssh.profiles(query.workspaceId);
+    if(query.type==="ssh.profile")return this.backend.ssh.profile(query.workspaceId,query.profileId);
+    if(query.type==="ssh.project")return this.backend.ssh.project(query.workspaceId,query.projectId);
     const all=this.backend.projects.events(query.projectId),events=all.filter(item=>item.sequence>=query.fromSequence).slice(0,query.limit),last=events.at(-1)?.sequence??query.fromSequence-1,nextSequence=all.some(item=>item.sequence>last)?last+1:null;
     return ProjectEventListSchema.parse({schemaVersion:PUBLIC_SCHEMA_VERSION,workspaceId:query.workspaceId,projectId:query.projectId,events,nextSequence});
   }

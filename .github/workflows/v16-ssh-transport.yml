@@ -1,0 +1,52 @@
+name: v1.6 SSH transport
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ssh-transport:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x64 real sshd
+            os: ubuntu-24.04
+            real_sshd: true
+          - name: macOS arm64 client
+            os: macos-15
+            real_sshd: false
+          - name: macOS x64 client
+            os: macos-15-intel
+            real_sshd: false
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22.19.0
+          cache: npm
+      - run: npm ci
+      - name: Install Linux sshd fixture
+        if: matrix.real_sshd
+        run: sudo apt-get update && sudo apt-get install -y openssh-server && sudo mkdir -p /run/sshd
+      - run: npm run build
+      - name: Portable SSH client and stdio protocol
+        run: node --import tsx --test --test-concurrency=1 tests/ssh-portable.test.ts
+      - name: Real Linux sshd integration
+        if: matrix.real_sshd
+        run: node --import tsx --test --test-concurrency=1 tests/ssh-remote-worker.test.ts
+      - name: Record SSH transport snapshot
+        run: npx tsx scripts/verify_ssh_ci.ts --output .research-data/ssh-ci.json
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ssh-transport-${{ runner.os }}-${{ runner.arch }}
+          path: .research-data/ssh-ci.json
+          if-no-files-found: error

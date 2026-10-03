@@ -9,7 +9,7 @@ export const BundleCompatibilityIssueSchema=z.object({code:z.string().min(1),sev
 export const BundleCompatibilityReportSchema=z.object({status:z.enum(["ready","degraded","blocked"]),issues:z.array(BundleCompatibilityIssueSchema),checkedAt:z.string()}).strict();
 export type BundleCompatibilityReport=z.infer<typeof BundleCompatibilityReportSchema>;
 export const ProjectBundleV2Schema=z.object({
-  bundleVersion:z.literal("2"),format:z.literal("research-project-bundle-v2"),publicSchemaVersion:z.string().min(1),databaseSchemaVersion:z.literal(16),exportedAt:z.string(),
+  bundleVersion:z.literal("2"),format:z.literal("research-project-bundle-v2"),publicSchemaVersion:z.string().min(1),databaseSchemaVersion:z.union([z.literal(16),z.literal(17)]),exportedAt:z.string(),
   source:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1)}).strict(),
   manifest:z.object({sections:z.array(z.object({name:z.string(),rows:z.number().int().nonnegative(),rootHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict()),pluginsRootHash:z.string().regex(/^[a-f0-9]{64}$/),artifactsRootHash:z.string().regex(/^[a-f0-9]{64}$/),redactions:z.array(z.string()),omissions:z.array(z.string())}).strict(),
   sections:z.array(BundleSectionSchema),pluginLocks:z.array(BundlePluginLockSchema),artifacts:z.array(BundleArtifactSchema),contentHash:z.string().regex(/^[a-f0-9]{64}$/),

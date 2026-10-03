@@ -27,7 +27,7 @@ export class StudyStore {
     mkdirSync(dirname(path), { recursive: true }); const db = new Database(path); db.pragma("journal_mode = WAL"); db.pragma("foreign_keys = ON");
     const version = db.pragma("user_version", { simple: true }) as number;
     if (version < 5) { db.close(); throw new Error("F schema version 5 is required before G migration"); }
-    if(version>16){db.close();throw new Error(`Study database ${version} is newer than supported version 16`);}
+    if(version>17){db.close();throw new Error(`Study database ${version} is newer than supported version 17`);}
     let backup:string|null=null,manifest:string|null=null;
     if(version<9){const backupDir=resolve(dirname(path),"backups");mkdirSync(backupDir,{recursive:true});backup=resolve(backupDir,`research-before-008-${new Date().toISOString().replaceAll(":","-")}.db`);await db.backup(backup);manifest=snapshotArtifactManifest(path,backupDir,"008");}
     if (version < 6) {
@@ -38,7 +38,7 @@ export class StudyStore {
     if(current<7){try{applyMigrationTransaction(db,readMigration("006_claim_review_decision.sql"));}catch(error){db.close();throw error;}current=7;}
     if(current<8){try{applyMigrationTransaction(db,readMigration("007_reliability_foundations.sql"));}catch(error){db.close();throw error;}current=8;}
     if(current<9){try{applyMigrationTransaction(db,readMigration("008_enforced_reliability_gates.sql"));}catch(error){db.close();throw error;}current=9;}
-    if(current<9||current>16){db.close();throw new Error(`Study schema compatibility failed at version ${current}`);}
+    if(current<9||current>17){db.close();throw new Error(`Study schema compatibility failed at version ${current}`);}
     return new StudyStore(db, backup, manifest);
   }
 

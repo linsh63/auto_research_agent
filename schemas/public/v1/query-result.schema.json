@@ -780,8 +780,16 @@
                       "minLength": 1
                     },
                     "databaseSchemaVersion": {
-                      "type": "number",
-                      "const": 16
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "const": 16
+                        },
+                        {
+                          "type": "number",
+                          "const": 17
+                        }
+                      ]
                     },
                     "exportedAt": {
                       "type": "string"
@@ -3322,6 +3330,1279 @@
               },
               "required": [
                 "capabilities"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "profiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "hostAlias": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+                      },
+                      "sshConfigFile": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "remoteRoot": {
+                        "type": "string",
+                        "pattern": "^\\/[A-Za-z0-9._/-]+$"
+                      },
+                      "expectedOs": {
+                        "type": "string",
+                        "const": "linux"
+                      },
+                      "expectedArch": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "pending",
+                          "trusted",
+                          "quarantined",
+                          "disabled"
+                        ]
+                      },
+                      "pendingFingerprint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "pendingHostKey": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "approvedFingerprint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "workerProtocolVersion": {
+                        "type": "string",
+                        "const": "1"
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "workspaceId",
+                      "name",
+                      "hostAlias",
+                      "sshConfigFile",
+                      "remoteRoot",
+                      "expectedOs",
+                      "expectedArch",
+                      "status",
+                      "pendingFingerprint",
+                      "pendingHostKey",
+                      "approvedFingerprint",
+                      "workerProtocolVersion",
+                      "createdAt",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "installations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "profileId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "protocolVersion": {
+                        "type": "string",
+                        "const": "1"
+                      },
+                      "contentHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "remotePath": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "staged",
+                          "installed",
+                          "enabled",
+                          "disabled",
+                          "failed",
+                          "quarantined"
+                        ]
+                      },
+                      "platform": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "os": {
+                                "type": "string",
+                                "enum": [
+                                  "linux",
+                                  "darwin",
+                                  "win32",
+                                  "other"
+                                ]
+                              },
+                              "arch": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "nodeVersion": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "pythonVersion": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "executors": {
+                                "type": "object",
+                                "properties": {
+                                  "python": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "bubblewrap": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "pi": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "python",
+                                  "bubblewrap",
+                                  "pi"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "sandbox": {
+                                "type": "object",
+                                "properties": {
+                                  "status": {
+                                    "type": "string",
+                                    "enum": [
+                                      "available",
+                                      "unavailable",
+                                      "degraded",
+                                      "not_checked"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "status",
+                                  "reason"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "resourceLimits": {
+                                "type": "object",
+                                "properties": {
+                                  "status": {
+                                    "type": "string",
+                                    "enum": [
+                                      "available",
+                                      "unavailable",
+                                      "degraded",
+                                      "not_checked"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "status",
+                                  "reason"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "processGroups": {
+                                "type": "object",
+                                "properties": {
+                                  "status": {
+                                    "type": "string",
+                                    "enum": [
+                                      "available",
+                                      "unavailable",
+                                      "degraded",
+                                      "not_checked"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "status",
+                                  "reason"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "storageModes": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "local",
+                                    "cas_sync",
+                                    "remote_existing"
+                                  ]
+                                }
+                              },
+                              "filesystem": {
+                                "type": "object",
+                                "properties": {
+                                  "pathSeparator": {
+                                    "type": "string",
+                                    "enum": [
+                                      "/",
+                                      "\\"
+                                    ]
+                                  },
+                                  "caseSensitive": {
+                                    "type": [
+                                      "boolean",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "pathSeparator",
+                                  "caseSensitive"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "ssh": {
+                                "type": "object",
+                                "properties": {
+                                  "client": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "version": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "sftp": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "proxyJump": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "multiplexing": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "client",
+                                  "version",
+                                  "sftp",
+                                  "proxyJump",
+                                  "multiplexing"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "detectedAt": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "os",
+                              "arch",
+                              "nodeVersion",
+                              "pythonVersion",
+                              "executors",
+                              "sandbox",
+                              "resourceLimits",
+                              "processGroups",
+                              "storageModes",
+                              "filesystem",
+                              "ssh",
+                              "detectedAt"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "workspaceId",
+                      "profileId",
+                      "protocolVersion",
+                      "contentHash",
+                      "remotePath",
+                      "status",
+                      "platform",
+                      "createdAt",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "profiles",
+                "installations"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "profile": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "workspaceId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "hostAlias": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+                    },
+                    "sshConfigFile": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "remoteRoot": {
+                      "type": "string",
+                      "pattern": "^\\/[A-Za-z0-9._/-]+$"
+                    },
+                    "expectedOs": {
+                      "type": "string",
+                      "const": "linux"
+                    },
+                    "expectedArch": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "trusted",
+                        "quarantined",
+                        "disabled"
+                      ]
+                    },
+                    "pendingFingerprint": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "pendingHostKey": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "approvedFingerprint": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "workerProtocolVersion": {
+                      "type": "string",
+                      "const": "1"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "workspaceId",
+                    "name",
+                    "hostAlias",
+                    "sshConfigFile",
+                    "remoteRoot",
+                    "expectedOs",
+                    "expectedArch",
+                    "status",
+                    "pendingFingerprint",
+                    "pendingHostKey",
+                    "approvedFingerprint",
+                    "workerProtocolVersion",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                },
+                "installations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "profileId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "protocolVersion": {
+                        "type": "string",
+                        "const": "1"
+                      },
+                      "contentHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "remotePath": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "staged",
+                          "installed",
+                          "enabled",
+                          "disabled",
+                          "failed",
+                          "quarantined"
+                        ]
+                      },
+                      "platform": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "os": {
+                                "type": "string",
+                                "enum": [
+                                  "linux",
+                                  "darwin",
+                                  "win32",
+                                  "other"
+                                ]
+                              },
+                              "arch": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "nodeVersion": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "pythonVersion": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "executors": {
+                                "type": "object",
+                                "properties": {
+                                  "python": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "bubblewrap": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "pi": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "python",
+                                  "bubblewrap",
+                                  "pi"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "sandbox": {
+                                "type": "object",
+                                "properties": {
+                                  "status": {
+                                    "type": "string",
+                                    "enum": [
+                                      "available",
+                                      "unavailable",
+                                      "degraded",
+                                      "not_checked"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "status",
+                                  "reason"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "resourceLimits": {
+                                "type": "object",
+                                "properties": {
+                                  "status": {
+                                    "type": "string",
+                                    "enum": [
+                                      "available",
+                                      "unavailable",
+                                      "degraded",
+                                      "not_checked"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "status",
+                                  "reason"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "processGroups": {
+                                "type": "object",
+                                "properties": {
+                                  "status": {
+                                    "type": "string",
+                                    "enum": [
+                                      "available",
+                                      "unavailable",
+                                      "degraded",
+                                      "not_checked"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "status",
+                                  "reason"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "storageModes": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "local",
+                                    "cas_sync",
+                                    "remote_existing"
+                                  ]
+                                }
+                              },
+                              "filesystem": {
+                                "type": "object",
+                                "properties": {
+                                  "pathSeparator": {
+                                    "type": "string",
+                                    "enum": [
+                                      "/",
+                                      "\\"
+                                    ]
+                                  },
+                                  "caseSensitive": {
+                                    "type": [
+                                      "boolean",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "pathSeparator",
+                                  "caseSensitive"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "ssh": {
+                                "type": "object",
+                                "properties": {
+                                  "client": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "version": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "sftp": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "proxyJump": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "multiplexing": {
+                                    "type": "object",
+                                    "properties": {
+                                      "status": {
+                                        "type": "string",
+                                        "enum": [
+                                          "available",
+                                          "unavailable",
+                                          "degraded",
+                                          "not_checked"
+                                        ]
+                                      },
+                                      "reason": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "status",
+                                      "reason"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "client",
+                                  "version",
+                                  "sftp",
+                                  "proxyJump",
+                                  "multiplexing"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "detectedAt": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            },
+                            "required": [
+                              "os",
+                              "arch",
+                              "nodeVersion",
+                              "pythonVersion",
+                              "executors",
+                              "sandbox",
+                              "resourceLimits",
+                              "processGroups",
+                              "storageModes",
+                              "filesystem",
+                              "ssh",
+                              "detectedAt"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "workspaceId",
+                      "profileId",
+                      "protocolVersion",
+                      "contentHash",
+                      "remotePath",
+                      "status",
+                      "platform",
+                      "createdAt",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "lastPreflight": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "profileId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "sshVersion": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "effectiveHost": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "effectiveUser": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "effectivePort": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "proxyJump": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "fingerprint": {
+                          "type": "string",
+                          "pattern": "^SHA256:"
+                        },
+                        "hostKey": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "remotePlatform": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "os": {
+                                  "type": "string",
+                                  "const": "linux"
+                                },
+                                "arch": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "nodeVersion": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "os",
+                                "arch",
+                                "nodeVersion"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "trusted": {
+                          "type": "boolean"
+                        },
+                        "issues": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "profileId",
+                        "sshVersion",
+                        "effectiveHost",
+                        "effectiveUser",
+                        "effectivePort",
+                        "proxyJump",
+                        "fingerprint",
+                        "hostKey",
+                        "remotePlatform",
+                        "trusted",
+                        "issues"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "profile",
+                "installations",
+                "lastPreflight"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "requirements": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "projectId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "profileId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "installationId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "profileHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "workerHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "available",
+                          "missing",
+                          "incompatible",
+                          "quarantined"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "workspaceId",
+                      "projectId",
+                      "profileId",
+                      "installationId",
+                      "profileHash",
+                      "workerHash",
+                      "status",
+                      "createdAt",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "requirements"
               ],
               "additionalProperties": false
             }

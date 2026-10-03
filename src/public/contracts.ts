@@ -238,6 +238,23 @@ export const ScientificCapabilityInvocationSchema=z.discriminatedUnion("capabili
 ]);
 export const InvokeScientificCapabilityCommandSchema=CommandContextSchema.extend({type:z.literal("capability.invoke"),projectId:z.string().min(1),payload:ScientificCapabilityInvocationSchema}).strict();
 
+export const SshHostProfileSchema=z.object({id:z.string().min(1),workspaceId:z.string().min(1),name:z.string().min(1),hostAlias:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/),sshConfigFile:z.string().min(1).nullable(),remoteRoot:z.string().regex(/^\/[A-Za-z0-9._/-]+$/).refine(value=>!value.split("/").includes("..")),expectedOs:z.literal("linux"),expectedArch:z.string().min(1).nullable(),status:z.enum(["pending","trusted","quarantined","disabled"]),pendingFingerprint:z.string().nullable(),pendingHostKey:z.string().nullable(),approvedFingerprint:z.string().nullable(),workerProtocolVersion:z.literal("1"),createdAt:z.string(),updatedAt:z.string()}).strict();
+export type SshHostProfile=z.infer<typeof SshHostProfileSchema>;
+export const RemoteWorkerInstallationSchema=z.object({id:z.string().min(1),workspaceId:z.string().min(1),profileId:z.string().min(1),protocolVersion:z.literal("1"),contentHash:z.string().regex(/^[a-f0-9]{64}$/),remotePath:z.string().min(1),status:z.enum(["staged","installed","enabled","disabled","failed","quarantined"]),platform:PlatformCapabilitySnapshotSchema.nullable(),createdAt:z.string(),updatedAt:z.string()}).strict();
+export type RemoteWorkerInstallation=z.infer<typeof RemoteWorkerInstallationSchema>;
+export const SshPreflightResultSchema=z.object({profileId:z.string().min(1),sshVersion:z.string().min(1),effectiveHost:z.string().min(1),effectiveUser:z.string().min(1),effectivePort:z.number().int().positive(),proxyJump:z.string().nullable(),fingerprint:z.string().regex(/^SHA256:/),hostKey:z.string().min(1),remotePlatform:z.object({os:z.literal("linux"),arch:z.string().min(1),nodeVersion:z.string().nullable()}).strict().nullable(),trusted:z.boolean(),issues:z.array(z.string())}).strict();
+export const ProjectSshRequirementSchema=z.object({id:z.string().min(1),workspaceId:z.string().min(1),projectId:z.string().min(1),profileId:z.string().min(1),installationId:z.string().min(1),profileHash:z.string().regex(/^[a-f0-9]{64}$/),workerHash:z.string().regex(/^[a-f0-9]{64}$/),status:z.enum(["available","missing","incompatible","quarantined"]),createdAt:z.string(),updatedAt:z.string()}).strict();
+
+export const AddSshProfileCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.profile.add"),projectId:z.null(),payload:z.object({name:z.string().min(1),hostAlias:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/),sshConfigFile:z.string().min(1).nullable().default(null),remoteRoot:z.string().regex(/^\/[A-Za-z0-9._/-]+$/).refine(value=>!value.split("/").includes("..")),expectedArch:z.string().min(1).nullable().default(null)}).strict()}).strict();
+export const UpdateSshProfileCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.profile.update"),projectId:z.null(),payload:z.object({profileId:z.string().min(1),name:z.string().min(1).optional(),hostAlias:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/).optional(),sshConfigFile:z.string().min(1).nullable().optional(),remoteRoot:z.string().regex(/^\/[A-Za-z0-9._/-]+$/).refine(value=>!value.split("/").includes("..")).optional(),expectedArch:z.string().min(1).nullable().optional(),enabled:z.boolean().optional()}).strict()}).strict();
+export const RemoveSshProfileCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.profile.remove"),projectId:z.null(),payload:z.object({profileId:z.string().min(1)}).strict()}).strict();
+export const ProbeSshProfileCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.profile.probe"),projectId:z.null(),payload:z.object({profileId:z.string().min(1)}).strict()}).strict();
+export const ApproveSshHostCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.host.approve"),projectId:z.null(),payload:z.object({profileId:z.string().min(1),fingerprint:z.string().regex(/^SHA256:/)}).strict()}).strict();
+export const InstallSshWorkerCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.worker.install"),projectId:z.null(),payload:z.object({profileId:z.string().min(1)}).strict()}).strict();
+export const EnableSshWorkerCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.worker.enable"),projectId:z.null(),payload:z.object({installationId:z.string().min(1)}).strict()}).strict();
+export const DisableSshWorkerCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.worker.disable"),projectId:z.null(),payload:z.object({installationId:z.string().min(1)}).strict()}).strict();
+export const AttachProjectSshCommandSchema=CommandContextSchema.extend({type:z.literal("ssh.project.attach"),projectId:z.string().min(1),payload:z.object({profileId:z.string().min(1),installationId:z.string().min(1)}).strict()}).strict();
+
 export const PublicCommandSchema = z.discriminatedUnion("type", [
   CreateProjectCommandSchema,
   ProposeQuestionCommandSchema,
@@ -260,6 +277,15 @@ export const PublicCommandSchema = z.discriminatedUnion("type", [
   UpdatePluginCommandSchema,
   RemovePluginCommandSchema,
   InvokeScientificCapabilityCommandSchema,
+  AddSshProfileCommandSchema,
+  UpdateSshProfileCommandSchema,
+  RemoveSshProfileCommandSchema,
+  ProbeSshProfileCommandSchema,
+  ApproveSshHostCommandSchema,
+  InstallSshWorkerCommandSchema,
+  EnableSshWorkerCommandSchema,
+  DisableSshWorkerCommandSchema,
+  AttachProjectSshCommandSchema,
 ]);
 export type PublicCommand = z.infer<typeof PublicCommandSchema>;
 
@@ -298,7 +324,13 @@ export const PluginRuntimeQuerySchema=z.object({schemaVersion:PublicSchemaVersio
 export const ProjectDependenciesQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("project.dependencies"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
 export const ScientificCapabilityCatalogSchema=z.object({capabilities:z.array(z.object({id:ScientificCapabilityIdSchema,version:z.string().regex(/^\d+\.\d+\.\d+$/),description:z.string().min(1),operations:z.array(z.string().min(1)),sideEffects:z.array(z.string().min(1))}).strict()).length(7)}).strict();
 export const ScientificCapabilityCatalogQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("capability.catalog"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,ProjectDependenciesQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema,ScientificCapabilityCatalogQuerySchema]);
+export const SshProfilesReadModelSchema=z.object({profiles:z.array(SshHostProfileSchema),installations:z.array(RemoteWorkerInstallationSchema)}).strict();
+export const SshProfileReadModelSchema=z.object({profile:SshHostProfileSchema,installations:z.array(RemoteWorkerInstallationSchema),lastPreflight:SshPreflightResultSchema.nullable()}).strict();
+export const ProjectSshReadModelSchema=z.object({requirements:z.array(ProjectSshRequirementSchema)}).strict();
+export const SshProfilesQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("ssh.profiles"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema}).strict();
+export const SshProfileQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("ssh.profile"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema,profileId:z.string().min(1)}).strict();
+export const ProjectSshQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("ssh.project"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,ProjectDependenciesQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema,ScientificCapabilityCatalogQuerySchema,SshProfilesQuerySchema,SshProfileQuerySchema,ProjectSshQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -381,7 +413,7 @@ export const QueryResultSchema = z.object({
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),z.lazy(()=>BundleDependencyReadModelSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema,ScientificCapabilityCatalogSchema]).nullable(),
+  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),z.lazy(()=>BundleDependencyReadModelSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema,ScientificCapabilityCatalogSchema,SshProfilesReadModelSchema,SshProfileReadModelSchema,ProjectSshReadModelSchema]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {
@@ -440,7 +472,7 @@ export const PublicBundlePluginLockSchema=z.object({pluginId:z.string().min(1),v
 export const PublicBundleArtifactSchema=z.object({contentHash:z.string().regex(/^[a-f0-9]{64}$/),bytes:z.number().int().nonnegative().nullable(),mediaType:z.string().nullable(),access:z.enum(["public","project","private"]),disposition:z.enum(["embedded","content_addressed","missing","private_omitted"]),uri:z.string().nullable(),contentBase64:z.string().nullable(),entryHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
 export const BundleCompatibilityIssueSchema=z.object({code:z.string().min(1),severity:z.enum(["warning","error"]),subject:z.string().min(1),message:z.string().min(1)}).strict();
 export const BundleCompatibilityReportSchema=z.object({status:z.enum(["ready","degraded","blocked"]),issues:z.array(BundleCompatibilityIssueSchema),checkedAt:z.string()}).strict();
-export const PublicProjectBundleV2Schema=z.object({bundleVersion:z.literal("2"),format:z.literal("research-project-bundle-v2"),publicSchemaVersion:z.string().min(1),databaseSchemaVersion:z.literal(16),exportedAt:z.string(),source:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1)}).strict(),manifest:z.object({sections:z.array(z.object({name:z.string(),rows:z.number().int().nonnegative(),rootHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict()),pluginsRootHash:z.string().regex(/^[a-f0-9]{64}$/),artifactsRootHash:z.string().regex(/^[a-f0-9]{64}$/),redactions:z.array(z.string()),omissions:z.array(z.string())}).strict(),sections:z.array(PublicBundleSectionSchema),pluginLocks:z.array(PublicBundlePluginLockSchema),artifacts:z.array(PublicBundleArtifactSchema),contentHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export const PublicProjectBundleV2Schema=z.object({bundleVersion:z.literal("2"),format:z.literal("research-project-bundle-v2"),publicSchemaVersion:z.string().min(1),databaseSchemaVersion:z.union([z.literal(16),z.literal(17)]),exportedAt:z.string(),source:z.object({workspaceId:z.string().min(1),projectId:z.string().min(1)}).strict(),manifest:z.object({sections:z.array(z.object({name:z.string(),rows:z.number().int().nonnegative(),rootHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict()),pluginsRootHash:z.string().regex(/^[a-f0-9]{64}$/),artifactsRootHash:z.string().regex(/^[a-f0-9]{64}$/),redactions:z.array(z.string()),omissions:z.array(z.string())}).strict(),sections:z.array(PublicBundleSectionSchema),pluginLocks:z.array(PublicBundlePluginLockSchema),artifacts:z.array(PublicBundleArtifactSchema),contentHash:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
 export const PublicProjectBundleSchema=z.discriminatedUnion("bundleVersion",[PublicProjectBundleV1Schema,PublicProjectBundleV2Schema]);
 export type PublicProjectBundle=z.infer<typeof PublicProjectBundleSchema>;
 export const BundleDependencyReadModelSchema=z.object({projectId:z.string().min(1),lastImport:BundleCompatibilityReportSchema.nullable(),plugins:z.array(z.object({pluginId:z.string(),version:z.string(),contentHash:z.string(),originScope:z.enum(["project","workspace"]),status:z.enum(["available","missing","incompatible"]),permissions:z.array(z.string())}).strict()),artifacts:z.array(z.object({contentHash:z.string(),access:z.enum(["public","project","private"]),disposition:z.enum(["embedded","content_addressed","missing","private_omitted"]),status:z.enum(["available","missing","restricted"]),uri:z.string().nullable()}).strict())}).strict();

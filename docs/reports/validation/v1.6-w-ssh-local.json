@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "stage": "W",
+  "status": "pass",
+  "platform": {
+    "os": "linux",
+    "arch": "x64"
+  },
+  "sshVersion": "OpenSSH_8.9p1 Ubuntu-3ubuntu0.13, OpenSSL 3.0.2 15 Mar 2022",
+  "configParsed": true,
+  "workerHash": "742d08696651176ceff460ea23c8fd13ed010f27a8f69648fe195c8caf3154ad",
+  "protocolVersion": "1"
+}

@@ -19,7 +19,7 @@ export class JobStore{
 
   static async open(path:string):Promise<JobStore>{
     mkdirSync(dirname(path),{recursive:true});const db=new Database(path);db.pragma("journal_mode = WAL");db.pragma("foreign_keys = ON");const version=db.pragma("user_version",{simple:true}) as number;
-    if(version<12){db.close();throw new Error("Job store requires schema version 12 before migration");}if(version>16){db.close();throw new Error(`Job database ${version} is newer than supported version 16`);}
+    if(version<12){db.close();throw new Error("Job store requires schema version 12 before migration");}if(version>17){db.close();throw new Error(`Job database ${version} is newer than supported version 17`);}
     let backup:string|null=null,manifest:string|null=null;if(version===12){const backupDir=resolve(dirname(path),"backups");mkdirSync(backupDir,{recursive:true});backup=resolve(backupDir,`research-before-012-${new Date().toISOString().replaceAll(":","-")}.db`);await db.backup(backup);manifest=snapshotArtifactManifest(path,backupDir,"012");try{applyMigrationTransaction(db,readMigration("012_job_worker.sql"));}catch(error){db.close();throw error;}}
     return new JobStore(db,backup,manifest);
   }
