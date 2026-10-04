@@ -88,6 +88,7 @@
     "h:finalize-decision": "tsx scripts/h_finalize_decision.ts",
     "validate:cv": "tsx scripts/validate_cv_scenario.ts",
     "probe:pi": "tsx scripts/pi_sdk_probe.ts",
+    "probe:pi-codex": "tsx scripts/probe_pi_codex_subscription.ts",
     "prepack": "npm run build && npm run check:contracts && npm run check:python-sdk",
     "check:package": "python3 scripts/audit_release_package.py",
     "validate:release-package": "tsx scripts/validate_release_package.ts",

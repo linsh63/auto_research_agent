@@ -9,13 +9,22 @@ test("environment maps to pi-native provider selection", () => {
     AUTO_RESEARCH_PROVIDER: "deepseek",
     AUTO_RESEARCH_MODEL: "deepseek-flash",
     AUTO_RESEARCH_API_KEY: "runtime-only",
+    AUTO_RESEARCH_PI_AUTH_PATH: "/tmp/pi-auth.json",
     AUTO_RESEARCH_MODEL_TIMEOUT_MS: "5000",
   });
   assert.deepEqual(config, {
     modelsPath: "models.json", providerId: "deepseek", modelId: "deepseek-flash",
-    apiKey: "runtime-only", timeoutMs: 5000, baseUrl: undefined, api: undefined,
+    apiKey: "runtime-only", authPath: "/tmp/pi-auth.json", timeoutMs: 5000, baseUrl: undefined, api: undefined,
     modelsStorePath: undefined,
   });
+});
+
+test("pi resolves the built-in OpenAI Codex subscription catalog without an API key", async () => {
+  const model = await PiResearchModel.create({
+    providerId: "openai-codex", modelId: "gpt-5.6-luna",
+    modelsStorePath: resolve(".research-data/test-openai-codex-models.json"),
+  });
+  assert.equal(model.id, "openai-codex/gpt-5.6-luna");
 });
 
 test("pi loads the DeepSeek models.json without a network request", async () => {

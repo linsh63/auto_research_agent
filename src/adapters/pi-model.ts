@@ -19,6 +19,7 @@ export interface ResearchModel {
 
 export interface PiModelConfig {
   apiKey?: string;
+  authPath?: string;
   providerId?: string;
   modelsPath?: string;
   modelsStorePath?: string;
@@ -36,6 +37,7 @@ export function piModelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PiMo
   const timeout = env.AUTO_RESEARCH_MODEL_TIMEOUT_MS;
   return {
     apiKey: env.AUTO_RESEARCH_API_KEY,
+    authPath: env.AUTO_RESEARCH_PI_AUTH_PATH,
     providerId: env.AUTO_RESEARCH_PROVIDER,
     modelsPath: env.AUTO_RESEARCH_MODELS_PATH,
     modelsStorePath: env.AUTO_RESEARCH_MODELS_STORE_PATH,
@@ -114,6 +116,7 @@ export class PiResearchModel implements ResearchModel {
     const modelsStorePath = config.modelsStorePath ?? resolve(".research-data", "pi-models-store.json");
     mkdirSync(dirname(modelsStorePath), { recursive: true });
     const runtime = await ModelRuntime.create({
+      authPath: config.authPath,
       modelsPath: config.modelsPath,
       modelsStorePath,
       refreshOnCreate: false,

@@ -141,6 +141,7 @@ docs/
 
 - [pi SDK 探针结果](reports/validation/pi-sdk-probe.json)
 - [Pi SDK Q 阶段复用审计](reports/validation/pi-sdk-q-audit.md)
+- [Pi 使用 ChatGPT/Codex 计划额度调查](reports/validation/pi-codex-subscription-investigation.md)
 - [T2a MLLM 机器运行记录](reports/validation/t2a-mllm-run.json)
 - [T2b fastText / AG News 机器运行记录](reports/validation/t2b-fasttext-run.json)
 - [T3 Research Capability Benchmark v1 机器基线](reports/validation/t3-capability-baseline.json)
