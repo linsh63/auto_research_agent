@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "release": "v1.6.0",
-  "status": "blocked",
-  "decision": "awaiting_mac_cross_host",
-  "startedAt": "2026-10-03T14:25:39.891Z",
-  "finishedAt": "2026-10-03T14:27:16.171Z",
+  "status": "pass",
+  "decision": "release_candidate_ready",
+  "startedAt": "2026-10-04T01:26:45.650Z",
+  "finishedAt": "2026-10-04T01:28:50.288Z",
   "environment": {
     "node": "v22.19.0",
     "platform": "linux",
@@ -16,49 +16,49 @@
     {
       "name": "build",
       "status": "pass",
-      "durationMs": 1788,
+      "durationMs": 1886,
       "summary": "> tsc -p tsconfig.json"
     },
     {
       "name": "full-test-suite",
       "status": "pass",
-      "durationMs": 67287,
-      "summary": "# duration_ms 67092.207447"
+      "durationMs": 90362,
+      "summary": "# duration_ms 90170.93406"
     },
     {
       "name": "linux-ssh-workspace",
       "status": "pass",
-      "durationMs": 14441,
-      "summary": "# duration_ms 14251.751244"
+      "durationMs": 14409,
+      "summary": "# duration_ms 14254.434568"
     },
     {
       "name": "typecheck",
       "status": "pass",
-      "durationMs": 1583,
+      "durationMs": 1615,
       "summary": "> tsc --noEmit -p tsconfig.json"
     },
     {
       "name": "public-boundary",
       "status": "pass",
-      "durationMs": 189,
+      "durationMs": 208,
       "summary": "{\"status\": \"pass\", \"publicFiles\": 8, \"exports\": [\".\", \"./application\", \"./client\", \"./contracts\", \"./kernel\", \"./scenario\", \"./server\", \"./ssh\"]}"
     },
     {
       "name": "scenario-boundary",
       "status": "pass",
-      "durationMs": 184,
+      "durationMs": 285,
       "summary": "{\"status\": \"pass\", \"scenarioFiles\": 4}"
     },
     {
       "name": "t3-boundary",
       "status": "pass",
-      "durationMs": 151,
+      "durationMs": 223,
       "summary": "{\"status\": \"pass\", \"runnerImports\": [\"node:crypto\", \"node:child_process\", \"node:fs\", \"node:path\", \"node:os\", \"auto-research-agent/client\", \"auto-research-agent/server\", \"auto-research-agent/contracts\"], \"fixtures\": 24}"
     },
     {
       "name": "contracts",
       "status": "pass",
-      "durationMs": 711,
+      "durationMs": 744,
       "summary": "{\"status\":\"pass\",\"schemaVersion\":\"1.0.0\",\"files\":31}"
     },
     {
@@ -70,14 +70,14 @@
     {
       "name": "docs",
       "status": "pass",
-      "durationMs": 199,
-      "summary": "Docs OK: 101 Markdown files, 0 broken local links"
+      "durationMs": 215,
+      "summary": "Docs OK: 102 Markdown files, 0 broken local links"
     },
     {
       "name": "package-install",
       "status": "pass",
-      "durationMs": 9504,
-      "summary": "{\"status\":\"pass\",\"tarball\":\"auto-research-agent-1.6.0-alpha.1.tgz\",\"entries\":217,\"bytes\":265997,\"quickstart\":{\"status\":\"accepted\",\"projectCreated\":true,\"schemaVersion\":\"1.0.0\"},\"extensions\":{\"scenario\":true,\"workerClient\":true,\"pluginDescriptor\":true},\"capabilities\":{\"catalog\":7,\"invoke\":\"accepted\"}}"
+      "durationMs": 13541,
+      "summary": "{\"status\":\"pass\",\"tarball\":\"auto-research-agent-1.6.0-alpha.1.tgz\",\"entries\":217,\"bytes\":266081,\"quickstart\":{\"status\":\"accepted\",\"projectCreated\":true,\"schemaVersion\":\"1.0.0\"},\"extensions\":{\"scenario\":true,\"workerClient\":true,\"pluginDescriptor\":true},\"capabilities\":{\"catalog\":7,\"invoke\":\"accepted\"}}"
     }
   ],
   "tests": {
@@ -85,7 +85,7 @@
     "failed": 0
   },
   "releaseEvaluation": {
-    "status": "blocked",
+    "status": "ready",
     "checks": [
       {
         "id": "migration",
@@ -129,7 +129,7 @@
         "status": "passed",
         "mandatory": true,
         "artifactHashes": [
-          "195d624241b2331129a788f640280193c7a89ccdc988b9ba962888a25e5d0926"
+          "82486e3f7bd679472724a09e3bf020766a3f24de1af97d0c7645c861d00d932d"
         ],
         "detail": "Clean package installation and public exports"
       },
@@ -154,22 +154,17 @@
       },
       {
         "id": "platform_matrix",
-        "status": "not_evaluated",
+        "status": "passed",
         "mandatory": true,
         "artifactHashes": [
-          "47304e982bc7394274f050dd6d4464f20f30f410257c2f5a062b516158faf640",
-          "c8afa64322d40ba44a56fea2878ffc8183a8cd4832398306e1f53a9be2c43e28"
+          "7d92c79c1793e8a555eadf55641aadeb2cb565bf599eeb3733759550a8bb51c6"
         ],
-        "detail": "Linux and native macOS component matrices pass; real Mac→user Linux exploration+confirmation remains pending"
+        "detail": "Real Mac client completed exploration and confirmation on user Linux host"
       }
     ],
-    "blockers": [
-      "platform_matrix:not_evaluated"
-    ],
-    "knownLimitations": [
-      "Real Mac→user-controlled Linux exploration and confirmation must be run by the user before release."
-    ],
-    "evaluatedAt": "2026-10-03T14:27:16.157Z",
+    "blockers": [],
+    "knownLimitations": [],
+    "evaluatedAt": "2026-10-04T01:28:50.276Z",
     "sideEffects": "none"
   },
   "artifacts": [
@@ -217,14 +212,97 @@
     },
     {
       "path": "docs/reports/validation/v1.6-z-package-audit.json",
-      "sha256": "195d624241b2331129a788f640280193c7a89ccdc988b9ba962888a25e5d0926",
+      "sha256": "82486e3f7bd679472724a09e3bf020766a3f24de1af97d0c7645c861d00d932d",
       "bytes": 1920,
       "status": "pass"
     }
   ],
   "macCrossHost": {
-    "status": "not_evaluated",
-    "expectedPath": "docs/reports/validation/v1.6-z-mac-linux.json"
+    "schemaVersion": 1,
+    "status": "pass",
+    "client": {
+      "os": "darwin",
+      "arch": "arm64",
+      "node": "v25.8.2"
+    },
+    "remote": {
+      "profileId": "ssh-profile-d8ecd838-9156-42f7-911e-a4c690ff6b8d",
+      "installationId": "remote-worker-0e1cafa8-a24f-4770-8261-7244bb3bc3ee",
+      "platform": {
+        "os": "linux",
+        "arch": "x64",
+        "nodeVersion": "v22.19.0",
+        "pythonVersion": "Python 3.8.10",
+        "executors": {
+          "python": {
+            "status": "available",
+            "reason": null
+          },
+          "bubblewrap": {
+            "status": "available",
+            "reason": null
+          },
+          "pi": {
+            "status": "not_checked",
+            "reason": "Not probed by the remote Worker"
+          }
+        },
+        "sandbox": {
+          "status": "available",
+          "reason": null
+        },
+        "resourceLimits": {
+          "status": "available",
+          "reason": null
+        },
+        "processGroups": {
+          "status": "available",
+          "reason": null
+        },
+        "storageModes": [
+          "cas_sync",
+          "remote_existing"
+        ],
+        "filesystem": {
+          "pathSeparator": "/",
+          "caseSensitive": true
+        },
+        "ssh": {
+          "client": {
+            "status": "not_checked",
+            "reason": "Not probed by the remote Worker"
+          },
+          "version": null,
+          "sftp": {
+            "status": "not_checked",
+            "reason": "Not probed by the remote Worker"
+          },
+          "proxyJump": {
+            "status": "not_checked",
+            "reason": "Not probed by the remote Worker"
+          },
+          "multiplexing": {
+            "status": "not_checked",
+            "reason": "Not probed by the remote Worker"
+          }
+        },
+        "detectedAt": "2026-10-04T01:19:19.842Z"
+      },
+      "workerHash": "1834503ee9233df5a48d514ea4e2bd54d64ee9d280b6d1ad6a790cbc88c6bf02"
+    },
+    "exploration": {
+      "status": "succeeded",
+      "jobId": "job-b2fbd7e6-425e-4f5d-b179-fcaf77eee296",
+      "artifactHash": "1edf360ee2d6b6a575bc80c21fe17d6203c58ab36f23a7a512acd82604a0698b"
+    },
+    "confirmation": {
+      "status": "succeeded",
+      "jobId": "job-c4d9162d-f623-47cf-bc31-b821916b65ee",
+      "artifactHash": "8433b9841808d16571a3edfd7ecde24eb3fef863585d565497d456f14781a48f",
+      "sealedHashReturnedToCas": false,
+      "sealedValueInLogsOrBundle": false
+    },
+    "createdAt": "2026-10-04T01:19:33.042Z"
   },
   "security": {
     "secretMatches": [],
