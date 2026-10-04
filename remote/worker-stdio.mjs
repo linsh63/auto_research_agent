@@ -35,7 +35,7 @@ async function execute(frame){
   for(const device of spec.gpuDevices){for(const path of [`/dev/nvidia${device}`,"/dev/nvidiactl","/dev/nvidia-uvm","/dev/nvidia-uvm-tools"])if(existsSync(path))limitArgs.push("--dev-bind",path,path);}
   if(spec.gpuDevices.length)limitArgs.push("--setenv","CUDA_VISIBLE_DEVICES",spec.gpuDevices.join(","));
   const command=spec.execution.kind==="python"?"/usr/bin/python3":spec.execution.command,commandArgs=spec.execution.kind==="python"?[`/work/${spec.execution.script}`,...spec.execution.args]:spec.execution.args;
-  limitArgs.push("/usr/bin/prlimit","--nproc=128","--",command,...commandArgs);
+  limitArgs.push("/usr/bin/prlimit","--nproc=2048","--",command,...commandArgs);
   emit({type:"job.started",leaseId:frame.leaseId});const child=spawn("prlimit",limitArgs,{stdio:["ignore","pipe","pipe"],detached:true}),timer=setTimeout(()=>{try{process.kill(-child.pid,"SIGKILL");}catch{}},spec.limits.wallTimeMs);running.set(frame.leaseId,child);
   let outputBytes=0,overflow=false;const consume=(stream,chunk)=>{if(overflow)return;outputBytes+=chunk.length;if(outputBytes>spec.limits.maxOutputBytes){overflow=true;try{process.kill(-child.pid,"SIGKILL");}catch{};return;}emit({type:"job.log",leaseId:frame.leaseId,stream,message:chunk.toString("utf8")});};child.stdout.on("data",chunk=>consume("stdout",chunk));child.stderr.on("data",chunk=>consume("stderr",chunk));
   const result=await new Promise(resolveResult=>child.once("close",(code,signal)=>resolveResult({code,signal})));clearTimeout(timer);running.delete(frame.leaseId);if(!sessions.has(frame.leaseId))return;

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "client": {
+    "os": "darwin",
+    "arch": "arm64",
+    "node": "v25.8.2"
+  },
+  "remote": {
+    "profileId": "ssh-profile-d8ecd838-9156-42f7-911e-a4c690ff6b8d",
+    "installationId": "remote-worker-0e1cafa8-a24f-4770-8261-7244bb3bc3ee",
+    "platform": {
+      "os": "linux",
+      "arch": "x64",
+      "nodeVersion": "v22.19.0",
+      "pythonVersion": "Python 3.8.10",
+      "executors": {
+        "python": {
+          "status": "available",
+          "reason": null
+        },
+        "bubblewrap": {
+          "status": "available",
+          "reason": null
+        },
+        "pi": {
+          "status": "not_checked",
+          "reason": "Not probed by the remote Worker"
+        }
+      },
+      "sandbox": {
+        "status": "available",
+        "reason": null
+      },
+      "resourceLimits": {
+        "status": "available",
+        "reason": null
+      },
+      "processGroups": {
+        "status": "available",
+        "reason": null
+      },
+      "storageModes": [
+        "cas_sync",
+        "remote_existing"
+      ],
+      "filesystem": {
+        "pathSeparator": "/",
+        "caseSensitive": true
+      },
+      "ssh": {
+        "client": {
+          "status": "not_checked",
+          "reason": "Not probed by the remote Worker"
+        },
+        "version": null,
+        "sftp": {
+          "status": "not_checked",
+          "reason": "Not probed by the remote Worker"
+        },
+        "proxyJump": {
+          "status": "not_checked",
+          "reason": "Not probed by the remote Worker"
+        },
+        "multiplexing": {
+          "status": "not_checked",
+          "reason": "Not probed by the remote Worker"
+        }
+      },
+      "detectedAt": "2026-10-04T01:19:19.842Z"
+    },
+    "workerHash": "1834503ee9233df5a48d514ea4e2bd54d64ee9d280b6d1ad6a790cbc88c6bf02"
+  },
+  "exploration": {
+    "status": "succeeded",
+    "jobId": "job-b2fbd7e6-425e-4f5d-b179-fcaf77eee296",
+    "artifactHash": "1edf360ee2d6b6a575bc80c21fe17d6203c58ab36f23a7a512acd82604a0698b"
+  },
+  "confirmation": {
+    "status": "succeeded",
+    "jobId": "job-c4d9162d-f623-47cf-bc31-b821916b65ee",
+    "artifactHash": "8433b9841808d16571a3edfd7ecde24eb3fef863585d565497d456f14781a48f",
+    "sealedHashReturnedToCas": false,
+    "sealedValueInLogsOrBundle": false
+  },
+  "createdAt": "2026-10-04T01:19:33.042Z"
+}
