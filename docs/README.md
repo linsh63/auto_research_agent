@@ -18,13 +18,14 @@ docs/
 
 ## 推荐阅读顺序
 
-1. [v1.6 公共科研能力与跨系统规划](planning/v1.6-plan.md)：七类公共科研接口，以及后续跨系统工作。
-2. [v1.5 核心产品化规划](planning/v1.5-plan.md)：已完成的 Headless Research Kernel、SDK、Worker、Scenario 和项目存档。
-3. [v1.4 规划](planning/v1.4-plan.md)：泛化、机制诊断和隔离确认。
-4. [v1.4 阶段报告](reports/stages/v1.4-progress.md)：最近一次真实研究和能力边界。
-5. [v1.3 规划](planning/v1.3-plan.md)：可靠性基础设施，以及 B/C 联合迭代。
-6. [v1.2 完整实施规划](planning/v1.2-plan.md)：确认性科研工作流与发布门禁。
-7. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
+1. [v2.0 Auto Research CLI v0.1 实施规划](planning/v2.0-cli-plan.md)：基于 Pi CLI extension 的正式命令行产品。
+2. [v1.6 公共科研能力与跨系统规划](planning/v1.6-plan.md)：七类公共科研接口，以及后续跨系统工作。
+3. [v1.5 核心产品化规划](planning/v1.5-plan.md)：已完成的 Headless Research Kernel、SDK、Worker、Scenario 和项目存档。
+4. [v1.4 规划](planning/v1.4-plan.md)：泛化、机制诊断和隔离确认。
+5. [v1.4 阶段报告](reports/stages/v1.4-progress.md)：最近一次真实研究和能力边界。
+6. [v1.3 规划](planning/v1.3-plan.md)：可靠性基础设施，以及 B/C 联合迭代。
+7. [v1.2 完整实施规划](planning/v1.2-plan.md)：确认性科研工作流与发布门禁。
+8. [V1 总体规划](planning/v1-plan.md)：项目目标、首版边界和基础架构。
 
 ## 按主题查找
 
@@ -38,6 +39,7 @@ docs/
 - [v1.4 泛化与隔离确认计划](planning/v1.4-plan.md)
 - [v1.5 Headless Research Kernel 产品化](planning/v1.5-plan.md)
 - [v1.6 公共科研能力与跨系统开发](planning/v1.6-plan.md)
+- [v2.0 Auto Research CLI v0.1 实施规划](planning/v2.0-cli-plan.md)
 - [v1.5 T 阶段拆分计划](planning/v1.5-t-plan.md)
 - [下一阶段备选方案](planning/next-stage-options.md)
 
