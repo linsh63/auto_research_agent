@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "registry": "https://registry.npmjs.org/",
+  "sourceCommit": "2347be17c6d6d913d3a96e2f29cead419f646194",
+  "replacement": {
+    "name": "research-explorer-core",
+    "version": "1.6.0",
+    "distTag": "latest",
+    "shasum": "ac2fdd77ac36aed0ce5f3b59787c7c76b6d19354",
+    "integrity": "sha512-uxEa9DeXWmPgm77PtTSqJK4snZpirf3JHM1PbqZyzruvpIpngYJ723flnrju6/69ZmlduoEQdVQB2/Oglb1dGQ=="
+  },
+  "previous": {
+    "name": "auto-research-agent",
+    "version": "1.6.0",
+    "deprecated": true,
+    "installable": true
+  },
+  "compatibility": {
+    "serviceVersion": "1.0.0",
+    "publicSchemaVersion": "1.0.0",
+    "legacyExecutableAlias": true
+  },
+  "publishedAt": "2026-10-05T20:37:00+08:00"
+}
