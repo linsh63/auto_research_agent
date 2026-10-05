@@ -22,17 +22,16 @@ v1.5 Headless Research Kernel 的 N–S、T1–T5 已全部完成，v1.5.0 通�
 
 ### v1.5 Core package 快速开始
 
-当前 `1.6.0-rc.1` 包尚未发布到 npm registry。可以直接从公开 GitHub 仓库安装到用户目录；`prepare` 会生成发布所需的 `dist`：
+稳定版 `1.6.0` 可从 npm registry 安装到用户目录：
 
 ```bash
-npm install -g --prefix "$HOME/.local" \
-  git+https://github.com/linsh63/research_explorer_core.git#main
+npm install -g --prefix "$HOME/.local" auto-research-agent
 ```
 
-也可以在仓库运行 `npm pack`，再在一个干净目录安装生成的 `auto-research-agent-1.6.0-rc.1.tgz`：
+也可以从公开 GitHub 仓库构建，或在仓库运行 `npm pack` 后安装生成的 `auto-research-agent-1.6.0.tgz`：
 
 ```bash
-npm install /absolute/path/auto-research-agent-1.6.0-rc.1.tgz
+npm install /absolute/path/auto-research-agent-1.6.0.tgz
 ```
 
 保存以下内容为 `quickstart.mjs`，它只使用已发布的包导出，并在临时目录建立一个 Project：

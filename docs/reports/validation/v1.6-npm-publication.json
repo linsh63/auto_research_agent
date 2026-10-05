@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "package": "auto-research-agent",
+  "version": "1.6.0",
+  "distTag": "latest",
+  "integrity": "sha512-Q14IbKhbxLzRiiipXIxNPr8y6P2mTDZkhOZjA8mLDlcQrHVAGCIOajEypZXYb/u6BmzKNjLSwdEO4bpxzfR+yw==",
+  "shasum": "d641adac0e0024a6b1da19e114e93d5a30782685",
+  "registry": "https://registry.npmjs.org/",
+  "publishedAt": "2026-10-05T16:22:00+08:00"
+}
