@@ -4,10 +4,10 @@ import { spawn } from "node:child_process";
 import { copyFileSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
-import { ResearchClient } from "auto-research-agent/client";
-import { PUBLIC_SCHEMA_VERSION, PublicProjectBundleV2Schema, type Actor } from "auto-research-agent/contracts";
-import { ScenarioManifestSchema, assertScenarioJob } from "auto-research-agent/scenario";
-import { startCoreService } from "auto-research-agent/server";
+import { ResearchClient } from "research-explorer-core/client";
+import { PUBLIC_SCHEMA_VERSION, PublicProjectBundleV2Schema, type Actor } from "research-explorer-core/contracts";
+import { ScenarioManifestSchema, assertScenarioJob } from "research-explorer-core/scenario";
+import { startCoreService } from "research-explorer-core/server";
 
 const repositoryRoot=resolve("."),scenarioRoot=join(repositoryRoot,"examples/scenarios/mllm-routing"),sourceRoot=resolve(process.env.MLLM_RESEARCH_ROOT??"/data0/linsihan/mllm-routing-generalization"),runRoot=join(repositoryRoot,".research-data/t2a-mllm"),workspace=join(runRoot,"workspace"),inputRoot=join(workspace,"input"),outputRoot=join(workspace,"output"),workerCas=join(runRoot,"worker-cas"),sourceServiceDir=join(runRoot,"source-service"),targetServiceDir=join(runRoot,"target-service"),reportPath=join(repositoryRoot,"docs/reports/validation/t2a-mllm-run.json");
 rmSync(runRoot,{recursive:true,force:true});mkdirSync(inputRoot,{recursive:true});mkdirSync(outputRoot,{recursive:true});mkdirSync(workerCas,{recursive:true});const lock=JSON.parse(readFileSync(join(scenarioRoot,"source-lock.json"),"utf8")),manifest=ScenarioManifestSchema.parse(JSON.parse(readFileSync(join(scenarioRoot,"manifest.json"),"utf8"))),{manifestHash,...lockBody}=lock;if(hashJson(lockBody)!==manifestHash)throw new Error("T2a source lock manifest hash mismatch");const commit=execFileSync("git",["rev-parse","HEAD"],{cwd:sourceRoot,encoding:"utf8"}).trim();if(commit!==lock.sourceCommit)throw new Error(`MLLM source commit mismatch: ${commit}`);if(execFileSync("git",["status","--porcelain"],{cwd:sourceRoot,encoding:"utf8"}).trim())throw new Error("MLLM source repository has uncommitted changes");

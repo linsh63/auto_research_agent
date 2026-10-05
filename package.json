@@ -1,5 +1,5 @@
 {
-  "name": "auto-research-agent",
+  "name": "research-explorer-core",
   "version": "1.6.0",
   "private": false,
   "type": "module",
@@ -166,6 +166,8 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "bin": {
+    "research-explorer-core": "dist/service/cli.js",
+    "research-explorer-reference": "dist/reference-cli.js",
     "auto-research-core": "dist/service/cli.js",
     "auto-research-reference": "dist/reference-cli.js"
   },

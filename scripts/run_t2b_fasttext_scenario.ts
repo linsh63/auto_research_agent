@@ -3,10 +3,10 @@ import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { ResearchClient } from "auto-research-agent/client";
-import { PUBLIC_SCHEMA_VERSION, PublicProjectBundleV2Schema, type Actor } from "auto-research-agent/contracts";
-import { ScenarioManifestSchema, assertScenarioJob } from "auto-research-agent/scenario";
-import { startCoreService } from "auto-research-agent/server";
+import { ResearchClient } from "research-explorer-core/client";
+import { PUBLIC_SCHEMA_VERSION, PublicProjectBundleV2Schema, type Actor } from "research-explorer-core/contracts";
+import { ScenarioManifestSchema, assertScenarioJob } from "research-explorer-core/scenario";
+import { startCoreService } from "research-explorer-core/server";
 
 const repositoryRoot=resolve("."),scenarioRoot=join(repositoryRoot,"examples/scenarios/fasttext-agnews"),preparedRoot=join(repositoryRoot,".research-data/cases/fasttext-agnews"),runRoot=join(repositoryRoot,".research-data/t2b-fasttext"),workspace=join(runRoot,"workspace"),inputRoot=join(workspace,"input"),outputRoot=join(workspace,"output"),workerCas=join(runRoot,"worker-cas"),sourceServiceDir=join(runRoot,"source-service"),targetServiceDir=join(runRoot,"target-service"),reportPath=join(repositoryRoot,"docs/reports/validation/t2b-fasttext-run.json");
 rmSync(runRoot,{recursive:true,force:true});mkdirSync(inputRoot,{recursive:true});mkdirSync(outputRoot,{recursive:true});mkdirSync(workerCas,{recursive:true});

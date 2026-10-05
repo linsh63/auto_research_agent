@@ -10,18 +10,18 @@
 
 | 子路径 | 内容 |
 | --- | --- |
-| `auto-research-agent` | 全部公共 API |
-| `auto-research-agent/contracts` | Command、Query、Result、Event、Error 和 read model schema |
-| `auto-research-agent/kernel` | schema/context guard 与稳定错误映射 |
-| `auto-research-agent/application` | `ResearchApplication` 兼容 facade |
-| `auto-research-agent/scenario` | Scenario manifest、Capability、双语言协商和预算契约 |
-| `auto-research-agent/client` | TypeScript REST/SSE 客户端与本地服务发现 |
-| `auto-research-agent/server` | Core Service 生命周期、SecretProvider 和 capability schema |
+| `research-explorer-core` | 全部公共 API |
+| `research-explorer-core/contracts` | Command、Query、Result、Event、Error 和 read model schema |
+| `research-explorer-core/kernel` | schema/context guard 与稳定错误映射 |
+| `research-explorer-core/application` | `ResearchApplication` 兼容 facade |
+| `research-explorer-core/scenario` | Scenario manifest、Capability、双语言协商和预算契约 |
+| `research-explorer-core/client` | TypeScript REST/SSE 客户端与本地服务发现 |
+| `research-explorer-core/server` | Core Service 生命周期、SecretProvider 和 capability schema |
 
 ## 最小流程
 
 ```ts
-import { PUBLIC_SCHEMA_VERSION, ResearchApplication } from "auto-research-agent";
+import { PUBLIC_SCHEMA_VERSION, ResearchApplication } from "research-explorer-core";
 
 const app = await ResearchApplication.open({ databasePath: ".research-data/research.db" });
 const actor = { id: "user:local", kind: "user" as const };

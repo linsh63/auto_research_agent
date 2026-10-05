@@ -5,7 +5,7 @@
 Scenario 只从公共子路径导入：
 
 ```ts
-import type { ResearchScenario, ScenarioManifest } from "auto-research-agent/scenario";
+import type { ResearchScenario, ScenarioManifest } from "research-explorer-core/scenario";
 ```
 
 `ResearchScenario` 包含：
@@ -45,4 +45,4 @@ Python SDK 只包含契约、协商、预算检查和 transport independent Work
 npm run check:scenarios
 ```
 
-该检查禁止示例 Scenario 和 Python SDK 引用内部 Store、Application、Domain 或 migration。TypeScript 示例只能导入 `auto-research-agent/scenario`。
+该检查禁止示例 Scenario 和 Python SDK 引用内部 Store、Application、Domain 或 migration。TypeScript 示例只能导入 `research-explorer-core/scenario`。

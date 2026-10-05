@@ -38,7 +38,7 @@ npm run service -- --permissions filesystem.read,filesystem.write,process,confir
 ## TypeScript SDK
 
 ```ts
-import { ResearchClient } from "auto-research-agent/client";
+import { ResearchClient } from "research-explorer-core/client";
 
 const client = await ResearchClient.connectLocal({
   dataDir: ".research-data/service",

@@ -1,9 +1,9 @@
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ResearchClient } from "auto-research-agent/client";
-import { PUBLIC_SCHEMA_VERSION } from "auto-research-agent/contracts";
-import { startCoreService } from "auto-research-agent/server";
+import { ResearchClient } from "research-explorer-core/client";
+import { PUBLIC_SCHEMA_VERSION } from "research-explorer-core/contracts";
+import { startCoreService } from "research-explorer-core/server";
 
 const root=mkdtempSync(join(tmpdir(),"auto-research-quickstart-"));
 const service=await startCoreService({databasePath:join(root,"research.db"),dataDir:join(root,"service")});

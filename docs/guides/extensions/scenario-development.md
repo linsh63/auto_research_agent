@@ -1,7 +1,7 @@
 # Scenario 扩展教程
 
 1. 复制 `docs/templates/scenario/` 到独立仓库。
-2. 只从 `auto-research-agent/scenario` 导入类型和校验器。
+2. 只从 `research-explorer-core/scenario` 导入类型和校验器。
 3. 在 manifest 声明四类必需 capability、执行器、最小权限、预算和 Artifact。
 4. DataAdapter 必须记录数据角色、内容 hash、sealed 状态和实验单位。
 5. ExperimentRunner 只返回 JobSpec；执行由 Core Worker 完成。

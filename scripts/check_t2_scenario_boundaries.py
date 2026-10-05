@@ -11,7 +11,7 @@ for path in [*(path for scenario in scenarios for path in scenario.rglob("*.py")
     text=path.read_text()
     for forbidden in ("src/infrastructure","src/application","src/domain","migrations/","better-sqlite3"):
         if forbidden in text: issues.append({"file":str(path.relative_to(root)),"forbidden":forbidden})
-allowed={"node:crypto","node:child_process","node:fs","node:path","auto-research-agent/client","auto-research-agent/contracts","auto-research-agent/scenario","auto-research-agent/server"}
+allowed={"node:crypto","node:child_process","node:fs","node:path","research-explorer-core/client","research-explorer-core/contracts","research-explorer-core/scenario","research-explorer-core/server"}
 all_imports={}
 for runner in runners:
     imports=re.findall(r'from\s+["\']([^"\']+)["\']',runner.read_text())

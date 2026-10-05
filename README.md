@@ -25,13 +25,13 @@ v1.5 Headless Research Kernel 的 N–S、T1–T5 已全部完成，v1.5.0 通�
 稳定版 `1.6.0` 可从 npm registry 安装到用户目录：
 
 ```bash
-npm install -g --prefix "$HOME/.local" auto-research-agent
+npm install -g --prefix "$HOME/.local" research-explorer-core
 ```
 
-也可以从公开 GitHub 仓库构建，或在仓库运行 `npm pack` 后安装生成的 `auto-research-agent-1.6.0.tgz`：
+也可以从公开 GitHub 仓库构建，或在仓库运行 `npm pack` 后安装生成的 `research-explorer-core-1.6.0.tgz`：
 
 ```bash
-npm install /absolute/path/auto-research-agent-1.6.0.tgz
+npm install /absolute/path/research-explorer-core-1.6.0.tgz
 ```
 
 保存以下内容为 `quickstart.mjs`，它只使用已发布的包导出，并在临时目录建立一个 Project：
@@ -40,9 +40,9 @@ npm install /absolute/path/auto-research-agent-1.6.0.tgz
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ResearchClient } from "auto-research-agent/client";
-import { PUBLIC_SCHEMA_VERSION } from "auto-research-agent/contracts";
-import { startCoreService } from "auto-research-agent/server";
+import { ResearchClient } from "research-explorer-core/client";
+import { PUBLIC_SCHEMA_VERSION } from "research-explorer-core/contracts";
+import { startCoreService } from "research-explorer-core/server";
 
 const root=mkdtempSync(join(tmpdir(),"auto-research-quickstart-"));
 const service=await startCoreService({databasePath:join(root,"research.db"),dataDir:join(root,"service")});
@@ -56,7 +56,7 @@ try {
 }
 ```
 
-运行 `node quickstart.mjs`，应返回 `status: "accepted"`。正式发布前的包兼容、弃用和数据库回滚规则见[兼容政策](docs/guides/compatibility-and-deprecation.md)。
+运行 `node quickstart.mjs`，应返回 `status: "accepted"`。包兼容、旧名称迁移和数据库回滚规则见[兼容政策](docs/guides/compatibility-and-deprecation.md)。
 
 ### 源码仓库原型
 

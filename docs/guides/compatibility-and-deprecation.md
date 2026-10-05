@@ -2,7 +2,7 @@
 
 ## 版本面
 
-- npm package 使用 SemVer；`1.5.0` 已通过本地发布验收；只有创建官方 tag/release 或发布到 registry 后才视为对外发布。
+- npm package 使用 SemVer；`research-explorer-core@1.6.0` 是当前稳定版本。
 - Core Service、TypeScript/Python client 和 JSON Schema 使用独立的公共 schema 版本，当前为 `1.0.0`。
 - Scenario SDK 版本、Plugin 的 `coreSchemaRange`/`piVersionRange` 和 Bundle 格式单独协商。
 - SQLite schema 是内部持久化版本，不作为客户端 API。
@@ -12,6 +12,8 @@
 ## 弃用
 
 公共导出、命令、查询或字段的弃用必须进入 release notes 和文档，提供替代路径，并至少保留一个后续 minor release line。删除或改变语义需要新的公共 schema major。安全漏洞可能缩短周期，但必须记录原因和迁移步骤。
+
+旧包名 `auto-research-agent` 已由 `research-explorer-core` 取代。旧版本继续留在 registry 以保证既有安装可复现，但不再发布功能更新。迁移时只需替换 npm 包名和 TypeScript 导入前缀；公共 schema、服务协议和数据目录保持兼容。`auto-research-core` 可执行命令暂时保留为兼容别名，新集成应使用 `research-explorer-core`。
 
 ## 数据迁移
 

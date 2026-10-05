@@ -1,6 +1,6 @@
-import { ResearchClient } from "auto-research-agent/client";
-import { PluginDescriptorSchema, WorkerRequestSchema } from "auto-research-agent/contracts";
-import { ScenarioManifestSchema, negotiateScenario } from "auto-research-agent/scenario";
+import { ResearchClient } from "research-explorer-core/client";
+import { PluginDescriptorSchema, WorkerRequestSchema } from "research-explorer-core/contracts";
+import { ScenarioManifestSchema, negotiateScenario } from "research-explorer-core/scenario";
 
 const capability=(id,kind,permissions)=>({id,kind,description:`External ${kind} capability`,permissions,inputSchema:{},outputSchema:{},failureClasses:[kind==="data"?"data":"scientific"]});
 const scenario=ScenarioManifestSchema.parse({id:"external.fixture",name:"External fixture",version:"0.1.0",description:"Third-party package-only Scenario fixture.",domain:"testing",scenarioSdkVersion:"1.0.0",coreSchemaRange:"^1.0.0",languages:["typescript"],executors:["bubblewrap"],permissions:["filesystem.read"],budget:{maxWallTimeMs:1000,maxCpuCores:1,maxMemoryMiB:128,maxDiskMiB:128,maxGpuCount:0,maxKnownCostUsd:0},capabilities:[capability("fixture.data","data",["filesystem.read"]),capability("fixture.experiment","experiment",["filesystem.read"]),capability("fixture.evaluation","evaluation",["filesystem.read"]),capability("fixture.analysis","analysis",["filesystem.read"])],artifacts:[]});

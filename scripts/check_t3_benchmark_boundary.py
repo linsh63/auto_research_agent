@@ -10,7 +10,7 @@ issues=[]
 for forbidden in ("src/infrastructure","src/application","src/domain","migrations/","better-sqlite3"):
     if forbidden in text: issues.append({"file":str(runner.relative_to(root)),"forbidden":forbidden})
 imports=re.findall(r'from\s+["\']([^"\']+)["\']',text)
-allowed={"node:crypto","node:child_process","node:fs","node:path","node:os","auto-research-agent/client","auto-research-agent/contracts","auto-research-agent/server"}
+allowed={"node:crypto","node:child_process","node:fs","node:path","node:os","research-explorer-core/client","research-explorer-core/contracts","research-explorer-core/server"}
 for value in imports:
     if value not in allowed: issues.append({"file":str(runner.relative_to(root)),"import":value})
 fixtures=sorted((root/"benchmarks/research-capability-v1/fixtures").glob("*.json"))

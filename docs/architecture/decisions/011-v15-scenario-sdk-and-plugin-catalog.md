@@ -4,7 +4,7 @@
 
 ## 决策
 
-1. TypeScript Scenario SDK 作为 `auto-research-agent/scenario` 公共子路径发布，不导出任何 Store、Workflow 或 migration。
+1. TypeScript Scenario SDK 作为 `research-explorer-core/scenario` 公共子路径发布，不导出任何 Store、Workflow 或 migration。
 2. Python Scenario/Worker SDK 由同一组公共 JSON Schema 生成 TypedDict，并嵌入 schema 哈希；科研状态机只存在于 Kernel。
 3. Scenario 必须声明 data、experiment、evaluation、analysis 四类 Capability，以及权限、预算、执行器和 Artifact。
 4. 兼容协商在 Scenario 执行前检查 core schema、权限和 Worker executor；Job 还必须落在 Scenario budget 内。

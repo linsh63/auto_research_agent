@@ -4,9 +4,9 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { arch, platform } from "node:os";
-import { ResearchClient } from "auto-research-agent/client";
-import { CORE_SERVICE_VERSION, startCoreService } from "auto-research-agent/server";
-import { PUBLIC_SCHEMA_VERSION, PublicProjectBundleV2Schema, type Actor } from "auto-research-agent/contracts";
+import { ResearchClient } from "research-explorer-core/client";
+import { CORE_SERVICE_VERSION, startCoreService } from "research-explorer-core/server";
+import { PUBLIC_SCHEMA_VERSION, PublicProjectBundleV2Schema, type Actor } from "research-explorer-core/contracts";
 
 const root=resolve("."),benchmarkRoot=join(root,"benchmarks/research-capability-v1"),manifestPath=join(benchmarkRoot,"manifest.json");
 const args=process.argv.slice(2),outputPath=resolve(valueAfter("--output")??"docs/reports/validation/t3-capability-v1.2-baseline.json"),comparePath=valueAfter("--compare");

@@ -1,5 +1,5 @@
-import type { ResearchScenario } from "auto-research-agent/scenario";
-import { ScenarioManifestSchema } from "auto-research-agent/scenario";
+import type { ResearchScenario } from "research-explorer-core/scenario";
+import { ScenarioManifestSchema } from "research-explorer-core/scenario";
 import manifestJson from "./manifest.json" with { type: "json" };
 
 const manifest=ScenarioManifestSchema.parse(manifestJson);

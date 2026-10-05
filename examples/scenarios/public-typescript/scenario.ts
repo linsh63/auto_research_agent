@@ -1,6 +1,6 @@
 import type {
   AnalysisContract, DataContract, EvaluationContract, ResearchScenario, ScenarioContext, ScenarioManifest,
-} from "auto-research-agent/scenario";
+} from "research-explorer-core/scenario";
 
 export const manifest:ScenarioManifest={
   id:"example.public-typescript",name:"Public TypeScript fixture",version:"1.0.0",description:"A public-only Scenario SDK fixture.",domain:"testing",
