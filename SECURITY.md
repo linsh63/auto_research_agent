@@ -6,7 +6,7 @@ Security fixes are developed for the current `main` branch and the most recent t
 
 ## Reporting a vulnerability
 
-Use GitHub private vulnerability reporting for `linsh63/auto_research_agent`. If that feature is unavailable, contact the maintainer privately through the GitHub profile and ask for a secure reporting channel. Do not open a public issue with exploit details, credentials, private data or an unredacted database.
+Use GitHub private vulnerability reporting for `linsh63/research_explorer_core`. If that feature is unavailable, contact the maintainer privately through the GitHub profile and ask for a secure reporting channel. Do not open a public issue with exploit details, credentials, private data or an unredacted database.
 
 Include affected version or commit, environment, impact, reproduction steps, and a minimal proof of concept. Remove real API keys and research data. You should receive an acknowledgement when the maintainer next reviews project notifications; this personal project has no response-time SLA.
 

@@ -26,7 +26,7 @@ v1.5 Headless Research Kernel 的 N–S、T1–T5 已全部完成，v1.5.0 通�
 
 ```bash
 npm install -g --prefix "$HOME/.local" \
-  git+https://github.com/linsh63/auto_research_agent.git#main
+  git+https://github.com/linsh63/research_explorer_core.git#main
 ```
 
 也可以在仓库运行 `npm pack`，再在一个干净目录安装生成的 `auto-research-agent-1.6.0-rc.1.tgz`：
