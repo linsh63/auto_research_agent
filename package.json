@@ -1,6 +1,6 @@
 {
   "name": "auto-research-agent",
-  "version": "1.6.0-alpha.1",
+  "version": "1.6.0-rc.1",
   "private": false,
   "type": "module",
   "main": "./dist/public/index.js",
@@ -90,6 +90,7 @@
     "probe:pi": "tsx scripts/pi_sdk_probe.ts",
     "probe:pi-codex": "tsx scripts/probe_pi_codex_subscription.ts",
     "prepack": "npm run build && npm run check:contracts && npm run check:python-sdk",
+    "prepare": "npm run build",
     "check:package": "python3 scripts/audit_release_package.py",
     "validate:release-package": "tsx scripts/validate_release_package.ts",
     "test:platform": "node --import tsx --test --test-concurrency=1 tests/platform-capabilities.test.ts tests/platform-smoke.test.ts",
