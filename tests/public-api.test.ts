@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
-  PUBLIC_SCHEMA_VERSION, ProjectStatusReadModelSchema, ResearchApplication,
+  PUBLIC_SCHEMA_VERSION, ProjectStatusReadModelSchema, ResearchApplication, WorkspaceProjectsReadModelSchema,
   type Actor,
 } from "../src/public/index.js";
 
@@ -57,6 +57,14 @@ test("v1.5 public application completes a minimal scoped research flow", async (
   assert.equal(status.questions.filter(item => item.status === "selected").length, 1);
   assert.equal(status.counts.approvals, 1);
 
+  const listed = await application.query({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: "query:projects", type: "workspace.projects",
+    workspaceId: base.workspaceId, projectId: null, actor, limit: 20 });
+  assert.equal(listed.status, "ok");
+  const projects = WorkspaceProjectsReadModelSchema.parse(listed.data);
+  assert.deepEqual(projects.projects.map(item => item.id), [projectId]);
+  assert.equal(projects.projects[0]?.title, "Public API study");
+  assert.equal(projects.projects[0]?.status, "scoped");
+
   const crossWorkspace = await application.query({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: "query:cross-workspace", type: "project.status",
     workspaceId: "workspace:other", projectId, actor });
   assert.equal(crossWorkspace.status, "rejected");
@@ -77,6 +85,11 @@ test("public contracts fail closed with stable error codes", async (t) => {
     workspaceId: "workspace:test", projectId: "missing", actor });
   assert.equal(unsupported.status, "rejected");
   assert.equal(unsupported.error?.code, "INCOMPATIBLE_VERSION");
+
+  const empty = await application.query({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: "empty-workspace", type: "workspace.projects",
+    workspaceId: "workspace:new", projectId: null, actor, limit: 20 });
+  assert.equal(empty.status, "ok");
+  assert.deepEqual(WorkspaceProjectsReadModelSchema.parse(empty.data).projects, []);
 });
 
 test("project workspace binding persists across application restarts", async (t) => {

@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
-import { ApprovalSchema, ResearchProgramSchema, ResearchQuestionSchema, hashPayload } from "../../domain/research.js";
+import { ApprovalSchema, ResearchProgramSchema, ResearchQuestionSchema, hashPayload, type ResearchProgram } from "../../domain/research.js";
 import {
   CommandReceiptSchema, PersistedActorSchema, PersistedResearchEventSchema, ProjectBundleSchema, ProjectProjectionSchema,
   ProjectRecordSchema, WorkspaceRecordSchema, createProjectProjection,
@@ -34,6 +34,10 @@ export class ProjectStore{
   }
   workspace(id:string):WorkspaceRecord|undefined{const row=this.db.prepare("SELECT payload_json FROM workspaces WHERE id=?").get(id) as JsonRow|undefined;return row?WorkspaceRecordSchema.parse(JSON.parse(row.payload_json)):undefined;}
   project(id:string):ProjectRecord|undefined{const row=this.db.prepare("SELECT payload_json FROM research_projects_v15 WHERE id=?").get(id) as JsonRow|undefined;return row?ProjectRecordSchema.parse(JSON.parse(row.payload_json)):undefined;}
+  projects(workspaceId:string,limit=100):Array<{project:ProjectRecord;program:ResearchProgram;projection:ProjectProjection}>{
+    const rows=this.db.prepare("SELECT payload_json FROM research_projects_v15 WHERE workspace_id=? ORDER BY updated_at DESC,id LIMIT ?").all(workspaceId,limit) as JsonRow[];
+    return rows.map(row=>{const project=ProjectRecordSchema.parse(JSON.parse(row.payload_json));return{project,program:this.programTx(project.id),projection:this.projection(project.id)};}).sort((a,b)=>b.projection.updatedAt.localeCompare(a.projection.updatedAt));
+  }
   projection(id:string):ProjectProjection{const row=this.db.prepare("SELECT payload_json FROM project_projections_v15 WHERE project_id=?").get(id) as JsonRow|undefined;if(!row)throw new Error(`Unknown project projection ${id}`);return ProjectProjectionSchema.parse(JSON.parse(row.payload_json));}
 
   prepareCommand(input:{workspaceId:string;projectId:string|null;commandId:string;idempotencyKey:string;commandHash:string;actor:CommandActor}):PreparedCommand{

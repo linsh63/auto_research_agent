@@ -259,6 +259,96 @@
                   "type": "string",
                   "minLength": 1
                 },
+                "projects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "direction": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "domain": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "profile": {
+                        "type": "string",
+                        "enum": [
+                          "smoke",
+                          "exploratory",
+                          "confirmatory"
+                        ]
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "scoped",
+                          "protocol_ready",
+                          "frozen",
+                          "confirmation_observed",
+                          "closed",
+                          "derived"
+                        ]
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "branchName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "projectStatus": {
+                        "type": "string",
+                        "enum": [
+                          "active",
+                          "archived"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "direction",
+                      "domain",
+                      "profile",
+                      "status",
+                      "updatedAt",
+                      "branchName",
+                      "projectStatus"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "schemaVersion",
+                "workspaceId",
+                "projects"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "schemaVersion": {
+                  "type": "string",
+                  "const": "1.0.0"
+                },
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
                 "projectId": {
                   "type": "string",
                   "minLength": 1

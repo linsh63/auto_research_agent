@@ -82,7 +82,7 @@ app.close();
 - `plugin.update`
 - `plugin.remove`
 
-查询还包括 `plugin.search`、`plugin.inspect`、`plugin.sources`、`plugin.installations` 和 `plugin.runtime`。返回值是稳定 read model，不是数据库记录。聊天与策略见 [ResearchAction 指南](research-actions-and-policies.md)，长任务见 [Job 与 Worker 指南](jobs-and-workers.md)，扩展开发见 [Scenario SDK](scenario-sdk.md)和[插件目录](plugin-catalog.md)。
+`workspace.projects` 以更新时间倒序返回指定 Workspace 的 Project 摘要，供客户端实现公开的项目选择器，不需要读取 Core 数据库。查询还包括 `plugin.search`、`plugin.inspect`、`plugin.sources`、`plugin.installations` 和 `plugin.runtime`。返回值是稳定 read model，不是数据库记录。聊天与策略见 [ResearchAction 指南](research-actions-and-policies.md)，长任务见 [Job 与 Worker 指南](jobs-and-workers.md)，扩展开发见 [Scenario SDK](scenario-sdk.md)和[插件目录](plugin-catalog.md)。
 
 `project.bundle` 默认导出完整 Bundle v2；`project.dependencies` 返回导入兼容、插件锁和 Artifact 状态。范围阶段 Bundle v1 仍可显式请求，详见 [Bundle v2 指南](project-bundle-v2.md)。
 

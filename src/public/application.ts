@@ -4,7 +4,7 @@ import { PublicApplicationBackend } from "../application/public-application-back
 import {
   PUBLIC_SCHEMA_VERSION, CandidateSetReadModelSchema, CommandResultSchema, ConversationReadModelSchema,
   ExecutionPolicySchema, ProjectStatusReadModelSchema, PublicCommandSchema, ProjectEventListSchema,
-  BundleDependencyReadModelSchema, JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema,
+  BundleDependencyReadModelSchema, JobLogListSchema, JobReadModelSchema, JobRecordSchema, PublicProjectBundleSchema, PublicQuerySchema, QueryResultSchema, ResearchActionSchema, WorkspaceProjectsReadModelSchema,
   PluginInspectionSchema, PluginInstallationsResultSchema, PluginInstallationSchema, PluginPermissionSchema, PluginRuntimeSelectionSchema, PluginSearchResultSchema, PluginSourceRecordSchema, PluginSourcesResultSchema,
   WorkerDescriptorSchema, WorkerRequestSchema, WorkerResultSchema,
   ScientificCapabilityCatalogSchema,
@@ -89,7 +89,7 @@ export class ResearchApplication {
     const query = parsed.data;
     try {
       assertQueryContext(query);
-      if(query.projectId!==null){const project=this.backend.projects.project(query.projectId);if(!project)throw new PublicKernelError("NOT_FOUND",`Unknown project ${query.projectId}`,false);if(project.workspaceId!==query.workspaceId)throw new PublicKernelError("FORBIDDEN","Project does not belong to this workspace",false);}else if(!this.backend.projects.workspace(query.workspaceId))throw new PublicKernelError("NOT_FOUND",`Unknown workspace ${query.workspaceId}`,false);
+      if(query.projectId!==null){const project=this.backend.projects.project(query.projectId);if(!project)throw new PublicKernelError("NOT_FOUND",`Unknown project ${query.projectId}`,false);if(project.workspaceId!==query.workspaceId)throw new PublicKernelError("FORBIDDEN","Project does not belong to this workspace",false);}else if(query.type!=="workspace.projects"&&!this.backend.projects.workspace(query.workspaceId))throw new PublicKernelError("NOT_FOUND",`Unknown workspace ${query.workspaceId}`,false);
       return QueryResultSchema.parse({ schemaVersion: PUBLIC_SCHEMA_VERSION, queryId: query.queryId, workspaceId: query.workspaceId,
         projectId: query.projectId, status: "ok", data: this.queryData(query), error: null, handledAt: new Date().toISOString() });
     } catch (error) {
@@ -257,6 +257,7 @@ export class ResearchApplication {
 
   private queryData(query:PublicQuery):unknown{
     if(query.type==="project.status")return this.projectStatus(query);
+    if(query.type==="workspace.projects")return WorkspaceProjectsReadModelSchema.parse({schemaVersion:PUBLIC_SCHEMA_VERSION,workspaceId:query.workspaceId,projects:this.backend.projects.projects(query.workspaceId,query.limit).map(({project,program,projection})=>({...this.projectSummary(program),branchName:project.branchName,projectStatus:project.status,updatedAt:projection.updatedAt}))});
     if(query.type==="project.bundle")return PublicProjectBundleSchema.parse(query.bundleVersion==="1"?this.backend.projects.exportBundle(query.projectId,PUBLIC_SCHEMA_VERSION):this.backend.bundles.export(query.projectId,PUBLIC_SCHEMA_VERSION,query.artifactPolicy,query.maxEmbeddedBytes));
     if(query.type==="project.dependencies")return BundleDependencyReadModelSchema.parse(this.backend.bundles.dependencies(query.projectId));
     if(query.type==="conversation.get")return ConversationReadModelSchema.parse(this.backend.interactions.conversation(query.workspaceId,query.projectId,query.sessionId));

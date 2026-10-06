@@ -22,16 +22,16 @@ v1.5 Headless Research Kernel 的 N–S、T1–T5 已全部完成，v1.5.0 通�
 
 ### v1.5 Core package 快速开始
 
-稳定版 `1.6.0` 可从 npm registry 安装到用户目录：
+稳定版 `1.6.1` 可从 npm registry 安装到用户目录：
 
 ```bash
 npm install -g --prefix "$HOME/.local" research-explorer-core
 ```
 
-也可以从公开 GitHub 仓库构建，或在仓库运行 `npm pack` 后安装生成的 `research-explorer-core-1.6.0.tgz`：
+也可以从公开 GitHub 仓库构建，或在仓库运行 `npm pack` 后安装生成的 `research-explorer-core-1.6.1.tgz`：
 
 ```bash
-npm install /absolute/path/research-explorer-core-1.6.0.tgz
+npm install /absolute/path/research-explorer-core-1.6.1.tgz
 ```
 
 保存以下内容为 `quickstart.mjs`，它只使用已发布的包导出，并在临时目录建立一个 Project：

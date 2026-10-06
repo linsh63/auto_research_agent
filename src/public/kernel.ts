@@ -16,7 +16,7 @@ export function assertCommandContext(command: PublicCommand): void {
 
 export function assertQueryContext(query: PublicQuery): void {
   assertSupportedSchema(query.schemaVersion);
-  if (!query.type.startsWith("plugin.")&&!query.type.startsWith("ssh.")&&query.type!=="release.evaluate"&&!query.projectId) throw new PublicKernelError("INVALID_COMMAND", `${query.type} requires projectId`, false);
+  if (!query.type.startsWith("plugin.")&&!query.type.startsWith("ssh.")&&query.type!=="release.evaluate"&&query.type!=="workspace.projects"&&!query.projectId) throw new PublicKernelError("INVALID_COMMAND", `${query.type} requires projectId`, false);
 }
 
 export class PublicKernelError extends Error {

@@ -4,8 +4,8 @@
   "files": {
     "command.schema.json": "8ee691a444534b1539a71cffa4281d937ef04867aa3e2528c51b77e33d59633a",
     "command-result.schema.json": "22892d9ec59899763a457d5cf395ab065f0f43fae8ba9362c1f4d87fd37416a4",
-    "query.schema.json": "f82031884f28d9d375e5d6778006b732a4f8173d9a6c004044e9f8d773118cf4",
-    "query-result.schema.json": "6467ae4bbf2404478c5f5d61ee96fad7044729744f4e6207ae5406464cbe5df7",
+    "query.schema.json": "f5a6b6295cf1a180534bca46501beac53fc6e2647698bc81596403c811e4b70d",
+    "query-result.schema.json": "db18b4d34d332b80f2f056012f03719602138ed00cfed8c24a0213a6c4c02938",
     "project-status.schema.json": "cc38842d28a682d3740a28a9479965b6efdcd88daf1c3104b72156cb7c94e331",
     "project-events.schema.json": "5eb1e042dfcc5bd87a9e3753b9ee610adc3b8f80816abac5644e9a915e5bb417",
     "project-bundle.schema.json": "e10ae13d367b5dd1b745e6bab8e6ef87120a78a96567642e4911c55fee134075",

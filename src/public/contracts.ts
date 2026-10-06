@@ -314,6 +314,11 @@ export const GetProjectStatusQuerySchema = z.object({
   projectId: z.string().min(1),
   actor: ActorSchema,
 }).strict();
+export const GetWorkspaceProjectsQuerySchema = z.object({
+  schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("workspace.projects"),
+  workspaceId: z.string().min(1), projectId: z.null(), actor: ActorSchema,
+  limit: z.number().int().positive().max(200).default(100),
+}).strict();
 export const GetProjectEventsQuerySchema = z.object({
   schemaVersion: PublicSchemaVersionSchema, queryId: z.string().min(1), type: z.literal("project.events"),
   workspaceId: z.string().min(1), projectId: z.string().min(1), actor: ActorSchema,
@@ -348,7 +353,7 @@ export const ProjectSshReadModelSchema=z.object({requirements:z.array(ProjectSsh
 export const SshProfilesQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("ssh.profiles"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema}).strict();
 export const SshProfileQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("ssh.profile"),workspaceId:z.string().min(1),projectId:z.null(),actor:ActorSchema,profileId:z.string().min(1)}).strict();
 export const ProjectSshQuerySchema=z.object({schemaVersion:PublicSchemaVersionSchema,queryId:z.string().min(1),type:z.literal("ssh.project"),workspaceId:z.string().min(1),projectId:z.string().min(1),actor:ActorSchema}).strict();
-export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,ProjectDependenciesQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema,ScientificCapabilityCatalogQuerySchema,ReleaseEvaluateQuerySchema,SshProfilesQuerySchema,SshProfileQuerySchema,ProjectSshQuerySchema]);
+export const PublicQuerySchema = z.discriminatedUnion("type", [GetProjectStatusQuerySchema,GetWorkspaceProjectsQuerySchema,GetProjectEventsQuerySchema,ExportProjectBundleQuerySchema,ProjectDependenciesQuerySchema,GetConversationQuerySchema,GetExecutionPolicyQuerySchema,GetJobQuerySchema,GetJobLogsQuerySchema,SearchPluginsQuerySchema,InspectPluginQuerySchema,PluginSourcesQuerySchema,PluginInstallationsQuerySchema,PluginRuntimeQuerySchema,ScientificCapabilityCatalogQuerySchema,ReleaseEvaluateQuerySchema,SshProfilesQuerySchema,SshProfileQuerySchema,ProjectSshQuerySchema]);
 export type PublicQuery = z.infer<typeof PublicQuerySchema>;
 
 export const PublicErrorCodeSchema = z.enum([
@@ -425,13 +430,24 @@ export const ProjectStatusReadModelSchema = z.object({
 }).strict();
 export type ProjectStatusReadModel = z.infer<typeof ProjectStatusReadModelSchema>;
 
+export const WorkspaceProjectSummarySchema = ProjectSummarySchema.extend({
+  branchName: z.string().min(1),
+  projectStatus: z.enum(["active", "archived"]),
+}).strict();
+export const WorkspaceProjectsReadModelSchema = z.object({
+  schemaVersion: PublicSchemaVersionSchema,
+  workspaceId: z.string().min(1),
+  projects: z.array(WorkspaceProjectSummarySchema),
+}).strict();
+export type WorkspaceProjectsReadModel = z.infer<typeof WorkspaceProjectsReadModelSchema>;
+
 export const QueryResultSchema = z.object({
   schemaVersion: PublicSchemaVersionSchema,
   queryId: z.string().min(1),
   workspaceId: z.string().min(1).nullable(),
   projectId: z.string().min(1).nullable(),
   status: z.enum(["ok", "rejected"]),
-  data: z.union([ProjectStatusReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),z.lazy(()=>BundleDependencyReadModelSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema,ScientificCapabilityCatalogSchema,ReleaseEvaluationSchema,SshProfilesReadModelSchema,SshProfileReadModelSchema,ProjectSshReadModelSchema]).nullable(),
+  data: z.union([ProjectStatusReadModelSchema,WorkspaceProjectsReadModelSchema,z.lazy(()=>ProjectEventListSchema),z.lazy(()=>PublicProjectBundleSchema),z.lazy(()=>BundleDependencyReadModelSchema),ConversationReadModelSchema,ExecutionPolicySchema,JobReadModelSchema,JobLogListSchema,PluginSearchResultSchema,PluginInspectionSchema,PluginSourcesResultSchema,PluginInstallationsResultSchema,PluginRuntimeSelectionSchema,ScientificCapabilityCatalogSchema,ReleaseEvaluationSchema,SshProfilesReadModelSchema,SshProfileReadModelSchema,ProjectSshReadModelSchema]).nullable(),
   error: PublicErrorSchema.nullable(),
   handledAt: z.string().min(1),
 }).strict().refine(value => (value.status === "ok") === (value.error === null), {
