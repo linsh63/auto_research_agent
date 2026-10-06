@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "registry": "https://registry.npmjs.org/",
+  "sourceCommit": "60cf2d3dec17a921dce5641359ab0d1e02eae39b",
+  "package": {
+    "name": "research-explorer-core",
+    "version": "1.6.1",
+    "distTag": "latest",
+    "shasum": "82f7416931dc4fbc2e2f5f4100c227fd35603f98",
+    "integrity": "sha512-XxPKTc4lhkj0YITzfuVu06MtkZdSvhug3RuacE9+C7v3t7TieqGsj97iIWebsO7T12yA2N8kDpZttFyEBtP3dg=="
+  },
+  "gates": {
+    "coreTests": 114,
+    "workspaceProjects": true,
+    "emptyWorkspace": true,
+    "packageConsumer": true
+  },
+  "publishedAt": "2026-10-06T12:10:00+08:00"
+}
